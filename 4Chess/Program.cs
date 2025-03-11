@@ -1,10 +1,16 @@
-﻿namespace _4Chess
+﻿using _4Chess.Game;
+using BIERKELLER.BIERRender;
+using Raylib_CsLo;
+using static Raylib_CsLo.Raylib;
+namespace _4Chess;
+
+internal class Program
 {
-    internal class Program
+    private static void Main()
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello, World!");
-        }
+        var _4chessGame = new _4ChessGame();
+        _4chessGame.Run();
+
+        Console.ReadKey();
     }
 }
