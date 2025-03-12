@@ -2,13 +2,13 @@
 
 public abstract class BIERRenderObject
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-    public int W { get; set; }
-    public int H { get; set; }
+    public float X { get; set; }
+    public float Y { get; set; }
+    public float W { get; set; }
+    public float H { get; set; }
     public Raylib_CsLo.Color Color { get; protected set; }
 
-    public BIERRenderObject(int x, int y, int w = 0, int h = 0, Raylib_CsLo.Color? color = null)
+    public BIERRenderObject(float x, float y, float w = 0, float h = 0, Raylib_CsLo.Color? color = null)
     {
         X = x;
         Y = y;
@@ -18,4 +18,5 @@ public abstract class BIERRenderObject
     }
 
     public abstract void Render();
+    public abstract void Dispose();
 }

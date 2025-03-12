@@ -5,13 +5,18 @@ namespace BIERKELLER.BIERRender;
 
 public class BIERRenderRect : BIERRenderObject
 {
-    public BIERRenderRect(int x, int y, int w = 0, int h = 0, Color? color = null) : base(x, y, w, h, color)
+    public BIERRenderRect(float x, float y, float w = 0, float h = 0, Color? color = null) : base(x, y, w, h, color)
     {
 
     }
 
     public override void Render()
     {
-        DrawRectangle(X, Y, W, H, Color);
+        DrawRectangle((int)X, (int)Y, (int)W, (int)H, Color);
+    }
+
+    public override void Dispose()
+    {
+
     }
 }
