@@ -81,8 +81,8 @@ public class _4ChessGame : BIERGame
                 if (p == BIERMouse.DraggedPiece)
                 {
                     Vector2 mousePos = Raylib.GetMousePosition();
-                    renderX = (int)mousePos.X;
-                    renderY = (int)mousePos.Y;
+                    renderX = (int)mousePos.X - TILE_SIZE / 2;
+                    renderY = (int)mousePos.Y - TILE_SIZE / 2;
                 }
                 else
                 {
@@ -98,6 +98,7 @@ public class _4ChessGame : BIERGame
         }
         BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
+
 
 
     public override void GameDispose()
