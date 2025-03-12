@@ -29,7 +29,7 @@ public class _4ChessGame : BIERGame
     {
         CustomPreRenderFuncs.Add(RenderBoard);
 
-        CustomPostRenderFuncs.Add(RenderPieces);
+        //CustomPostRenderFuncs.Add(RenderPieces);
     }
 
     public override void GameInit()
@@ -57,7 +57,7 @@ public class _4ChessGame : BIERGame
 
         Board =
         [
-            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new King(0, 0, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
+            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new King(0, 2, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Queen(7, 6, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
         ];
     }
 
@@ -68,6 +68,12 @@ public class _4ChessGame : BIERGame
 
     public override void GameRender()
     {
+        _renderObjects.Clear();
+        Board.SelectMany(p => p).ToList().ForEach(p =>
+        {
+            if (p != null && p.FilePath != null)
+                _renderObjects.Add(new BIERRenderTexture(p.FilePath, p.X * TILE_SIZE + BOARDXPos, p.Y * TILE_SIZE + BOARDYPos, TILE_SIZE, TILE_SIZE, 1f, WHITE));
+        });
         BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
 
@@ -88,7 +94,7 @@ public class _4ChessGame : BIERGame
                 TILE_SIZE / texture.height
             }.Average();
             if (p != null)
-                DrawTextureEx(texture, new Vector2(p.X * TILE_SIZE + BOARDXPos + TILE_SIZE / 4, p.Y * TILE_SIZE + BOARDYPos + TILE_SIZE / 8), 0f, scale, WHITE);
+                DrawTextureEx(texture, new Vector2(p.X * TILE_SIZE + BOARDXPos + TILE_SIZE / 4, p.Y * TILE_SIZE + BOARDYPos + TILE_SIZE / 8), 0f, 5f, WHITE);
         });
     }
 
