@@ -1,10 +1,13 @@
-﻿using System.Numerics;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
     public abstract class Piece
     {
-        public string FilePath { get; set; } = "";
+        public required _4ChessGame Game { get; set; }
+
+        public required string FilePath { get; set; }
 
         public static (int,int) Indexer { get; set; }
 
@@ -12,7 +15,7 @@ namespace _4Chess.Pieces
 
         public int Y { get; set; }
 
-        public List<Vector2> PossibleMoves { get; set; } = [];// erst Y, dann X -> Konsistenz in Reihenfolge
+        public List<Vector2> PossibleMoves { get; set; } = [];
 
         public Color Alignment { get; set; }
 
@@ -27,34 +30,26 @@ namespace _4Chess.Pieces
 
         public void ValidateMoves()
         {
-            if(typeof(King) != this.GetType())
+            Vector2 kingPosition = Alignment switch
             {
-                Vector2 kingPosition = Alignment switch
-                {
-                    Color.Black => TempGame.BlackKingPosition,
-                    Color.White => TempGame.WhiteKingPosition,
-                    //Kann eigentlich nicht passieren
-                    _ => new()
-                };
+                Color.Black => Game.BlackKingPosition,
+                Color.White => Game.WhiteKingPosition,
+                //Kann eigentlich nicht passieren
+                _ => new()
+            };
 
-                for (int i = 0; i < PossibleMoves.Count; i++)
-                {
-                    List<Piece> temp = [.. TempGame.AllPieces.Where(elem => elem.Alignment != this.Alignment)];
+            for (int i = 0; i < PossibleMoves.Count; i++)
+            {
+                List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
 
-                    foreach (var piece in temp)
+                foreach (var piece in temp)
+                {
+                    if (typeof(King) != this.GetType())
                     {
                         if (piece.PossibleMoves.Contains(kingPosition))
                             this.PossibleMoves.RemoveAt(i);
                     }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < PossibleMoves.Count; i++)
-                {
-                    List<Piece> temp = [.. TempGame.AllPieces.Where(elem => elem.Alignment != this.Alignment)];
-
-                    foreach (var piece in temp)
+                    else
                     {
                         if (piece.PossibleMoves.Contains(PossibleMoves[i]))
                             this.PossibleMoves.RemoveAt(i);

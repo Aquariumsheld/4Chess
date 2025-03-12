@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
@@ -7,12 +8,13 @@ namespace _4Chess.Pieces
         public bool IsUnmoved { get; set; } = true;
         public bool IsEnPassant { get; set; } = false;
 
-        public Pawn(int yPosition, int xPosition, Color alignment)
+        public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhitePawn.png" : "BlackPawn.png";
+            Game = game;
 
             PossibleMoves = GetMoves();
         }
@@ -50,9 +52,6 @@ namespace _4Chess.Pieces
                      (TempGame.Board[Y][X - 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
                     moves.Add(new Vector2(X + 1, Y + yDiff));
             }
-
-            //en passant implementieren
-            //Bool in Move Methode, dass der Bauer sich 2 Felder bewegt hat
 
             ValidateMoves();
 

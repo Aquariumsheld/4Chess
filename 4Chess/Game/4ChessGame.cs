@@ -2,6 +2,7 @@
 using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
 using Raylib_CsLo;
+using System.Numerics;
 using static Raylib_CsLo.Raylib;
 
 namespace _4Chess.Game;
@@ -14,6 +15,9 @@ public class _4ChessGame : BIERGame
 
     public List<BIERRenderObject> _renderObjects = [];
     public List<List<Piece?>> Board { get; set; } = [];
+
+    public Vector2 WhiteKingPosition { get; set; }
+    public Vector2 BlackKingPosition { get; set; }
 
     public _4ChessGame()
     {
