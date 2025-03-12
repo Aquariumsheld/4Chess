@@ -6,6 +6,7 @@ namespace _4Chess.Pieces
     class Pawn : Piece
     {
         public bool IsUnmoved { get; set; } = true;
+        public bool IsEnPassant { get; set; } = false;
 
         public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
@@ -33,21 +34,24 @@ namespace _4Chess.Pieces
 
             moves.Add(new Vector2(X, Y + yDiff));
 
-            if (IsUnmoved) moves.Add(new Vector2(X, Y + yDiff * 2));
-
-            if(X - 1 >= 0 && Game?.Board.Count > 0)
+            if (IsUnmoved)
             {
-                if (Game?.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment)
+                moves.Add(new Vector2(X, Y + yDiff * 2));
+            }
+
+            if (X - 1 >= 0)
+            {
+                if (Game.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment ||
+                    (Game.Board[Y][X - 1] is Pawn leftPawn && leftPawn.Alignment != this.Alignment && leftPawn.IsEnPassant))
                     moves.Add(new Vector2(X - 1, Y + yDiff));
             }
 
-            if (X + 1 < Game?.Board.Count)
+            if (X + 1 < Game.Board.Count)
             {
-                if (Game?.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment)
+                if (Game.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment ||
+                     (Game.Board[Y][X - 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
                     moves.Add(new Vector2(X + 1, Y + yDiff));
             }
-
-            //en passant implementieren
 
             ValidateMoves();
 
