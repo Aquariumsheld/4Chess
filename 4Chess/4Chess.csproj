@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>_4Chess</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BIERKELLER\BIERKELLER.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ResFileFolder Include="Res\img" />
+    <ResFiles Include="Res\img\**\*.*" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	  <MakeDir Directories="$(OutDir)res" />
+	  <Copy SourceFiles="@(ResFiles)" DestinationFolder="$(ProjectDir)$(OutDir)res" />
+  </Target>
+
+</Project>
