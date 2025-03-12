@@ -57,7 +57,7 @@ public class _4ChessGame : BIERGame
 
         Board =
         [
-            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new King(0, 0, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
+            [new King(0,0,Piece.Color.White,this)]
         ];
     }
 
