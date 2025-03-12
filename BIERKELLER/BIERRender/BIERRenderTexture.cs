@@ -8,9 +8,11 @@ public class BIERRenderTexture : BIERRenderObject
 
     public float Scale { get; set; }
 
-    public BIERRenderTexture(string path, int x, int y, int w = 0, int h = 0, float scale = 1f, Color? color = null) : base(x, y, w, h, color)
+    public BIERRenderTexture(int x, int y, int w = 0, int h = 0, string? path = null, float scale = 1f, Color? color = null) : base(x, y, w, h, color)
     {
-        Texture = Raylib.LoadTexture($"res/{path}");
+        if (path != null)
+            Texture = Raylib.LoadTexture($"res/{path}");
+
         Scale = scale;
     }
 

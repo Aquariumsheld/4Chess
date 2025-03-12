@@ -36,6 +36,21 @@ public class _4ChessGame : BIERGame
 
         // BIERRender-Objekte erst nach BIERRenderer.Init initialisieren, da sie den GL-Context brauchen!
 
+        _pieceTextureDict = new Dictionary<string, Texture>()
+        {
+             { "WhiteBishop.png", LoadTexture("res/WhiteBishop.png") },
+             { "BlackBishop.png", LoadTexture("res/BlackBishop.png") },
+             { "WhiteKing.png", LoadTexture("res/WhiteKing.png") },
+             { "BlackKing.png", LoadTexture("res/BlackKing.png") },
+             { "WhiteKnight.png", LoadTexture("res/WhiteKnight.png") },
+             { "BlackKnight.png", LoadTexture("res/BlackKnight.png") },
+             { "WhitePawn.png", LoadTexture("res/WhitePawn.png") },
+             { "BlackPawn.png", LoadTexture("res/BlackPawn.png") },
+             { "WhiteQueen.png", LoadTexture("res/WhiteQueen.png") },
+             { "BlackQueen.png", LoadTexture("res/BlackQueen.png") },
+             { "WhiteRook.png", LoadTexture("res/WhiteRook.png") },
+             { "BlackRook.png", LoadTexture("res/BlackRook.png") }
+        };
 
         Board =
         [
@@ -54,7 +69,7 @@ public class _4ChessGame : BIERGame
         Board.SelectMany(p => p).ToList().ForEach(p =>
         {
             if (p != null && p.FilePath != null)
-                _renderObjects.Add(new BIERRenderTexture(p.FilePath, p.X * TILE_SIZE + BOARDXPos, p.Y * TILE_SIZE + BOARDYPos, TILE_SIZE, TILE_SIZE, 1f, WHITE));
+                _renderObjects.Add(new BIERRenderTexture(p.X * TILE_SIZE + BOARDXPos, p.Y * TILE_SIZE + BOARDYPos, TILE_SIZE, TILE_SIZE, color: WHITE) { Texture = _pieceTextureDict[$"{p.FilePath}"] });
         });
         BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
