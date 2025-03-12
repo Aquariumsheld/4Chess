@@ -11,11 +11,12 @@ namespace _4Chess.Pieces
     {
         public bool Unmoved { get; set; } = true;
 
-        public Rook(int yPosition, int xPosition, Color alignment)
+        public Rook(int yPosition, int xPosition, Color alignment, string filepath)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
+            Filepath = filepath;
 
             PossibleMoves = GetMoves();
         }
