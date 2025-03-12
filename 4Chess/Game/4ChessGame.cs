@@ -1,5 +1,6 @@
 ﻿using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;
+using BIERKELLER.BIERInputs;
 using BIERKELLER.BIERRender;
 using Raylib_CsLo;
 using System.IO;
@@ -60,19 +61,44 @@ public class _4ChessGame : BIERGame
 
     public override void GameUpdate()
     {
-        _renderObjects.ForEach(o => o.X -= 1f);
+        List<Piece> pieces = Board.SelectMany(row => row)
+                                  .Where(piece => piece != null)
+                                  .ToList();
+
+        BIERMouse.MouseUpdate(pieces);
     }
+
+
 
     public override void GameRender()
     {
         _renderObjects.Clear();
-        Board.SelectMany(p => p).ToList().ForEach(p =>
+        foreach (var p in Board.SelectMany(row => row))
         {
             if (p != null && p.FilePath != null)
-                _renderObjects.Add(new BIERRenderTexture(p.X * TILE_SIZE + BOARDXPos, p.Y * TILE_SIZE + BOARDYPos, TILE_SIZE, TILE_SIZE, color: WHITE) { Texture = _pieceTextureDict[$"{p.FilePath}"] });
-        });
+            {
+                int renderX, renderY;
+                if (p == BIERMouse.DraggedPiece)
+                {
+                    Vector2 mousePos = Raylib.GetMousePosition();
+                    renderX = (int)mousePos.X;
+                    renderY = (int)mousePos.Y;
+                }
+                else
+                {
+                    renderX = p.X * TILE_SIZE + BOARDXPos;
+                    renderY = p.Y * TILE_SIZE + BOARDYPos;
+                }
+
+                _renderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
+                {
+                    Texture = _pieceTextureDict[$"{p.FilePath}"]
+                });
+            }
+        }
         BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
+
 
     public override void GameDispose()
     {
