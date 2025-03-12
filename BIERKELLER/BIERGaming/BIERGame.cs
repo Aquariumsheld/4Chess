@@ -5,7 +5,8 @@ namespace BIERKELLER.BIERGaming;
 
 public abstract class BIERGame
 {
-
+    public List<Action> CustomPreRenderFuncs { get; protected set; } = new();
+    public List<Action> CustomPostRenderFuncs { get; protected set; } = new();
     public void Run()
     {
         GameInit();
