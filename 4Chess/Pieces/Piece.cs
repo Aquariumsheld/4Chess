@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace _4Chess.Pieces
 {
@@ -32,27 +27,40 @@ namespace _4Chess.Pieces
 
         public void ValidateMoves()
         {
-            (int, int) kingPosition = Alignment switch
+            if(typeof(King) != this.GetType())
             {
-                Color.Black => TempGame.BlackKingPosition,
-                Color.White => TempGame.WhiteKingPosition,
-                //Kann eigentlich nicht passieren
-                _ => (0,0)
-            };
-
-            for(int i = 0; i < PossibleMoves.Count; i++)
-            {
-                List<Piece> temp = [.. TempGame.AllPieces.Where(elem => elem.Alignment != this.Alignment)];
-
-                foreach(var piece in temp)
+                Vector2 kingPosition = Alignment switch
                 {
-                    if (piece.PossibleMoves.Contains(kingPosition))
-                        this.PossibleMoves.RemoveAt(i);
+                    Color.Black => TempGame.BlackKingPosition,
+                    Color.White => TempGame.WhiteKingPosition,
+                    //Kann eigentlich nicht passieren
+                    _ => new()
+                };
+
+                for (int i = 0; i < PossibleMoves.Count; i++)
+                {
+                    List<Piece> temp = [.. TempGame.AllPieces.Where(elem => elem.Alignment != this.Alignment)];
+
+                    foreach (var piece in temp)
+                    {
+                        if (piece.PossibleMoves.Contains(kingPosition))
+                            this.PossibleMoves.RemoveAt(i);
+                    }
                 }
             }
+            else
+            {
+                for (int i = 0; i < PossibleMoves.Count; i++)
+                {
+                    List<Piece> temp = [.. TempGame.AllPieces.Where(elem => elem.Alignment != this.Alignment)];
 
-            //TODO Für den König eigenes Aufruf-Szenario generieren
-            //TODO Diese Methode muss immer sofort nach GetMoves() aufgerufen werden
+                    foreach (var piece in temp)
+                    {
+                        if (piece.PossibleMoves.Contains(PossibleMoves[i]))
+                            this.PossibleMoves.RemoveAt(i);
+                    }
+                }
+            }
         }
     }
 }

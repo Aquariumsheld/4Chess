@@ -1,4 +1,5 @@
-﻿using BIERKELLER.BIERGaming;
+﻿using _4Chess.Pieces;
+using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
 using static Raylib_CsLo.Raylib;
 

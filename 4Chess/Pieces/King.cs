@@ -127,7 +127,6 @@ namespace _4Chess.Pieces
             }
 
             ValidateMoves();
-            //TODO spezielles Szenario erstellen (nur hypothetische Züge)
 
             return moves;
         }
