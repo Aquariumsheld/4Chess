@@ -10,7 +10,6 @@ namespace _4Chess.Pieces
         {
             Y = yPosition;
             X = xPosition;
-            FilePath = alignment == Color.White ? "Assets/WhiteRook.png" : "Assets/BlackRook.png";
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhiteRook.png" : "BlackRook.png";
 
