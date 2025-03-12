@@ -5,9 +5,9 @@ namespace _4Chess.Pieces
 {
     public abstract class Piece
     {
-        public required _4ChessGame Game { get; set; }
+        public _4ChessGame? Game { get; set; }
 
-        public required string FilePath { get; set; }
+        public string? FilePath { get; set; }
 
         public static (int,int) Indexer { get; set; }
 

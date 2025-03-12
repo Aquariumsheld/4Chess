@@ -35,15 +35,15 @@ namespace _4Chess.Pieces
 
             if (IsUnmoved) moves.Add(new Vector2(X, Y + yDiff * 2));
 
-            if(X - 1 >= 0)
+            if(X - 1 >= 0 && Game?.Board.Count > 0)
             {
-                if (Game.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment)
+                if (Game?.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment)
                     moves.Add(new Vector2(X - 1, Y + yDiff));
             }
 
-            if (X + 1 >= 0)
+            if (X + 1 < Game?.Board.Count)
             {
-                if (Game.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment)
+                if (Game?.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment)
                     moves.Add(new Vector2(X + 1, Y + yDiff));
             }
 
