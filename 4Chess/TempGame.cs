@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace _4Chess
 
         public static List<Piece> AllPieces { get; set; } = [];
 
-        public static (int,int) WhiteKingPosition { get; set; }
-        public static (int,int) BlackKingPosition { get; set; }
+        public static Vector2 WhiteKingPosition { get; set; }
+        public static Vector2 BlackKingPosition { get; set; }
     }
 }

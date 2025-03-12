@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using _4Chess;
@@ -9,21 +10,19 @@ namespace _4Chess.Pieces
 {
     class Queen : Piece
     {
-        public bool Unmoved { get; set; } = true;
-
         public Queen(int yPosition, int xPosition, Color alignment)
         {
             Y = yPosition;
             X = xPosition;
-            FilePath = alignment == Color.White ? "Assets/WhiteQueen.png" : "Assets/BlackQueen.png";
+            FilePath = alignment == Color.White ? "WhiteQueen.png" : "BlackQueen.png";
             Alignment = alignment;
 
             PossibleMoves = GetMoves();
         }
 
-        public override List<(int, int)> GetMoves()
+        public override List<Vector2> GetMoves()
         {
-            List<(int, int)> moves = [];
+            List<Vector2> moves = [];
 
             bool left = true;
             bool right = true;
@@ -40,11 +39,11 @@ namespace _4Chess.Pieces
                 if (X - i >= 0 && left)
                 {
                     if (TempGame.Board[Y][X - i] == null)
-                        moves.Add((Y, X - i));
+                        moves.Add(new Vector2(X - i, Y));
 
                     else if (TempGame.Board[Y][X - i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y, X - i));
+                        moves.Add(new Vector2(X - i, Y));
                         left = false;
                     }
 
@@ -55,11 +54,11 @@ namespace _4Chess.Pieces
                 if (X + i <= 7 && right)
                 {
                     if (TempGame.Board[Y][X + i] == null)
-                        moves.Add((Y, X + i));
+                        moves.Add(new Vector2(X + i, Y));
 
                     else if (TempGame.Board[Y][X + i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y, X + i));
+                        moves.Add(new Vector2(X + i, Y));
                         right = false;
                     }
 
@@ -70,11 +69,11 @@ namespace _4Chess.Pieces
                 if (Y - i >= 0 && up)
                 {
                     if (TempGame.Board[Y - i][X] == null)
-                        moves.Add((Y - i, X));
+                        moves.Add(new Vector2(X, Y - i));
 
                     else if (TempGame.Board[Y - i][X]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y - i, X));
+                        moves.Add(new Vector2(X, Y - i));
                         up = false;
                     }
 
@@ -85,11 +84,11 @@ namespace _4Chess.Pieces
                 if (Y + i <= 7 && down)
                 {
                     if (TempGame.Board[Y + i][X] == null)
-                        moves.Add((Y + i, X));
+                        moves.Add(new Vector2(X, Y + i));
 
                     else if (TempGame.Board[Y + i][X]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y + i, X));
+                        moves.Add(new Vector2(X, Y + i));
                         down = false;
                     }
                     else down = false;
@@ -99,11 +98,11 @@ namespace _4Chess.Pieces
                 if (X - i >= 0 && Y - i >= 0 && leftUp)
                 {
                     if (TempGame.Board[Y - i][X - i] == null)
-                        moves.Add((Y - i, X - i));
+                        moves.Add(new Vector2(X - i, Y - i));
 
                     else if (TempGame.Board[Y - i][X - i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y - i, X - i));
+                        moves.Add(new Vector2(X - i, Y - i));
                         leftUp = false;
                     }
 
@@ -114,11 +113,11 @@ namespace _4Chess.Pieces
                 if (X + i < TempGame.Board.Count && Y - i < TempGame.Board.Count && rightUp)
                 {
                     if (TempGame.Board[Y - i][X + i] == null)
-                        moves.Add((Y - i, X + i));
+                        moves.Add(new Vector2(X + i, Y - i));
 
                     else if (TempGame.Board[Y][X + i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y - i, X + i));
+                        moves.Add(new Vector2(X + i, Y - i));
                         rightUp = false;
                     }
 
@@ -129,11 +128,11 @@ namespace _4Chess.Pieces
                 if (Y + i >= 0 && X - i >= 0 && leftDown)
                 {
                     if (TempGame.Board[Y + i][X - i] == null)
-                        moves.Add((Y + i, X - i));
+                        moves.Add(new Vector2(X - i, Y + i));
 
                     else if (TempGame.Board[Y + i][X - i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y + i, X - i));
+                        moves.Add(new Vector2(X - i, Y + i));
                         leftDown = false;
                     }
 
@@ -144,16 +143,19 @@ namespace _4Chess.Pieces
                 if (Y + i < TempGame.Board.Count && X + i < TempGame.Board.Count && rightDown)
                 {
                     if (TempGame.Board[Y + i][X + i] == null)
-                        moves.Add((Y + i, X + i));
+                        moves.Add(new Vector2(X + i, Y + i));
 
                     else if (TempGame.Board[Y + i][X + i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y + i, X + i));
+                        moves.Add(new Vector2(X + i, Y + i));
                         rightDown = false;
                     }
                     else rightDown = false;
                 }
             }
+
+            ValidateMoves();
+
             return moves;
         }
     }

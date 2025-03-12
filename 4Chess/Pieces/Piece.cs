@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,15 +12,12 @@ namespace _4Chess.Pieces
         public string FilePath { get; set; } = "";
 
         public static (int,int) Indexer { get; set; }
-        public string FilePath { get; set; }
 
         public int X { get; set; }
 
         public int Y { get; set; }
 
-        public List<(int, int)> PossibleMoves { get; set; } = [];// erst Y, dann X -> Konsistenz in Reihenfolge
-
-        public List<(int, int)>? SpecialMoves { get; set; } = null;
+        public List<Vector2> PossibleMoves { get; set; } = [];// erst Y, dann X -> Konsistenz in Reihenfolge
 
         public Color Alignment { get; set; }
 
@@ -30,7 +28,7 @@ namespace _4Chess.Pieces
             None
         }
 
-        public abstract List<(int, int)> GetMoves();
+        public abstract List<Vector2> GetMoves();
 
         public void ValidateMoves()
         {
