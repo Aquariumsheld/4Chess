@@ -15,6 +15,7 @@ namespace _4Chess.Pieces
         {
             Y = yPosition;
             X = xPosition;
+            FilePath = alignment == Color.White ? "Assets/WhiteRook.png" : "Assets/BlackRook.png";
             Alignment = alignment;
 
             PossibleMoves = GetMoves();
@@ -29,7 +30,7 @@ namespace _4Chess.Pieces
             bool up = true;
             bool down = true;
 
-            for(int i = 1; i <= TempGame.Board.Count-1; i++)
+            for(int i = 1; i < TempGame.Board.Count; i++)
             {
                 //Felder links der Figur
                 if (X - i >= 0 && left)

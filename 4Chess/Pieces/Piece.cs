@@ -9,6 +9,7 @@ namespace _4Chess.Pieces
     abstract class Piece
     {
         public static (int,int) Indexer { get; set; }
+        public string FilePath { get; set; }
 
         public int X { get; set; }
 
