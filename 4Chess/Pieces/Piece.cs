@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace _4Chess.Pieces
 {
-    abstract class Piece
+    public abstract class Piece
     {
         public string FilePath { get; set; } = "";
 

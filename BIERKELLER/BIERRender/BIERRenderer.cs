@@ -10,9 +10,10 @@ public static class BIERRenderer
     {
         InitWindow(w, h, title);
         SetTargetFPS(fps);
+        MaximizeWindow();
     }
 
-    public static void Render(List<BIERRenderObject> renderObjects, Color? bgColor = null)
+    public static void Render(List<BIERRenderObject> renderObjects, Color? bgColor = null, List<Action>? cPreFuncs = null, List<Action>? cPostFuncs = null)
     {
         var bgColorResolved = bgColor ?? BLACK;
 
@@ -20,7 +21,11 @@ public static class BIERRenderer
 
         ClearBackground(bgColorResolved);
 
+        cPreFuncs?.ForEach(a => a.Invoke());
+
         renderObjects.ForEach(o => o.Render());
+
+        cPostFuncs?.ForEach(a => a.Invoke());
 
         EndDrawing();
     }
