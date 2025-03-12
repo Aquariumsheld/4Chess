@@ -14,11 +14,13 @@ public abstract class BIERGame
             GameUpdate();
             GameRender();
         }
+        GameDispose();
         BIERRenderer.Dispose();
     }
 
     public abstract void GameInit();
     public abstract void GameUpdate();
     public abstract void GameRender();
+    public abstract void GameDispose();
 }
 

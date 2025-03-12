@@ -12,4 +12,14 @@
     <ProjectReference Include="..\BIERKELLER\BIERKELLER.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+	<ResFileFolder Include="Res\img" />
+    <ResFiles Include="Res\img\**\*.*" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	  <MakeDir Directories="$(OutDir)res" />
+	  <Copy SourceFiles="@(ResFiles)" DestinationFolder="$(ProjectDir)$(OutDir)res" />
+  </Target>
+
 </Project>
