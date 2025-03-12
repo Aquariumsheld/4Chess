@@ -1,15 +1,17 @@
-﻿using System.Numerics;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
     class Bishop : Piece
     {
-        public Bishop(int yPosition, int xPosition, Color alignment)
+        public Bishop(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
             Y = yPosition;
             X = xPosition;
             FilePath = alignment == Color.White ? "WhiteBishop.png" : "BlackBishop.png";
             Alignment = alignment;
+            Game = game;
 
             PossibleMoves = GetMoves();
         }
@@ -23,15 +25,15 @@ namespace _4Chess.Pieces
             bool leftDown = true;
             bool rightDown = true;
 
-            for (int i = 1; i < TempGame.Board.Count; i++)
+            for (int i = 1; i < Game.Board.Count; i++)
             {
                 //Felder links über der Figur
                 if (X - i >= 0 && Y - i >= 0 && leftUp)
                 {
-                    if (TempGame.Board[Y - i][X - i] == null)
+                    if (Game.Board[Y - i][X - i] == null)
                         moves.Add(new Vector2(X-i,Y-i));
 
-                    else if (TempGame.Board[Y - i][X - i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y - i][X - i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X - i, Y - i));
                         leftUp = false;
@@ -41,12 +43,12 @@ namespace _4Chess.Pieces
                 }
 
                 //Felder rechts über der Figur
-                if (X + i < TempGame.Board.Count && Y - i < TempGame.Board.Count && rightUp)
+                if (X + i < Game.Board.Count && Y - i < Game.Board.Count && rightUp)
                 {
-                    if (TempGame.Board[Y - i][X + i] == null)
+                    if (Game.Board[Y - i][X + i] == null)
                         moves.Add(new Vector2(X + i, Y - i));
 
-                    else if (TempGame.Board[Y][X + i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y][X + i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X + i, Y - i));
                         rightUp = false;
@@ -58,10 +60,10 @@ namespace _4Chess.Pieces
                 //Felder links unter der Figur
                 if (Y + i >= 0 && X - i >= 0 && leftDown)
                 {
-                    if (TempGame.Board[Y + i][X - i] == null)
+                    if (Game.Board[Y + i][X - i] == null)
                         moves.Add(new Vector2(X - i, Y + i));
 
-                    else if (TempGame.Board[Y + i][X - i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y + i][X - i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X - i, Y + i));
                         leftDown = false;
@@ -71,12 +73,12 @@ namespace _4Chess.Pieces
                 }
 
                 //Felder rechts unter der Figur
-                if (Y + i < TempGame.Board.Count && X + i < TempGame.Board.Count && rightDown)
+                if (Y + i < Game.Board.Count && X + i < Game.Board.Count && rightDown)
                 {
-                    if (TempGame.Board[Y + i][X + i] == null)
+                    if (Game.Board[Y + i][X + i] == null)
                         moves.Add(new Vector2(X + i, Y + i));
 
-                    else if (TempGame.Board[Y + i][X + i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y + i][X + i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X + i, Y + i));
                         rightDown = false;

@@ -1,15 +1,17 @@
-﻿using System.Numerics;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
     class Queen : Piece
     {
-        public Queen(int yPosition, int xPosition, Color alignment)
+        public Queen(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
             Y = yPosition;
             X = xPosition;
             FilePath = alignment == Color.White ? "WhiteQueen.png" : "BlackQueen.png";
             Alignment = alignment;
+            Game = game;
 
             PossibleMoves = GetMoves();
         }
@@ -27,15 +29,15 @@ namespace _4Chess.Pieces
             bool leftDown = true;
             bool rightDown = true;
 
-            for (int i = 1; i < TempGame.Board.Count; i++)
+            for (int i = 1; i < Game.Board.Count; i++)
             {
                 //Felder links der Figur
                 if (X - i >= 0 && left)
                 {
-                    if (TempGame.Board[Y][X - i] == null)
+                    if (Game.Board[Y][X - i] == null)
                         moves.Add(new Vector2(X - i, Y));
 
-                    else if (TempGame.Board[Y][X - i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y][X - i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X - i, Y));
                         left = false;
@@ -47,10 +49,10 @@ namespace _4Chess.Pieces
                 //Felder rechts der Figur
                 if (X + i <= 7 && right)
                 {
-                    if (TempGame.Board[Y][X + i] == null)
+                    if (Game.Board[Y][X + i] == null)
                         moves.Add(new Vector2(X + i, Y));
 
-                    else if (TempGame.Board[Y][X + i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y][X + i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X + i, Y));
                         right = false;
@@ -62,10 +64,10 @@ namespace _4Chess.Pieces
                 //Felder oberhalb der Figur
                 if (Y - i >= 0 && up)
                 {
-                    if (TempGame.Board[Y - i][X] == null)
+                    if (Game.Board[Y - i][X] == null)
                         moves.Add(new Vector2(X, Y - i));
 
-                    else if (TempGame.Board[Y - i][X]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y - i][X]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X, Y - i));
                         up = false;
@@ -77,10 +79,10 @@ namespace _4Chess.Pieces
                 //Felder oberhalb der Figur
                 if (Y + i <= 7 && down)
                 {
-                    if (TempGame.Board[Y + i][X] == null)
+                    if (Game.Board[Y + i][X] == null)
                         moves.Add(new Vector2(X, Y + i));
 
-                    else if (TempGame.Board[Y + i][X]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y + i][X]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X, Y + i));
                         down = false;
@@ -91,10 +93,10 @@ namespace _4Chess.Pieces
                 //Felder links über der Figur
                 if (X - i >= 0 && Y - i >= 0 && leftUp)
                 {
-                    if (TempGame.Board[Y - i][X - i] == null)
+                    if (Game.Board[Y - i][X - i] == null)
                         moves.Add(new Vector2(X - i, Y - i));
 
-                    else if (TempGame.Board[Y - i][X - i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y - i][X - i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X - i, Y - i));
                         leftUp = false;
@@ -104,12 +106,12 @@ namespace _4Chess.Pieces
                 }
 
                 //Felder rechts über der Figur
-                if (X + i < TempGame.Board.Count && Y - i < TempGame.Board.Count && rightUp)
+                if (X + i < Game.Board.Count && Y - i < Game.Board.Count && rightUp)
                 {
-                    if (TempGame.Board[Y - i][X + i] == null)
+                    if (Game.Board[Y - i][X + i] == null)
                         moves.Add(new Vector2(X + i, Y - i));
 
-                    else if (TempGame.Board[Y][X + i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y][X + i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X + i, Y - i));
                         rightUp = false;
@@ -121,10 +123,10 @@ namespace _4Chess.Pieces
                 //Felder links unter der Figur
                 if (Y + i >= 0 && X - i >= 0 && leftDown)
                 {
-                    if (TempGame.Board[Y + i][X - i] == null)
+                    if (Game.Board[Y + i][X - i] == null)
                         moves.Add(new Vector2(X - i, Y + i));
 
-                    else if (TempGame.Board[Y + i][X - i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y + i][X - i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X - i, Y + i));
                         leftDown = false;
@@ -134,12 +136,12 @@ namespace _4Chess.Pieces
                 }
 
                 //Felder rechts unter der Figur
-                if (Y + i < TempGame.Board.Count && X + i < TempGame.Board.Count && rightDown)
+                if (Y + i < Game.Board.Count && X + i < Game.Board.Count && rightDown)
                 {
-                    if (TempGame.Board[Y + i][X + i] == null)
+                    if (Game.Board[Y + i][X + i] == null)
                         moves.Add(new Vector2(X + i, Y + i));
 
-                    else if (TempGame.Board[Y + i][X + i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y + i][X + i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X + i, Y + i));
                         rightDown = false;
