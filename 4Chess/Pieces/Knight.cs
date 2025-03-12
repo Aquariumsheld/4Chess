@@ -8,12 +8,12 @@ namespace _4Chess.Pieces
 {
     class Knight : Piece
     {
-        public Knight(int yPosition, int xPosition, Color alignment, string filepath)
+        public Knight(int yPosition, int xPosition, Color alignment)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
-            Filepath = filepath;
+            FilePath = alignment == Color.White ? "Assets/WhiteKnight.png" : "Assets/BlackKnight.png";
 
             PossibleMoves = GetMoves();
         }
