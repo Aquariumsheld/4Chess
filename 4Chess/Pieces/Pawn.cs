@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace _4Chess.Pieces
 {
@@ -20,9 +16,9 @@ namespace _4Chess.Pieces
             PossibleMoves = GetMoves();
         }
 
-        public override List<(int, int)> GetMoves()
+        public override List<Vector2> GetMoves()
         {
-            List<(int, int)> moves = [];
+            List<Vector2> moves = [];
 
             int yDiff = Alignment switch
             {
@@ -33,20 +29,20 @@ namespace _4Chess.Pieces
 
             if (yDiff == 0) Console.WriteLine("Der Bauer hat keine Farbe !!!");
 
-            moves.Add((Y + yDiff, X));
+            moves.Add(new Vector2(X, Y + yDiff));
 
-            if (IsUnmoved) moves.Add((Y + yDiff * 2, X));
+            if (IsUnmoved) moves.Add(new Vector2(X, Y + yDiff * 2));
 
             if(X - 1 >= 0)
             {
                 if (TempGame.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment)
-                    moves.Add((Y + yDiff, X - 1));
+                    moves.Add(new Vector2(X - 1, Y + yDiff));
             }
 
             if (X + 1 >= 0)
             {
                 if (TempGame.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment)
-                    moves.Add((Y + yDiff, X + 1));
+                    moves.Add(new Vector2(X + 1, Y + yDiff));
             }
 
             //en passant implementieren

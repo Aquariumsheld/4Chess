@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using _4Chess;
+﻿using System.Numerics;
 
 namespace _4Chess.Pieces
 {
@@ -22,9 +17,9 @@ namespace _4Chess.Pieces
             PossibleMoves = GetMoves();
         }
 
-        public override List<(int, int)> GetMoves()
+        public override List<Vector2> GetMoves()
         {
-            List<(int, int)> moves = [];
+            List<Vector2> moves = [];
 
             bool left = true;
             bool right = true;
@@ -37,11 +32,11 @@ namespace _4Chess.Pieces
                 if (X - i >= 0 && left)
                 {
                     if (TempGame.Board[Y][X - i] == null)
-                        moves.Add((Y, X - i));
+                        moves.Add(new Vector2(X - i, Y));
 
                     else if (TempGame.Board[Y][X - i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y, X - i));
+                        moves.Add(new Vector2(X - i, Y));
                         left = false;
                     }
 
@@ -52,11 +47,11 @@ namespace _4Chess.Pieces
                 if(X + i <= 7 && right)
                 {
                     if (TempGame.Board[Y][X + i] == null)
-                        moves.Add((Y, X + i));
+                        moves.Add(new Vector2(X + i, Y));
 
                     else if (TempGame.Board[Y][X + i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y, X + i));
+                        moves.Add(new Vector2(X + i, Y));
                         right = false;
                     }
 
@@ -67,11 +62,11 @@ namespace _4Chess.Pieces
                 if (Y - i >= 0 && up)
                 {
                     if (TempGame.Board[Y - i][X] == null)
-                        moves.Add((Y - i, X));
+                        moves.Add(new Vector2(X, Y - i));
 
                     else if (TempGame.Board[Y - i][X]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y - i, X));
+                        moves.Add(new Vector2(X, Y - i));
                         up = false;
                     }
 
@@ -82,11 +77,11 @@ namespace _4Chess.Pieces
                 if (Y + i <= 7 && down)
                 {
                     if (TempGame.Board[Y + i][X] == null)
-                        moves.Add((Y + i, X));
+                        moves.Add(new Vector2(X, Y + i));
 
                     else if (TempGame.Board[Y + i][X]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y + i, X));
+                        moves.Add(new Vector2(X, Y + i));
                         down = false;
                     }
                     else down = false;
