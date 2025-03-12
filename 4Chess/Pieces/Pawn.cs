@@ -41,15 +41,15 @@ namespace _4Chess.Pieces
 
             if (X - 1 >= 0)
             {
-                if (TempGame.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment ||
-                    (TempGame.Board[Y][X - 1] is Pawn leftPawn && leftPawn.Alignment != this.Alignment && leftPawn.IsEnPassant))
+                if (Game.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment ||
+                    (Game.Board[Y][X - 1] is Pawn leftPawn && leftPawn.Alignment != this.Alignment && leftPawn.IsEnPassant))
                     moves.Add(new Vector2(X - 1, Y + yDiff));
             }
 
-            if (X + 1 < TempGame.Board.Count)
+            if (X + 1 < Game.Board.Count)
             {
-                if (TempGame.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment ||
-                     (TempGame.Board[Y][X - 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
+                if (Game.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment ||
+                     (Game.Board[Y][X - 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
                     moves.Add(new Vector2(X + 1, Y + yDiff));
             }
 
