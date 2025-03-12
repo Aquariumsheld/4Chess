@@ -28,8 +28,6 @@ public class _4ChessGame : BIERGame
     public _4ChessGame()
     {
         CustomPreRenderFuncs.Add(RenderBoard);
-
-        //CustomPostRenderFuncs.Add(RenderPieces);
     }
 
     public override void GameInit()
@@ -38,26 +36,10 @@ public class _4ChessGame : BIERGame
 
         // BIERRender-Objekte erst nach BIERRenderer.Init initialisieren, da sie den GL-Context brauchen!
 
-        _pieceTextureDict = new Dictionary<string, Texture>()
-        {
-            { "WhiteBishop.png", LoadTexture("res/WhiteBishop.png") },
-            { "BlackBishop.png", LoadTexture("res/BlackBishop.png") },
-            { "WhiteKing.png", LoadTexture("res/WhiteKing.png") },
-            { "BlackKing.png", LoadTexture("res/BlackKing.png") },
-            { "WhiteKnight.png", LoadTexture("res/WhiteKnight.png") },
-            { "BlackKnight.png", LoadTexture("res/BlackKnight.png") },
-            { "WhitePawn.png", LoadTexture("res/WhitePawn.png") },
-            { "BlackPawn.png", LoadTexture("res/BlackPawn.png") },
-            { "WhiteQueen.png", LoadTexture("res/WhiteQueen.png") },
-            { "BlackQueen.png", LoadTexture("res/BlackQueen.png") },
-            { "WhiteRook.png", LoadTexture("res/WhiteRook.png") },
-            { "BlackRook.png", LoadTexture("res/BlackRook.png") }
-        };
-
 
         Board =
         [
-            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new King(0, 2, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Queen(7, 6, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
+            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new Rook(0, 2, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Queen(7, 6, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
         ];
     }
 
@@ -83,20 +65,6 @@ public class _4ChessGame : BIERGame
         _pieceTextureDict.Values.ToList().ForEach(t => UnloadTexture(t));
     }
 
-    private void RenderPieces()
-    {
-        Board.SelectMany(p => p).ToList().ForEach(p =>
-        {
-            var texture = _pieceTextureDict[$"{p?.FilePath}"];
-            var scale = new List<float>()
-            {
-                TILE_SIZE / texture.width,
-                TILE_SIZE / texture.height
-            }.Average();
-            if (p != null)
-                DrawTextureEx(texture, new Vector2(p.X * TILE_SIZE + BOARDXPos + TILE_SIZE / 4, p.Y * TILE_SIZE + BOARDYPos + TILE_SIZE / 8), 0f, 5f, WHITE);
-        });
-    }
 
     private void RenderBoard()
     {

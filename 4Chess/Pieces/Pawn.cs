@@ -39,14 +39,14 @@ namespace _4Chess.Pieces
                 moves.Add(new Vector2(X, Y + yDiff * 2));
             }
 
-            if (X - 1 >= 0)
+            if (X - 1 >= 0 && Y + yDiff >= 0 && Y + yDiff < Game?.Board.Count)
             {
-                if (Game.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment ||
+                if (Game?.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment ||
                     (Game.Board[Y][X - 1] is Pawn leftPawn && leftPawn.Alignment != this.Alignment && leftPawn.IsEnPassant))
                     moves.Add(new Vector2(X - 1, Y + yDiff));
             }
 
-            if (X + 1 < Game.Board.Count)
+            if (X + 1 < Game?.Board.Count)
             {
                 if (Game.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment ||
                      (Game.Board[Y][X - 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
