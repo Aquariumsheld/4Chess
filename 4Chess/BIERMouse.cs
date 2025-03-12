@@ -44,7 +44,7 @@ namespace BIERKELLER.BIERInputs
                 newX = Math.Clamp(newX, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
                 newY = Math.Clamp(newY, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
 
-                Vector2 newPos = new Vector2(newX, newY);
+                Vector2 newPos = new Vector2(newX, newY);//Kann zum Testen True gesetztwerden (isValidMove = true)
                 bool isValidMove = DraggedPiece.PossibleMoves.Any(move => (int)move.X == newX && (int)move.Y == newY);
                 if (isValidMove)
                 {
