@@ -9,7 +9,7 @@ namespace _4Chess.Pieces
 {
     class Rook : Piece
     {
-        public bool Unmoved { get; set; } = true;
+        public bool IsUnmoved { get; set; } = true;
 
         public Rook(int yPosition, int xPosition, Color alignment)
         {
@@ -17,6 +17,7 @@ namespace _4Chess.Pieces
             X = xPosition;
             FilePath = alignment == Color.White ? "Assets/WhiteRook.png" : "Assets/BlackRook.png";
             Alignment = alignment;
+            FilePath = alignment == Color.White ? "WhiteRook.png" : "BlackRook.png";
 
             PossibleMoves = GetMoves();
         }
@@ -91,6 +92,9 @@ namespace _4Chess.Pieces
                     else down = false;
                 }
             }
+
+            ValidateMoves();
+
             return moves;
         }
     }

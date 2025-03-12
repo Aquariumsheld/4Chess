@@ -8,6 +8,8 @@ namespace _4Chess.Pieces
 {
     abstract class Piece
     {
+        public string FilePath { get; set; } = "";
+
         public static (int,int) Indexer { get; set; }
         public string FilePath { get; set; }
 
@@ -29,5 +31,30 @@ namespace _4Chess.Pieces
         }
 
         public abstract List<(int, int)> GetMoves();
+
+        public void ValidateMoves()
+        {
+            (int, int) kingPosition = Alignment switch
+            {
+                Color.Black => TempGame.BlackKingPosition,
+                Color.White => TempGame.WhiteKingPosition,
+                //Kann eigentlich nicht passieren
+                _ => (0,0)
+            };
+
+            for(int i = 0; i < PossibleMoves.Count; i++)
+            {
+                List<Piece> temp = [.. TempGame.AllPieces.Where(elem => elem.Alignment != this.Alignment)];
+
+                foreach(var piece in temp)
+                {
+                    if (piece.PossibleMoves.Contains(kingPosition))
+                        this.PossibleMoves.RemoveAt(i);
+                }
+            }
+
+            //TODO Für den König eigenes Aufruf-Szenario generieren
+            //TODO Diese Methode muss immer sofort nach GetMoves() aufgerufen werden
+        }
     }
 }
