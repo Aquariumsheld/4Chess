@@ -29,7 +29,7 @@ namespace _4Chess.Pieces
             List<Vector2> moves = [];
 
             //Felder links der Figur
-            if (X - 1 >= 0 && Game?.Board.Count > 0)
+            if (X - 1 >= 0)
             {
                 if (Game?.Board[Y][X - 1] == null)
                     moves.Add(new Vector2(X-1,Y));
@@ -41,9 +41,9 @@ namespace _4Chess.Pieces
             }
 
             //Felder rechts der Figur
-            if (X + 1 <= Game?.Board.Count - 1)
+            if (X + 1 < Game?.Board.Count)
             {
-                if (Game.Board[Y][X + 1] == null)
+                if (Game?.Board[Y][X + 1] == null)
                     moves.Add(new Vector2(X + 1, Y));
 
                 else if (Game.Board[Y][X + 1]?.Alignment != this.Alignment)
@@ -54,9 +54,9 @@ namespace _4Chess.Pieces
             }
 
             //Felder oberhalb der Figur
-            if (Y - 1 >= 0 && Game?.Board.Count > 0)
+            if (Y - 1 >= 0)
             {
-                if (Game.Board[Y - 1][X] == null)
+                if (Game?.Board[Y - 1][X] == null)
                     moves.Add(new Vector2(X, Y - 1));
 
                 else if (Game.Board[Y - 1][X]?.Alignment != this.Alignment)
@@ -67,9 +67,9 @@ namespace _4Chess.Pieces
             }
 
             //Felder oberhalb der Figur
-            if (Y + 1 <= Game?.Board.Count - 1)
+            if (Y + 1 < Game?.Board.Count)
             {
-                if (Game.Board[Y + 1][X] == null)
+                if (Game?.Board[Y + 1][X] == null)
                     moves.Add(new Vector2(X, Y + 1));
 
                 else if (Game.Board[Y + 1][X]?.Alignment != this.Alignment)
@@ -81,7 +81,7 @@ namespace _4Chess.Pieces
             //Felder links über der Figur
             if (X - 1 >= 0 && Y - 1 >= 0)
             {
-                if (Game.Board[Y - 1][X - 1] == null)
+                if (Game?.Board[Y - 1][X - 1] == null)
                     moves.Add(new Vector2(X - 1, Y - 1));
 
                 else if (Game.Board[Y - 1][X - 1]?.Alignment != this.Alignment)
@@ -92,9 +92,9 @@ namespace _4Chess.Pieces
             }
 
             //Felder rechts über der Figur
-            if (X + 1 < Game.Board.Count && Y - 1 < Game.Board.Count)
+            if (X + 1 < Game?.Board.Count && Y - 1 < Game.Board.Count)
             {
-                if (Game.Board[Y - 1][X + 1] == null)
+                if (Game?.Board[Y - 1][X + 1] == null)
                     moves.Add(new Vector2(X + 1, Y - 1));
 
                 else if (Game.Board[Y][X + 1]?.Alignment != this.Alignment)
@@ -107,7 +107,7 @@ namespace _4Chess.Pieces
             //Felder links unter der Figur
             if (Y + 1 < Game.Board.Count && X - 1 >= 0)
             {
-                if (Game.Board[Y + 1][X - 1] == null)
+                if (Game?.Board[Y + 1][X - 1] == null)
                     moves.Add(new Vector2(X - 1, Y + 1));
 
                 else if (Game.Board[Y + 1][X - 1]?.Alignment != this.Alignment)
@@ -118,9 +118,9 @@ namespace _4Chess.Pieces
             }
 
             //Felder rechts unter der Figur
-            if (Y + 1 < Game.Board.Count && X + 1 < Game.Board.Count)
+            if (Y + 1 < Game?.Board.Count && X + 1 < Game.Board.Count)
             {
-                if (Game.Board[Y + 1][X + 1] == null)
+                if (Game?.Board[Y + 1][X + 1] == null)
                     moves.Add(new Vector2(X + 1, Y + 1));
 
                 else if (Game.Board[Y + 1][X + 1]?.Alignment != this.Alignment)

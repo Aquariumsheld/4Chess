@@ -27,7 +27,7 @@ namespace _4Chess.Pieces
             bool up = true;
             bool down = true;
 
-            for(int i = 1; i < Game.Board.Count; i++)
+            for(int i = 1; i < Game?.Board.Count; i++)
             {
                 //Felder links der Figur
                 if (X - i >= 0 && left)
