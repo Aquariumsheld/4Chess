@@ -5,9 +5,9 @@ namespace _4Chess.Pieces
 {
     public abstract class Piece
     {
-        public required _4ChessGame Game { get; set; }
+        public _4ChessGame? Game { get; set; }
 
-        public required string FilePath { get; set; }
+        public string? FilePath { get; set; }
 
         public static (int,int) Indexer { get; set; }
 
@@ -30,29 +30,32 @@ namespace _4Chess.Pieces
 
         public void ValidateMoves()
         {
-            Vector2 kingPosition = Alignment switch
+            if(Game != null)
             {
-                Color.Black => Game.BlackKingPosition,
-                Color.White => Game.WhiteKingPosition,
-                //Kann eigentlich nicht passieren
-                _ => new()
-            };
-
-            for (int i = 0; i < PossibleMoves.Count; i++)
-            {
-                List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
-
-                foreach (var piece in temp)
+                Vector2 kingPosition = Alignment switch
                 {
-                    if (typeof(King) != this.GetType())
+                    Color.Black => Game.BlackKingPosition,
+                    Color.White => Game.WhiteKingPosition,
+                    //Kann eigentlich nicht passieren
+                    _ => new()
+                };
+
+                for (int i = 0; i < PossibleMoves.Count; i++)
+                {
+                    List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
+
+                    foreach (var piece in temp)
                     {
-                        if (piece.PossibleMoves.Contains(kingPosition))
-                            this.PossibleMoves.RemoveAt(i);
-                    }
-                    else
-                    {
-                        if (piece.PossibleMoves.Contains(PossibleMoves[i]))
-                            this.PossibleMoves.RemoveAt(i);
+                        if (typeof(King) != this.GetType())
+                        {
+                            if (piece.PossibleMoves.Contains(kingPosition))
+                                this.PossibleMoves.RemoveAt(i);
+                        }
+                        else
+                        {
+                            if (piece.PossibleMoves.Contains(PossibleMoves[i]))
+                                this.PossibleMoves.RemoveAt(i);
+                        }
                     }
                 }
             }

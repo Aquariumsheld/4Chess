@@ -2,6 +2,7 @@
 using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
 using Raylib_CsLo;
+using System.IO;
 using System.Numerics;
 using static Raylib_CsLo.Raylib;
 
@@ -12,9 +13,14 @@ public class _4ChessGame : BIERGame
     public const int WINDOW_WIDTH = 1920;
     public const int WINDOW_HEIGHT = 1200;
     public const int BOARD_DIMENSIONS = 8;
+    public static readonly int BOARDXPos = WINDOW_WIDTH / 4;
+    public static readonly int BOARDYPos = WINDOW_HEIGHT / 8;
+    public static readonly int TILE_SIZE = (WINDOW_WIDTH - (BOARDXPos * 2)) / BOARD_DIMENSIONS;
 
     public List<BIERRenderObject> _renderObjects = [];
     public List<List<Piece?>> Board { get; set; } = [];
+
+    private Dictionary<string, Texture> _pieceTextureDict = [];
 
     public Vector2 WhiteKingPosition { get; set; }
     public Vector2 BlackKingPosition { get; set; }
@@ -22,6 +28,8 @@ public class _4ChessGame : BIERGame
     public _4ChessGame()
     {
         CustomPreRenderFuncs.Add(RenderBoard);
+
+        //CustomPostRenderFuncs.Add(RenderPieces);
     }
 
     public override void GameInit()
@@ -30,11 +38,26 @@ public class _4ChessGame : BIERGame
 
         // BIERRender-Objekte erst nach BIERRenderer.Init initialisieren, da sie den GL-Context brauchen!
 
-        _renderObjects =
+        _pieceTextureDict = new Dictionary<string, Texture>()
+        {
+            { "WhiteBishop.png", LoadTexture("res/WhiteBishop.png") },
+            { "BlackBishop.png", LoadTexture("res/BlackBishop.png") },
+            { "WhiteKing.png", LoadTexture("res/WhiteKing.png") },
+            { "BlackKing.png", LoadTexture("res/BlackKing.png") },
+            { "WhiteKnight.png", LoadTexture("res/WhiteKnight.png") },
+            { "BlackKnight.png", LoadTexture("res/BlackKnight.png") },
+            { "WhitePawn.png", LoadTexture("res/WhitePawn.png") },
+            { "BlackPawn.png", LoadTexture("res/BlackPawn.png") },
+            { "WhiteQueen.png", LoadTexture("res/WhiteQueen.png") },
+            { "BlackQueen.png", LoadTexture("res/BlackQueen.png") },
+            { "WhiteRook.png", LoadTexture("res/WhiteRook.png") },
+            { "BlackRook.png", LoadTexture("res/BlackRook.png") }
+        };
+
+
+        Board =
         [
-            new BIERRenderRect(200, 200, 300, 100, GREEN),
-            new BIERRenderRect(100, 100, 50, 250, RED),
-            new BIERRenderTexture("test.png", 300, 200, 400, 300, WHITE)
+            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new King(0, 2, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Queen(7, 6, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
         ];
     }
 
@@ -45,21 +68,38 @@ public class _4ChessGame : BIERGame
 
     public override void GameRender()
     {
-        BIERRenderer.Render(_renderObjects, GOLD, CustomPreRenderFuncs, CustomPostRenderFuncs);
+        _renderObjects.Clear();
+        Board.SelectMany(p => p).ToList().ForEach(p =>
+        {
+            if (p != null && p.FilePath != null)
+                _renderObjects.Add(new BIERRenderTexture(p.FilePath, p.X * TILE_SIZE + BOARDXPos, p.Y * TILE_SIZE + BOARDYPos, TILE_SIZE, TILE_SIZE, 1f, WHITE));
+        });
+        BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
 
     public override void GameDispose()
     {
         _renderObjects.ForEach(o => o.Dispose());
+        _pieceTextureDict.Values.ToList().ForEach(t => UnloadTexture(t));
+    }
+
+    private void RenderPieces()
+    {
+        Board.SelectMany(p => p).ToList().ForEach(p =>
+        {
+            var texture = _pieceTextureDict[$"{p?.FilePath}"];
+            var scale = new List<float>()
+            {
+                TILE_SIZE / texture.width,
+                TILE_SIZE / texture.height
+            }.Average();
+            if (p != null)
+                DrawTextureEx(texture, new Vector2(p.X * TILE_SIZE + BOARDXPos + TILE_SIZE / 4, p.Y * TILE_SIZE + BOARDYPos + TILE_SIZE / 8), 0f, 5f, WHITE);
+        });
     }
 
     private void RenderBoard()
     {
-        var bXPos = WINDOW_WIDTH / 4;
-        var bYPos = WINDOW_HEIGHT / 8;
-
-        var tileSize = (WINDOW_WIDTH - (bXPos * 2)) / BOARD_DIMENSIONS;
-
         char c = 'w';
 
         for (int x = 0; x < BOARD_DIMENSIONS; x++)
@@ -68,11 +108,11 @@ public class _4ChessGame : BIERGame
             {
                 var color = c switch
                 {
-                    'w' => WHITE,
-                    _ => BLACK
+                    'w' => LIGHTGRAY,
+                    _ => DARKGRAY
                 };
 
-                Raylib.DrawRectangle(bXPos + x * tileSize, bYPos + y * tileSize, tileSize, tileSize, color);
+                Raylib.DrawRectangle(BOARDXPos + x * TILE_SIZE, BOARDYPos + y * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
 
                 c = c switch
                 {
