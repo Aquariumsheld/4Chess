@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
@@ -6,12 +7,13 @@ namespace _4Chess.Pieces
     {
         public bool IsUnmoved { get; set; } = true;
 
-        public Pawn(int yPosition, int xPosition, Color alignment)
+        public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhitePawn.png" : "BlackPawn.png";
+            Game = game;
 
             PossibleMoves = GetMoves();
         }
@@ -35,13 +37,13 @@ namespace _4Chess.Pieces
 
             if(X - 1 >= 0)
             {
-                if (TempGame.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment)
+                if (Game.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment)
                     moves.Add(new Vector2(X - 1, Y + yDiff));
             }
 
             if (X + 1 >= 0)
             {
-                if (TempGame.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment)
+                if (Game.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment)
                     moves.Add(new Vector2(X + 1, Y + yDiff));
             }
 
