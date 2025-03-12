@@ -105,7 +105,7 @@ namespace _4Chess.Pieces
             }
 
             //Felder links unter der Figur
-            if (Y + 1 >= 0 && X - 1 >= 0)
+            if (Y + 1 < Game.Board.Count && X - 1 >= 0)
             {
                 if (Game?.Board[Y + 1][X - 1] == null)
                     moves.Add(new Vector2(X - 1, Y + 1));
