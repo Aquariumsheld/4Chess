@@ -8,14 +8,14 @@ namespace _4Chess.Pieces
 {
     class Pawn : Piece
     {
-        public bool Unmoved { get; set; } = true;
+        public bool IsUnmoved { get; set; } = true;
 
         public Pawn(int yPosition, int xPosition, Color alignment)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
-            FilePath = alignment == Color.White ? "Assets/WhitePawn.png" : "Assets/BlackPawn.png";
+            FilePath = alignment == Color.White ? "WhitePawn.png" : "BlackPawn.png";
 
             PossibleMoves = GetMoves();
         }
@@ -35,7 +35,7 @@ namespace _4Chess.Pieces
 
             moves.Add((Y + yDiff, X));
 
-            if (Unmoved) moves.Add((Y + yDiff * 2, X));
+            if (IsUnmoved) moves.Add((Y + yDiff * 2, X));
 
             if(X - 1 >= 0)
             {
@@ -50,6 +50,8 @@ namespace _4Chess.Pieces
             }
 
             //en passant implementieren
+
+            ValidateMoves();
 
             return moves;
         }

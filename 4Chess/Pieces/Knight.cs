@@ -13,7 +13,7 @@ namespace _4Chess.Pieces
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
-            FilePath = alignment == Color.White ? "Assets/WhiteKnight.png" : "Assets/BlackKnight.png";
+            FilePath = alignment == Color.White ? "WhiteKnight.png" : "BlackKnight.png";
 
             PossibleMoves = GetMoves();
         }
@@ -77,6 +77,8 @@ namespace _4Chess.Pieces
                 if (TempGame.Board[Y - 1][X - 2] == null || TempGame.Board[Y - 1][X - 2]?.Alignment != this.Alignment)
                     moves.Add((Y - 1, X - 2));
             }
+
+            ValidateMoves();
 
             return moves;
         }
