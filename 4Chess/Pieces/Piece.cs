@@ -8,9 +8,6 @@ namespace _4Chess.Pieces
         public _4ChessGame? Game { get; set; }
 
         public string? FilePath { get; set; }
-
-        public static (int,int) Indexer { get; set; }
-
         public int X { get; set; }
 
         public int Y { get; set; }

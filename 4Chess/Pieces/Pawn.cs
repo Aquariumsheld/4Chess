@@ -15,8 +15,6 @@ namespace _4Chess.Pieces
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhitePawn.png" : "BlackPawn.png";
             Game = game;
-
-            PossibleMoves = GetMoves();
         }
 
         public override List<Vector2> GetMoves()
@@ -32,7 +30,11 @@ namespace _4Chess.Pieces
 
             if (yDiff == 0) Console.WriteLine("Der Bauer hat keine Farbe !!!");
 
-            moves.Add(new Vector2(X, Y + yDiff));
+            if(Y+yDiff >= 0 && Y + yDiff < Game?.Board.Count)
+            {
+                if (Game?.Board[Y + yDiff][X] == null)
+                    moves.Add(new Vector2(X, Y + yDiff));
+            }
 
             if (IsUnmoved)
             {
@@ -46,10 +48,10 @@ namespace _4Chess.Pieces
                     moves.Add(new Vector2(X - 1, Y + yDiff));
             }
 
-            if (X + 1 < Game?.Board.Count)
+            if (X + 1 < Game?.Board.Count && Y + yDiff >= 0 && Y + yDiff < Game?.Board.Count)
             {
                 if (Game.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment ||
-                     (Game.Board[Y][X - 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
+                     (Game.Board[Y][X + 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
                     moves.Add(new Vector2(X + 1, Y + yDiff));
             }
 

@@ -1,5 +1,6 @@
 ﻿using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;
+using BIERKELLER.BIERInputs;
 using BIERKELLER.BIERRender;
 using Raylib_CsLo;
 using System.IO;
@@ -54,25 +55,57 @@ public class _4ChessGame : BIERGame
 
         Board =
         [
-            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new Rook(0, 2, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Queen(7, 6, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
+            [new Knight(0, 0, Piece.Color.Black, this), new King(0, 1, Piece.Color.Black, this), new Queen(0, 2, Piece.Color.White, this), null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null]
         ];
     }
 
     public override void GameUpdate()
     {
-        _renderObjects.ForEach(o => o.X -= 1f);
+        List<Piece> pieces = [.. Board.SelectMany(row => row)
+                                  .Where(piece => piece != null)
+                                  .Cast<Piece>()];
+
+        if (pieces.All(p => p != null))
+            BIERMouse.MouseUpdate(pieces, this);
     }
 
     public override void GameRender()
     {
         _renderObjects.Clear();
-        Board.SelectMany(p => p).ToList().ForEach(p =>
+        foreach (var p in Board.SelectMany(row => row))
         {
             if (p != null && p.FilePath != null)
-                _renderObjects.Add(new BIERRenderTexture(p.X * TILE_SIZE + BOARDXPos, p.Y * TILE_SIZE + BOARDYPos, TILE_SIZE, TILE_SIZE, color: WHITE) { Texture = _pieceTextureDict[$"{p.FilePath}"] });
-        });
+            {
+                int renderX, renderY;
+                if (p == BIERMouse.DraggedPiece)
+                {
+                    Vector2 mousePos = Raylib.GetMousePosition();
+                    renderX = (int)mousePos.X - TILE_SIZE / 2;
+                    renderY = (int)mousePos.Y - TILE_SIZE / 2;
+                }
+                else
+                {
+                    renderX = p.X * TILE_SIZE + BOARDXPos;
+                    renderY = p.Y * TILE_SIZE + BOARDYPos;
+                }
+
+                _renderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
+                {
+                    Texture = _pieceTextureDict[$"{p.FilePath}"]
+                });
+            }
+        }
         BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
+
+
 
     public override void GameDispose()
     {
