@@ -4,6 +4,7 @@ using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
 using Raylib_CsLo;
 using System.IO;
+using System.Linq.Expressions;
 using System.Numerics;
 using static Raylib_CsLo.Raylib;
 using static System.Net.Mime.MediaTypeNames;
@@ -105,9 +106,8 @@ public class _4ChessGame : BIERGame
     public override void GameUpdate()
     {
         var moveCounter = new MoveCounter();
-        long totalMoves = moveCounter.CountBoardVariants(this, 3);
-
-
+        MoveCounter.MaxDepth = 1;
+        var (totalMoves, uniquePositions) = moveCounter.CountLegalMovesAndPositions(this);
         List<Piece> pieces = [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
                                   .Cast<Piece>()];
