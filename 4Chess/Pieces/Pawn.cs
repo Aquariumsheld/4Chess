@@ -19,7 +19,7 @@ namespace _4Chess.Pieces
 
         public override List<Vector2> GetMoves()
         {
-            List<Vector2> moves = [];
+            List<Vector2> moves = new List<Vector2>();
 
             int yDiff = Alignment switch
             {
@@ -28,35 +28,46 @@ namespace _4Chess.Pieces
                 _ => 0
             };
 
-            if (yDiff == 0) Console.WriteLine("Der Bauer hat keine Farbe !!!");
+            if (yDiff == 0)
+                Console.WriteLine("Der Bauer hat keine Farbe !!!");
 
-            if(Y+yDiff >= 0 && Y + yDiff < Game?.Board.Count)
+            // Ein Feld vorwärts, falls frei
+            if (Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
             {
-                if (Game?.Board[Y + yDiff][X] == null)
+                if (Game.Board[Y + yDiff][X] == null)
+                {
                     moves.Add(new Vector2(X, Y + yDiff));
+                }
             }
 
-            if (IsUnmoved)
+            bool onStartingRow = (Alignment == Color.White && Y == 6) || (Alignment == Color.Black && Y == 1);
+            if (IsUnmoved && onStartingRow && Y + yDiff * 2 >= 0 && Y + yDiff * 2 < _4ChessGame.BOARD_DIMENSIONS)
             {
-                moves.Add(new Vector2(X, Y + yDiff * 2));
+                if (Game.Board[Y + yDiff][X] == null && Game.Board[Y + yDiff * 2][X] == null)
+                {
+                    moves.Add(new Vector2(X, Y + yDiff * 2));
+                }
             }
 
-            if (X - 1 >= 0 && Y + yDiff >= 0 && Y + yDiff < Game?.Board.Count)
+            if (X - 1 >= 0 && Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
             {
-                if (Game?.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment ||
-                    (Game.Board[Y][X - 1] is Pawn leftPawn && leftPawn.Alignment != this.Alignment && leftPawn.IsEnPassant))
+                var leftCapture = Game.Board[Y + yDiff][X - 1];
+                if (leftCapture != null && leftCapture.Alignment != this.Alignment)
+                {
                     moves.Add(new Vector2(X - 1, Y + yDiff));
+                }
             }
 
-            if (X + 1 < Game?.Board.Count && Y + yDiff >= 0 && Y + yDiff < Game?.Board.Count)
+            if (X + 1 < _4ChessGame.BOARD_DIMENSIONS && Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
             {
-                if (Game.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment ||
-                     (Game.Board[Y][X + 1] is Pawn rightPawn && rightPawn.Alignment != this.Alignment && rightPawn.IsEnPassant))
+                var rightCapture = Game.Board[Y + yDiff][X + 1];
+                if (rightCapture != null && rightCapture.Alignment != this.Alignment)
+                {
                     moves.Add(new Vector2(X + 1, Y + yDiff));
+                }
             }
 
             ValidateMoves();
-
             return moves;
         }
     }
