@@ -17,6 +17,7 @@ public static class BIERRenderer
     {
         var bgColorResolved = bgColor ?? BLACK;
 
+
         BeginDrawing();
 
         ClearBackground(bgColorResolved);
