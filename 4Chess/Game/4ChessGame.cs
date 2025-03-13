@@ -105,8 +105,7 @@ public class _4ChessGame : BIERGame
     public override void GameUpdate()
     {
         var moveCounter = new MoveCounter();
-        MoveCounter.MaxDepth = 2;
-        var (totalMoves, uniquePositions) = moveCounter.CountLegalMovesAndPositions(this);
+        var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
 
         List<Piece> pieces = [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
