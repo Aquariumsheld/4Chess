@@ -7,7 +7,8 @@ namespace _4Chess.Game.Input;
 
 public static class _4ChessMouse
 {
-    public static readonly Color PossibleMoveTileColor = Raylib.ColorAlpha(Raylib.ColorFromHSV(352f, 0.83f, 0.64f), 0.4f);
+    public static readonly Color PossibleMoveTileColor = Raylib.ColorAlpha(Raylib.ColorFromHSV(113f, 0.83f, 0.64f), 0.4f);
+    public static readonly Color PossibleTakePieceTileColor = Raylib.ColorAlpha(Raylib.ColorFromHSV(352f, 0.83f, 0.64f), 0.4f);
     public static Rectangle MouseRect = new Rectangle(0, 0, 1, 1);
     public static Piece? DraggedPiece = null;
     public static Vector2 OriginalPosition = Vector2.Zero;
@@ -40,7 +41,7 @@ public static class _4ChessMouse
                             m.Y * _4ChessGame.TILE_SIZE + _4ChessGame.BOARDYPos,
                             _4ChessGame.TILE_SIZE,
                             _4ChessGame.TILE_SIZE,
-                            PossibleMoveTileColor
+                            pieces.Any(p => p.X == m.X && p.Y == m.Y) ? PossibleTakePieceTileColor : PossibleMoveTileColor
                         ));
                     });
                     
