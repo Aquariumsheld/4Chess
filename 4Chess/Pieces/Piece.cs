@@ -27,13 +27,7 @@ namespace _4Chess.Pieces
         {
             if(Game != null)
             {
-                Vector2 kingPosition = Alignment switch
-                {
-                    Color.Black => Game.BlackKingPosition,
-                    Color.White => Game.WhiteKingPosition,
-                    //Kann eigentlich nicht passieren
-                    _ => new()
-                };
+                Vector2 kingPosition = GetKingPosition(Game);
 
                 List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
 
@@ -51,7 +45,7 @@ namespace _4Chess.Pieces
                                 Game.Board[(int)moves[i].Y][(int)moves[i].X] = this;
                                 Game.Board[Y][X] = null;
 
-                                if (piece.GetMoves(false).Contains(kingPosition))
+                                if ((piece.GetMoves(false).Contains(kingPosition)) && (piece.X != moves[i].X || piece.Y != moves[i].Y))
                                 {
                                     Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
                                     Game.Board[Y][X] = this;
@@ -67,8 +61,18 @@ namespace _4Chess.Pieces
                         }
                         else
                         {
-                            if (enemyMoves.Contains(moves[i]))
-                                moves.RemoveAt(i);
+                            if(piece.GetType() != typeof(Pawn))
+                            {
+                                if (enemyMoves.Contains(moves[i]))
+                                    moves.RemoveAt(i);
+                            }
+                            else
+                            {
+                                switch (Alignment)
+                                {
+
+                                }
+                            }
                         }
                     }
                 }
@@ -77,6 +81,19 @@ namespace _4Chess.Pieces
             }
 
             return [];
+        }
+
+        public Vector2 GetKingPosition(_4ChessGame game)
+        {
+            Vector2 kingPosition = Alignment switch
+            {
+                Color.Black => Game.BlackKingPosition,
+                Color.White => Game.WhiteKingPosition,
+                //Kann eigentlich nicht passieren
+                _ => new()
+            };
+
+            return kingPosition;
         }
     }
 }
