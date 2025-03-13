@@ -12,8 +12,6 @@ namespace _4Chess.Pieces
 
         public int Y { get; set; }
 
-        public List<Vector2> PossibleMoves { get; set; } = [];
-
         public Color Alignment { get; set; }
 
         public enum Color
@@ -23,9 +21,9 @@ namespace _4Chess.Pieces
             None
         }
 
-        public abstract List<Vector2> GetMoves();
+        public abstract List<Vector2> GetMoves(bool validate = true);
 
-        public void ValidateMoves()
+        public List<Vector2> ValidateMoves(List<Vector2> moves)
         {
             if(Game != null)
             {
@@ -37,25 +35,48 @@ namespace _4Chess.Pieces
                     _ => new()
                 };
 
-                for (int i = 0; i < PossibleMoves.Count; i++)
-                {
-                    List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
+                List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
 
+                for (int i = moves.Count - 1; i >= 0; i--)
+                {
                     foreach (var piece in temp)
                     {
-                        if (typeof(King) != this.GetType())
+                        List<Vector2> enemyMoves = piece.GetMoves(false);
+
+                        if (typeof(King) != GetType())
                         {
-                            if (piece.PossibleMoves.Contains(kingPosition))
-                                this.PossibleMoves.RemoveAt(i);
+                            if (enemyMoves.Contains(kingPosition) || enemyMoves.Contains(new Vector2(X,Y)))
+                            {
+                                Piece? tileContent = Game.Board[(int)moves[i].Y][(int)moves[i].X];
+                                Game.Board[(int)moves[i].Y][(int)moves[i].X] = this;
+                                Game.Board[Y][X] = null;
+
+                                if (piece.GetMoves(false).Contains(kingPosition))
+                                {
+                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
+                                    Game.Board[Y][X] = this;
+                                    moves.RemoveAt(i);
+                                }
+
+                                else
+                                {
+                                    Game.Board[Y][X] = this;
+                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
+                                }   
+                            }
                         }
                         else
                         {
-                            if (piece.PossibleMoves.Contains(PossibleMoves[i]))
-                                this.PossibleMoves.RemoveAt(i);
+                            if (enemyMoves.Contains(moves[i]))
+                                moves.RemoveAt(i);
                         }
                     }
                 }
+
+                return moves;
             }
+
+            return [];
         }
     }
 }

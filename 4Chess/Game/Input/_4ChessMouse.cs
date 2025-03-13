@@ -65,6 +65,21 @@ public static class _4ChessMouse
 
                 game.Board[(int)OriginalPosition.Y][(int)OriginalPosition.X] = null;
                 game.Board[newY][newX] = DraggedPiece;
+
+                if (DraggedPiece.GetType() == typeof(King))
+                {
+                    switch (DraggedPiece.Alignment)
+                    {
+                        case Piece.Color.Black:
+                            game.BlackKingPosition = new Vector2(newX, newY);
+                            break;
+                        case Piece.Color.White:
+                            game.WhiteKingPosition = new Vector2(newX, newY);
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
             else
             {

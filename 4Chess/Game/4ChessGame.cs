@@ -73,9 +73,13 @@ public class _4ChessGame : BIERGame
                     if (checkedColors.Contains(pixelColor) || pixelColor.a > 0)
                     {
                         checkedColors.Add(pixelColor);
-                        ImageColorReplace(&img, pixelColor, SELECT_COLOR);
                     }
                 }
+            }
+
+            foreach (var color in checkedColors)
+            {
+                ImageColorReplace(&img, color, SELECT_COLOR);
             }
 
             Texture selectTexture = LoadTextureFromImage(img);

@@ -17,7 +17,7 @@ namespace _4Chess.Pieces
             Game = game;
         }
 
-        public override List<Vector2> GetMoves()
+        public override List<Vector2> GetMoves(bool validate = true)
         {
             List<Vector2> moves = new List<Vector2>();
 
@@ -67,8 +67,11 @@ namespace _4Chess.Pieces
                 }
             }
 
-            ValidateMoves();
-            return moves;
+            if (validate)
+                return ValidateMoves(moves);
+
+            else
+                return moves;
         }
     }
 }
