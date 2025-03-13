@@ -70,7 +70,16 @@ namespace _4Chess.Pieces
                             {
                                 switch (Alignment)
                                 {
-
+                                    case Color.Black:
+                                        moves.Remove(new Vector2(piece.X - 1, piece.Y - 1));
+                                        moves.Remove(new Vector2(piece.X + 1, piece.Y - 1));
+                                        break;
+                                    case Color.White:
+                                        moves.Remove(new Vector2(piece.X - 1, piece.Y + 1));
+                                        moves.Remove(new Vector2(piece.X + 1, piece.Y + 1));
+                                        break;
+                                    default:
+                                        break;
                                 }
                             }
                         }
@@ -87,8 +96,8 @@ namespace _4Chess.Pieces
         {
             Vector2 kingPosition = Alignment switch
             {
-                Color.Black => Game.BlackKingPosition,
-                Color.White => Game.WhiteKingPosition,
+                Color.Black => game.BlackKingPosition,
+                Color.White => game.WhiteKingPosition,
                 //Kann eigentlich nicht passieren
                 _ => new()
             };
