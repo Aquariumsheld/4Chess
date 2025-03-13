@@ -14,7 +14,7 @@ namespace _4Chess.Pieces
             Game = game;
         }
 
-        public override List<Vector2> GetMoves()
+        public override List<Vector2> GetMoves(bool validate = true)
         {
             List<Vector2> moves = [];
 
@@ -109,7 +109,7 @@ namespace _4Chess.Pieces
                     if (Game.Board[Y - i][X + i] == null)
                         moves.Add(new Vector2(X + i, Y - i));
 
-                    else if (Game.Board[Y][X + i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y - 1][X + i]?.Alignment != this.Alignment)
                     {
                         moves.Add(new Vector2(X + i, Y - i));
                         rightUp = false;
@@ -148,9 +148,11 @@ namespace _4Chess.Pieces
                 }
             }
 
-            ValidateMoves();
+            if (validate)
+                return ValidateMoves(moves);
 
-            return moves;
+            else
+                return moves;
         }
     }
 }

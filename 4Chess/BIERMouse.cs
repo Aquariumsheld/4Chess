@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Linq;
 using _4Chess.Game;
+using System.Reflection.Metadata.Ecma335;
 
 namespace BIERKELLER.BIERInputs
 {
@@ -53,6 +54,21 @@ namespace BIERKELLER.BIERInputs
 
                     game.Board[(int)OriginalPosition.Y][(int)OriginalPosition.X] = null;
                     game.Board[newY][newX] = DraggedPiece;
+
+                    if(DraggedPiece.GetType() == typeof(King))
+                    {
+                        switch (DraggedPiece.Alignment)
+                        {
+                            case Piece.Color.Black:
+                                game.BlackKingPosition = new Vector2(newX, newY);
+                                break;
+                            case Piece.Color.White:
+                                game.WhiteKingPosition = new Vector2(newX, newY);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
                 else
                 {

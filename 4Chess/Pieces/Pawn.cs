@@ -17,7 +17,7 @@ namespace _4Chess.Pieces
             Game = game;
         }
 
-        public override List<Vector2> GetMoves()
+        public override List<Vector2> GetMoves(bool validate = true)
         {
             List<Vector2> moves = [];
 
@@ -55,9 +55,11 @@ namespace _4Chess.Pieces
                     moves.Add(new Vector2(X + 1, Y + yDiff));
             }
 
-            ValidateMoves();
+            if (validate)
+                return ValidateMoves(moves);
 
-            return moves;
+            else
+                return moves;
         }
     }
 }
