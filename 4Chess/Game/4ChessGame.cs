@@ -55,20 +55,26 @@ public class _4ChessGame : BIERGame
 
         Board =
         [
-            [new Pawn(0, 0, Piece.Color.Black, this), new Pawn(1, 0, Piece.Color.Black, this), new Pawn(0, 1, Piece.Color.White, this), new Rook(0, 2, Piece.Color.White, this), new Pawn(0, 0, Piece.Color.Black, this), new Queen(7, 6, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this), new Pawn(0, 0, Piece.Color.Black, this)]
+            [new Knight(0, 0, Piece.Color.Black, this), new King(0, 1, Piece.Color.Black, this), new Queen(0, 2, Piece.Color.White, this), null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null]
         ];
     }
 
     public override void GameUpdate()
     {
-        List<Piece> pieces = Board.SelectMany(row => row)
+        List<Piece> pieces = [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
-                                  .ToList();
+                                  .Cast<Piece>()];
 
-        BIERMouse.MouseUpdate(pieces);
+        if (pieces.All(p => p != null))
+            BIERMouse.MouseUpdate(pieces, this);
     }
-
-
 
     public override void GameRender()
     {

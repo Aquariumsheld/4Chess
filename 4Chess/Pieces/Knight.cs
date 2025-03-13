@@ -17,8 +17,6 @@ namespace _4Chess.Pieces
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhiteKnight.png" : "BlackKnight.png";
             Game = game;
-
-            PossibleMoves = GetMoves();
         }
 
         public override List<Vector2> GetMoves()

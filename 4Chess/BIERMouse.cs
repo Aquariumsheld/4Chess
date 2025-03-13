@@ -13,7 +13,7 @@ namespace BIERKELLER.BIERInputs
         public static Piece DraggedPiece = null;
         public static Vector2 OriginalPosition = Vector2.Zero;
 
-        public static void MouseUpdate(List<Piece> pieces)
+        public static void MouseUpdate(List<Piece> pieces, _4ChessGame game)
         {
             MouseRect.x = Raylib.GetMousePosition().X;
             MouseRect.y = Raylib.GetMousePosition().Y;
@@ -45,11 +45,14 @@ namespace BIERKELLER.BIERInputs
                 newY = Math.Clamp(newY, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
 
                 Vector2 newPos = new Vector2(newX, newY);//Kann zum Testen True gesetztwerden (isValidMove = true)
-                bool isValidMove = DraggedPiece.PossibleMoves.Any(move => (int)move.X == newX && (int)move.Y == newY);
+                bool isValidMove = DraggedPiece.GetMoves().Any(move => (int)move.X == newX && (int)move.Y == newY);
                 if (isValidMove)
                 {
                     DraggedPiece.X = newX;
                     DraggedPiece.Y = newY;
+
+                    game.Board[(int)OriginalPosition.Y][(int)OriginalPosition.X] = null;
+                    game.Board[newY][newX] = DraggedPiece;
                 }
                 else
                 {

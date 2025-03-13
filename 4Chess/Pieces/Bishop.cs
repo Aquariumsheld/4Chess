@@ -12,8 +12,6 @@ namespace _4Chess.Pieces
             FilePath = alignment == Color.White ? "WhiteBishop.png" : "BlackBishop.png";
             Alignment = alignment;
             Game = game;
-
-            PossibleMoves = GetMoves();
         }
 
         public override List<Vector2> GetMoves()
@@ -43,7 +41,7 @@ namespace _4Chess.Pieces
                 }
 
                 //Felder rechts über der Figur
-                if (X + i < Game.Board.Count && Y - i < Game.Board.Count && rightUp)
+                if (X + i < Game.Board.Count && Y - i >= 0 && rightUp)
                 {
                     if (Game.Board[Y - i][X + i] == null)
                         moves.Add(new Vector2(X + i, Y - i));
@@ -58,7 +56,7 @@ namespace _4Chess.Pieces
                 }
 
                 //Felder links unter der Figur
-                if (Y + i >= 0 && X - i >= 0 && leftDown)
+                if (Y + i < Game?.Board.Count && X - i >= 0 && leftDown)
                 {
                     if (Game.Board[Y + i][X - i] == null)
                         moves.Add(new Vector2(X - i, Y + i));
