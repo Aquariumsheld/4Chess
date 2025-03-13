@@ -48,6 +48,15 @@ public static class _4ChessMouse
                     break;
                 }
             }
+
+            game.UIComponents.ForEach(c =>
+            {
+                if (c.CompnentHitboxes.Any(h => Raylib.CheckCollisionRecs(MouseRect, h)))
+                {
+                    if (c.IsVisible && c.IsClickable)
+                        c.ClickEvent.Invoke();
+                }
+            });
         }
 
         if (Raylib.IsMouseButtonReleased(MouseButton.MOUSE_BUTTON_LEFT) && DraggedPiece != null)
