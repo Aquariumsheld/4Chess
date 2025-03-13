@@ -52,7 +52,6 @@ namespace _4Chess.Game
                     }
                 }
             }
-
             return (totalLegalMoves, uniquePositions);
         }
 
