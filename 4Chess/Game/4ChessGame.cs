@@ -20,6 +20,8 @@ public class _4ChessGame : BIERGame
     public static readonly int TILE_SIZE = (WINDOW_WIDTH - (BOARDXPos * 2)) / BOARD_DIMENSIONS;
     public static readonly Color SELECT_COLOR = ColorFromHSV(157f, 27f, 63f);
 
+
+    private Raylib_CsLo.Font _romulusFont;
     public List<BIERRenderObject> _renderObjects = [];
     public List<List<Piece?>> Board { get; set; } = [];
 
@@ -85,6 +87,8 @@ public class _4ChessGame : BIERGame
             _pieceTextureDict.Add($"SELECTED{d.Key}", selectTexture);
         });
 
+        _romulusFont = LoadFont("res/font_romulus.png");
+
         Board =
         [
             [new Rook(0, 0, Piece.Color.Black, this), new Knight(0, 1, Piece.Color.Black, this), new Bishop(0, 2, Piece.Color.Black, this), new King(0, 3, Piece.Color.Black, this), new Queen(0, 4, Piece.Color.Black, this), new Bishop(0, 5, Piece.Color.Black, this), new Knight(0, 6, Piece.Color.Black, this), new Rook(0, 7, Piece.Color.Black, this)],
@@ -127,6 +131,7 @@ public class _4ChessGame : BIERGame
                 }
             }
         }
+        _renderObjects.Add(new BIERRenderText("HALLOOOO", 20, 20, 200, RED, _romulusFont, 3));
         BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
 

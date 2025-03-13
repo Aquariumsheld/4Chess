@@ -18,7 +18,6 @@ public class BIERRenderTexture : BIERRenderObject
 
     public override void Render()
     {
-        
         Raylib.DrawTextureEx(Texture, new System.Numerics.Vector2(X, Y), 0f, Scale, Color);
     }
 
