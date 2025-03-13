@@ -104,6 +104,10 @@ public class _4ChessGame : BIERGame
 
     public override void GameUpdate()
     {
+        var moveCounter = new MoveCounter();
+        long totalMoves = moveCounter.CountBoardVariants(this, 3);
+
+
         List<Piece> pieces = [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
                                   .Cast<Piece>()];
