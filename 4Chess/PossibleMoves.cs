@@ -13,7 +13,7 @@ namespace _4Chess.Game
         /// Gibt an, wie viele volle Züge (jeweils Weiß und Schwarz) im Voraus simuliert werden sollen.
         /// Eine Tiefe von 1 simuliert also einen Zug (erst Weiß, dann Schwarz).
         /// </summary>
-        public int MaxDepth { get; set; } = 3;
+        public int MaxDepth { get; set; } = 2;
 
         /// <summary>
         /// Zählt die Gesamtzahl der legalen vollen Züge und ermittelt,
