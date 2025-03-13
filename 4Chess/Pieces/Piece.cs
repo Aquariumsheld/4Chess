@@ -37,15 +37,15 @@ namespace _4Chess.Pieces
 
                 List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
 
-                for (int i = moves.Count - 1; i >= 0; i--)
+                foreach (var piece in temp)
                 {
-                    foreach (var piece in temp)
+                    for (int i = moves.Count - 1; i >= 0; i--)
                     {
                         List<Vector2> enemyMoves = piece.GetMoves(false);
 
                         if (typeof(King) != GetType())
                         {
-                            if (enemyMoves.Contains(kingPosition) || enemyMoves.Contains(new Vector2(X,Y)))
+                            if (enemyMoves.Contains(kingPosition) || enemyMoves.Contains(new Vector2(X, Y)))
                             {
                                 Piece? tileContent = Game.Board[(int)moves[i].Y][(int)moves[i].X];
                                 Game.Board[(int)moves[i].Y][(int)moves[i].X] = this;
@@ -62,7 +62,7 @@ namespace _4Chess.Pieces
                                 {
                                     Game.Board[Y][X] = this;
                                     Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
-                                }   
+                                }
                             }
                         }
                         else
