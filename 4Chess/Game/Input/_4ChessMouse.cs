@@ -9,14 +9,14 @@ namespace _4Chess.Game.Input
     {
         public static readonly Color PossibleMoveTileColor = Raylib.ColorAlpha(Raylib.ColorFromHSV(113f, 0.83f, 0.64f), 0.4f);
         public static readonly Color PossibleTakePieceTileColor = Raylib.ColorAlpha(Raylib.ColorFromHSV(352f, 0.83f, 0.64f), 0.4f);
-        public static Rectangle MouseRect = new Rectangle(0, 0, 1, 1);
+        public static Rectangle MouseRect = new(0, 0, 1, 1);
         public static Piece? DraggedPiece = null;
         public static Vector2 OriginalPosition = Vector2.Zero;
 
         private static int moveCounter = 1;
         private static bool isWhiteTurn = true;
 
-        public static List<BIERRenderRect> PossibleMoveRenderTiles { get; set; } = new List<BIERRenderRect>();
+        public static List<BIERRenderRect> PossibleMoveRenderTiles { get; set; } = [];
 
         /// <summary>
         /// Wechselt im Alterniermodus (wenn gameMode false) die Zugfarbe nach jedem gültigen Zug.
@@ -49,7 +49,7 @@ namespace _4Chess.Game.Input
                     if (!_4ChessGame.debugMoveMode && piece.Alignment != (isWhiteTurn ? Piece.Color.White : Piece.Color.Black))
                         continue;
 
-                    Rectangle hitbox = new Rectangle(
+                    Rectangle hitbox = new(
                         piece.X * _4ChessGame.TILE_SIZE + _4ChessGame.BOARDXPos,
                         piece.Y * _4ChessGame.TILE_SIZE + _4ChessGame.BOARDYPos,
                         _4ChessGame.TILE_SIZE,
