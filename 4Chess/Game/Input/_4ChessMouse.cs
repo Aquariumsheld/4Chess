@@ -74,8 +74,7 @@ namespace _4Chess.Game.Input
                 }
 
                 game.UIComponents.ForEach(c =>
-                {
-                    
+                { 
                     if (c.CompnentHitboxes.Any(h => Raylib.CheckCollisionRecs(MouseRect, h)))
                     {
                         if (c.IsVisible && c.IsClickable)
