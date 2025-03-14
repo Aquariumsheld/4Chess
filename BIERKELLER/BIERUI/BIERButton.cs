@@ -14,11 +14,11 @@ public class BIERButton : BIERUIComponent
         ClickEvent += () => { };
     }
 
-    public BIERButton(string txt, float x, float y, float w, float h, Raylib_CsLo.Color? bgColor, Raylib_CsLo.Color? txtColor, Raylib_CsLo.Font? customFont = null, int? spacing = 3)
+    public BIERButton(string txt, float x, float y, float w, float h, Raylib_CsLo.Color? bgColor, Raylib_CsLo.Color? txtColor, Raylib_CsLo.Font? customFont = null, int? spacing = 3, bool isClickable = true)
         : base([new BIERRenderRect(x, y, w, h, bgColor ?? Raylib.SKYBLUE), 
                 new BIERRenderText(txt, GetFittingFontSize(txt, customFont ?? Raylib.GetFontDefault(), w, h, spacing ?? 3), x, y + h/2 - GetFittingFontSize(txt, customFont ?? Raylib.GetFontDefault(), w, h, spacing ?? 3)/2, txtColor ?? Raylib.BLACK, customFont, spacing)],
                [new Raylib_CsLo.Rectangle(x, y, w, h)],
-               true)      
+               isClickable)      
     {
         ClickEvent += () => { };
     }
