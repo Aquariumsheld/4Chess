@@ -26,4 +26,13 @@ public class BIERLabel : BIERUIComponent
     {
         ClickEvent += () => { };
     }
+
+    public BIERLabel(string txt, int windowW, int windowH, int fontSize, Raylib_CsLo.Color color, Raylib_CsLo.Font? customFont = null, float? spacing = 3):
+        this(txt,
+            windowW / 2 - Raylib.MeasureTextEx(customFont ?? Raylib.GetFontDefault(), txt, fontSize, spacing ?? 3).X / 2,
+            windowH / 2 - Raylib.MeasureTextEx(customFont ?? Raylib.GetFontDefault(), txt, fontSize, spacing ?? 3).Y / 2,
+            fontSize, color, customFont, spacing)
+    {
+
+    }
 }
