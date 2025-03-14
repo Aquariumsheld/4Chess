@@ -63,9 +63,24 @@ namespace _4Chess.Pieces
                         {
                             if (piece.GetType() != typeof(Pawn))
                             {
-                                if (enemyMoves.Contains(moves[i]))
+                                Piece? tileContent = Game.Board[(int)moves[i].Y][(int)moves[i].X];
+                                Game.Board[(int)moves[i].Y][(int)moves[i].X] = this;
+                                Game.Board[Y][X] = null;
+
+                                if ((piece.GetMoves(false).Contains(moves[i])) && (piece.X != moves[i].X || piece.Y != moves[i].Y))
+                                {
+                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
+                                    Game.Board[Y][X] = this;
                                     moves.RemoveAt(i);
+                                }
+
+                                else
+                                {
+                                    Game.Board[Y][X] = this;
+                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
+                                }
                             }
+
                             else
                             {
                                 switch (Alignment)
