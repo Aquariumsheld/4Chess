@@ -75,6 +75,7 @@ namespace _4Chess.Game.Input
 
                 game.UIComponents.ForEach(c =>
                 {
+                    
                     if (c.CompnentHitboxes.Any(h => Raylib.CheckCollisionRecs(MouseRect, h)))
                     {
                         if (c.IsVisible && c.IsClickable)
@@ -112,11 +113,12 @@ namespace _4Chess.Game.Input
                                 break;
                         }
                     }
+
                     if (DraggedPiece is Pawn pawn) pawn.IsUnmoved = false;
                     if (DraggedPiece is King king) king.IsUnmoved = false;
                     if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
-                    moveCounter++;
 
+                    moveCounter++;
                     TurnChange();
                 }
                 else
