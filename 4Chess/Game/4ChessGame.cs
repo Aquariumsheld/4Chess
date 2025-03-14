@@ -183,15 +183,17 @@ public class _4ChessGame : BIERGame
     public override void GameRender()
     {
         RenderObjects.Clear();
+
+        // Zeichne alle Figuren, die NICHT gezogen werden:
         foreach (var p in Board.SelectMany(row => row))
         {
             if (p != null && p.FilePath != null)
             {
-                int renderX, renderY;
+                // Bei normalen Figuren (außer der aktuell gezogenen) wird der Standard-Rasterwert genutzt
                 if (p != _4ChessMouse.DraggedPiece)
                 {
-                    renderX = p.X * TILE_SIZE + BOARDXPos;
-                    renderY = p.Y * TILE_SIZE + BOARDYPos;
+                    int renderX = p.X * TILE_SIZE + BOARDXPos;
+                    int renderY = p.Y * TILE_SIZE + BOARDYPos;
                     RenderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
                     {
                         Texture = _pieceTextureDict[$"{p.FilePath}"]
@@ -199,8 +201,25 @@ public class _4ChessGame : BIERGame
                 }
             }
         }
+
+        // --- Hier wird die animierte Rochade gerendert ---
+        // Prüfe, ob gerade eine Castling-Animation aktiv ist
+        if (_4ChessMouse.IsCastlingAnimationActive && _4ChessMouse.CastlingRook != null)
+        {
+            // Nutze die animierte Position (als float) – diese Variable muss in _4ChessMouse gesetzt werden,
+            // z. B. "AnimatedCastlingRookPos" (wie in der vorherigen Lösung beschrieben).
+            int renderX = (int)(_4ChessMouse.AnimatedCastlingRookPos.X * TILE_SIZE + BOARDXPos);
+            int renderY = (int)(_4ChessMouse.AnimatedCastlingRookPos.Y * TILE_SIZE + BOARDYPos);
+            RenderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
+            {
+                Texture = _pieceTextureDict[$"{_4ChessMouse.CastlingRook.FilePath}"]
+            });
+        }
+        // ---------------------------------------------------
+
         BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
+
 
     private void RenderUIComponents()
     {
