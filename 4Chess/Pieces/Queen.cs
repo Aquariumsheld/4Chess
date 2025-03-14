@@ -14,10 +14,17 @@ namespace _4Chess.Pieces
             Game = game;
         }
 
+        /// <summary>
+        /// Ermittelt alle für die Dame möglichen Züge in Abhängigkeit von verbündeten und feindlichen Spielfiguren.
+        /// </summary>
+        /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
+        /// diesen Wert eine Rekursion vermieden.</param>
+        /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
         public override List<Vector2> GetMoves(bool validate = true)
         {
             List<Vector2> moves = [];
 
+            #region Werte für Begrenzungen in die einzelnen Richtungen
             bool left = true;
             bool right = true;
             bool up = true;
@@ -26,6 +33,7 @@ namespace _4Chess.Pieces
             bool rightUp = true;
             bool leftDown = true;
             bool rightDown = true;
+            #endregion
 
             for (int i = 1; i < Game?.Board.Count; i++)
             {

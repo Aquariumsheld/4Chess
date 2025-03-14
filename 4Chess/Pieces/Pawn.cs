@@ -5,7 +5,14 @@ namespace _4Chess.Pieces
 {
     class Pawn : Piece
     {
+        /// <summary>
+        /// Legt fest, ob die Figur über den gesamten Spielverlauf hinweg schon einmal bewegt wurde.
+        /// </summary>
         public bool IsUnmoved { get; set; } = true;
+
+        /// <summary>
+        /// Legt fest, ob die Figur gerade mithilfe von EnPassent geschlagen werden kann.
+        /// </summary>
         public bool IsEnPassant { get; set; } = false;
 
         public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game)
@@ -17,6 +24,12 @@ namespace _4Chess.Pieces
             Game = game;
         }
 
+        /// <summary>
+        /// Ermittelt alle für den Bauer möglichen Züge in Abhängigkeit von verbündeten und feindlichen Spielfiguren.
+        /// </summary>
+        /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
+        /// diesen Wert eine Rekursion vermieden.</param>
+        /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
         public override List<Vector2> GetMoves(bool validate = true)
         {
             List<Vector2> moves = new List<Vector2>();
@@ -34,7 +47,7 @@ namespace _4Chess.Pieces
             // Ein Feld vorwärts, falls frei
             if (Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
             {
-                if (Game.Board[Y + yDiff][X] == null)
+                if (Game?.Board[Y + yDiff][X] == null)
                 {
                     moves.Add(new Vector2(X, Y + yDiff));
                 }
@@ -43,7 +56,7 @@ namespace _4Chess.Pieces
             bool onStartingRow = (Alignment == Color.White && Y == 6) || (Alignment == Color.Black && Y == 1);
             if (IsUnmoved && onStartingRow && Y + yDiff * 2 >= 0 && Y + yDiff * 2 < _4ChessGame.BOARD_DIMENSIONS)
             {
-                if (Game.Board[Y + yDiff][X] == null && Game.Board[Y + yDiff * 2][X] == null)
+                if (Game?.Board[Y + yDiff][X] == null && Game?.Board[Y + yDiff * 2][X] == null)
                 {
                     moves.Add(new Vector2(X, Y + yDiff * 2));
                 }
@@ -51,7 +64,7 @@ namespace _4Chess.Pieces
 
             if (X - 1 >= 0 && Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
             {
-                var leftCapture = Game.Board[Y + yDiff][X - 1];
+                var leftCapture = Game?.Board[Y + yDiff][X - 1];
                 if (leftCapture != null && leftCapture.Alignment != this.Alignment)
                 {
                     moves.Add(new Vector2(X - 1, Y + yDiff));
@@ -60,7 +73,7 @@ namespace _4Chess.Pieces
 
             if (X + 1 < _4ChessGame.BOARD_DIMENSIONS && Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
             {
-                var rightCapture = Game.Board[Y + yDiff][X + 1];
+                var rightCapture = Game?.Board[Y + yDiff][X + 1];
                 if (rightCapture != null && rightCapture.Alignment != this.Alignment)
                 {
                     moves.Add(new Vector2(X + 1, Y + yDiff));
