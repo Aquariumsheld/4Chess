@@ -2,6 +2,7 @@
 using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
+using BIERKELLER.BIERUI;
 using Raylib_CsLo;
 using System.IO;
 using System.Numerics;
@@ -20,10 +21,17 @@ public class _4ChessGame : BIERGame
     public static readonly int TILE_SIZE = (WINDOW_WIDTH - (BOARDXPos * 2)) / BOARD_DIMENSIONS;
     public static readonly Color SELECT_COLOR = ColorFromHSV(157f, 27f, 63f);
 
-    public List<BIERRenderObject> _renderObjects = [];
+
+    private Raylib_CsLo.Font _romulusFont;
+    public List<BIERRenderObject> RenderObjects { get; set; } = [];
+    public List<BIERUIComponent> UIComponents { get; set; } = [];
     public List<List<Piece?>> Board { get; set; } = [];
 
     private Dictionary<string, Texture> _pieceTextureDict = [];
+
+    //=========DEBUG-VARS===============
+    private bool _debugUiHitboxes = false;
+    //==================================
 
     public Vector2 WhiteKingPosition { get; set; }
     public Vector2 BlackKingPosition { get; set; }
@@ -34,6 +42,7 @@ public class _4ChessGame : BIERGame
 
         CustomPostRenderFuncs.Add(RenderPossibleMoveRenderTiles);
         CustomPostRenderFuncs.Add(RenderDraggedPiece);
+        CustomPostRenderFuncs.Add(RenderUIComponents);
     }
 
     public unsafe override void GameInit()
@@ -62,24 +71,15 @@ public class _4ChessGame : BIERGame
         {
             Raylib_CsLo.Image img = Raylib.LoadImageFromTexture(d.Value);
 
-            var checkedColors = new List<Color>();
-
             for (int y = 0; y < img.height; y++)
             {
                 for (int x = 0; x < img.width; x++)
                 {
-                    Color pixelColor = GetImageColor(img, x, y);
-
-                    if (checkedColors.Contains(pixelColor) || pixelColor.a > 0)
+                    if (GetImageColor(img, x, y).a > 0)
                     {
-                        checkedColors.Add(pixelColor);
+                        ImageDrawPixel(&img, x, y, SELECT_COLOR);
                     }
                 }
-            }
-
-            foreach (var color in checkedColors)
-            {
-                ImageColorReplace(&img, color, SELECT_COLOR);
             }
 
             Texture selectTexture = LoadTextureFromImage(img);
@@ -89,9 +89,11 @@ public class _4ChessGame : BIERGame
             _pieceTextureDict.Add($"SELECTED{d.Key}", selectTexture);
         });
 
+        _romulusFont = LoadFont("res/font_romulus.png");
+
         Board =
         [
-            [new Rook(0, 0, Piece.Color.Black, this), new Knight(0, 1, Piece.Color.Black, this), new Bishop(0, 2, Piece.Color.Black, this), new King(0, 3, Piece.Color.Black, this), new Queen(0, 4, Piece.Color.Black, this), new Bishop(0, 5, Piece.Color.Black, this), new Knight(0, 6, Piece.Color.Black, this), new Rook(0, 7, Piece.Color.Black, this)],
+            [new Rook(0, 0, Piece.Color.Black, this), new Knight(0, 1, Piece.Color.Black, this), new Bishop(0, 2, Piece.Color.Black, this), new Queen(0, 3, Piece.Color.Black, this), new King(0, 4, Piece.Color.Black, this), new Bishop(0, 5, Piece.Color.Black, this), new Knight(0, 6, Piece.Color.Black, this), new Rook(0, 7, Piece.Color.Black, this)],
             [new Pawn(1, 0, Piece.Color.Black, this), new Pawn(1, 1, Piece.Color.Black, this), new Pawn(1, 2, Piece.Color.Black, this), new Pawn(1, 3, Piece.Color.Black, this), new Pawn(1, 4, Piece.Color.Black, this), new Pawn(1, 5, Piece.Color.Black, this), new Pawn(1, 6, Piece.Color.Black, this), new Pawn(1, 7, Piece.Color.Black, this)],
             [null,null,null,null,null,null,null,null],
             [null,null,null,null,null,null,null,null],
@@ -117,7 +119,7 @@ public class _4ChessGame : BIERGame
 
     public override void GameRender()
     {
-        _renderObjects.Clear();
+        RenderObjects.Clear();
         foreach (var p in Board.SelectMany(row => row))
         {
             if (p != null && p.FilePath != null)
@@ -127,14 +129,25 @@ public class _4ChessGame : BIERGame
                 {
                     renderX = p.X * TILE_SIZE + BOARDXPos;
                     renderY = p.Y * TILE_SIZE + BOARDYPos;
-                    _renderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
+                    RenderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
                     {
                         Texture = _pieceTextureDict[$"{p.FilePath}"]
                     });
                 }
             }
         }
-        BIERRenderer.Render(_renderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
+        BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
+    }
+
+    private void RenderUIComponents()
+    {
+        if (_debugUiHitboxes)
+            UIComponents.SelectMany(c => c.CompnentHitboxes).ToList().ForEach(h =>
+            {
+                Raylib.DrawRectangle((int)h.x, (int)h.y, (int)h.width, (int)h.height, ColorFromHSV(186, 1f, 0.4f));
+            });
+
+        UIComponents.Where(c => c.IsVisible).SelectMany(c => c.ComponentRenderObjects).ToList().ForEach(o => o.Render());
     }
 
     private void RenderDraggedPiece()
@@ -155,7 +168,7 @@ public class _4ChessGame : BIERGame
 
     public override void GameDispose()
     {
-        _renderObjects.ForEach(o => o.Dispose());
+        RenderObjects.ForEach(o => o.Dispose());
         _pieceTextureDict.Values.ToList().ForEach(t => UnloadTexture(t));
     }
 
