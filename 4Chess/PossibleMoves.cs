@@ -1,11 +1,12 @@
-﻿using _4Chess.Pieces;
+﻿using _4Chess.Game;
+using _4Chess.Pieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 
-namespace _4Chess.Game
+namespace _4Chess
 {
     public class MoveCounter
     {
@@ -104,7 +105,7 @@ namespace _4Chess.Game
         /// Prüft, ob ein gegebener Zug für eine Figur legal ist,
         /// also ob dadurch der eigene König nicht in Schach gerät.
         /// </summary>
-        private bool IsLegalMove(_4ChessGame game, Piece piece, Vector2 move)
+        private static bool IsLegalMove(_4ChessGame game, Piece piece, Vector2 move)
         {
             var moveData = SimulateMove(game, piece, move);
             bool legal = !IsKingInCheck(game, piece.Alignment);
@@ -116,11 +117,11 @@ namespace _4Chess.Game
         /// Simuliert einen Zug, indem die Figur vom Ausgangsfeld entfernt und auf das Zielfeld gesetzt wird.
         /// Dabei werden die ursprünglichen Koordinaten sowie ein eventuell geschlagenes Piece zurückgegeben.
         /// </summary>
-        private (int origX, int origY, Piece capturedPiece) SimulateMove(_4ChessGame game, Piece piece, Vector2 move)
+        private static (int origX, int origY, Piece? capturedPiece) SimulateMove(_4ChessGame game, Piece piece, Vector2 move)
         {
             int origX = piece.X;
             int origY = piece.Y;
-            Piece capturedPiece = game.Board[(int)move.Y][(int)move.X];
+            Piece? capturedPiece = game.Board[(int)move.Y][(int)move.X];
 
             game.Board[origY][origX] = null;
             game.Board[(int)move.Y][(int)move.X] = piece;
@@ -142,7 +143,7 @@ namespace _4Chess.Game
         /// Macht einen zuvor simulierten Zug rückgängig, indem die Figur an ihre ursprüngliche Position zurückgesetzt wird
         /// und ein eventuell geschlagenes Piece wieder an seinen Platz gesetzt wird.
         /// </summary>
-        private void UndoMove(_4ChessGame game, Piece piece, Vector2 move, (int origX, int origY, Piece capturedPiece) moveData)
+        private static void UndoMove(_4ChessGame game, Piece piece, Vector2 move, (int origX, int origY, Piece? capturedPiece) moveData)
         {
             game.Board[(int)move.Y][(int)move.X] = moveData.capturedPiece;
             game.Board[moveData.origY][moveData.origX] = piece;
@@ -162,7 +163,7 @@ namespace _4Chess.Game
         /// Prüft, ob der König der angegebenen Farbe im aktuellen Spielzustand in Schach steht.
         /// Dazu werden die von allen gegnerischen Figuren angegriffenen Felder ermittelt.
         /// </summary>
-        private bool IsKingInCheck(_4ChessGame game, Piece.Color kingColor)
+        private static bool IsKingInCheck(_4ChessGame game, Piece.Color kingColor)
         {
             Vector2 kingPos = kingColor == Piece.Color.White ? game.WhiteKingPosition : game.BlackKingPosition;
 
@@ -188,7 +189,7 @@ namespace _4Chess.Game
         /// Ermittelt die von einer gegnerischen Figur angegriffenen Felder.
         /// Spezialbehandlungen gibt es für Pawn, Knight, Bishop, Rook, Queen und King.
         /// </summary>
-        private IEnumerable<Vector2> GetAttackedSquares(Piece enemy, List<List<Piece>> board)
+        private static IEnumerable<Vector2> GetAttackedSquares(Piece enemy, List<List<Piece?>> board)
         {
             if (enemy is Pawn pawn)
             {
@@ -204,8 +205,8 @@ namespace _4Chess.Game
             }
             else if (enemy is Knight knight)
             {
-                int[] dx = { 2, 1, -1, -2, -2, -1, 1, 2 };
-                int[] dy = { 1, 2, 2, 1, -1, -2, -2, -1 };
+                int[] dx = [2, 1, -1, -2, -2, -1, 1, 2];
+                int[] dy = [1, 2, 2, 1, -1, -2, -2, -1];
                 for (int i = 0; i < 8; i++)
                 {
                     int newX = knight.X + dx[i];
@@ -216,17 +217,17 @@ namespace _4Chess.Game
             }
             else if (enemy is Bishop bishop)
             {
-                foreach (var dir in GetDirectionSquares(bishop, new[] { 1, 1, -1, -1 }, new[] { 1, -1, 1, -1 }, board))
+                foreach (var dir in GetDirectionSquares(bishop, [1, 1, -1, -1], [1, -1, 1, -1], board))
                     yield return dir;
             }
             else if (enemy is Rook rook)
             {
-                foreach (var dir in GetDirectionSquares(rook, new[] { 1, 0, -1, 0 }, new[] { 0, 1, 0, -1 }, board))
+                foreach (var dir in GetDirectionSquares(rook, [1, 0, -1, 0], [0, 1, 0, -1], board))
                     yield return dir;
             }
             else if (enemy is Queen queen)
             {
-                foreach (var dir in GetDirectionSquares(queen, new[] { 1, 1, -1, -1, 1, 0, -1, 0 }, new[] { 1, -1, 1, -1, 0, 1, 0, -1 }, board))
+                foreach (var dir in GetDirectionSquares(queen, [1, 1, -1, -1, 1, 0, -1, 0], [1, -1, 1, -1, 0, 1, 0, -1], board))
                     yield return dir;
             }
             else if (enemy is King king)
@@ -249,7 +250,7 @@ namespace _4Chess.Game
         /// <summary>
         /// Liefert alle Felder in den angegebenen Richtungen ausgehend von der Position der Figur.
         /// </summary>
-        private IEnumerable<Vector2> GetDirectionSquares(Piece piece, int[] dxArray, int[] dyArray, List<List<Piece>> board)
+        private static IEnumerable<Vector2> GetDirectionSquares(Piece piece, int[] dxArray, int[] dyArray, List<List<Piece?>> board)
         {
             for (int i = 0; i < dxArray.Length; i++)
             {
@@ -271,7 +272,7 @@ namespace _4Chess.Game
         /// <summary>
         /// Serialisiert den aktuellen Zustand des Boards in einen String, der zur Identifikation einzigartiger Stellungen dient.
         /// </summary>
-        private string SerializeBoard(List<List<Piece>> board)
+        private static string SerializeBoard(List<List<Piece?>> board)
         {
             var sb = new StringBuilder();
             foreach (var row in board)

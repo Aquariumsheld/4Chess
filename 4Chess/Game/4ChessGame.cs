@@ -108,7 +108,7 @@ public class _4ChessGame : BIERGame
         ];
     }
 
-    public void gamesettings()
+    public void Gamesettings()
     {
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_F1))
         {
@@ -149,7 +149,7 @@ public class _4ChessGame : BIERGame
         }
     }
 
-    public void isGameDone(List<Piece> pieces)
+    public void IsGameDone(List<Piece> pieces)
     {
         //Schachmatt Logik
         List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves())];
@@ -171,7 +171,7 @@ public class _4ChessGame : BIERGame
     {
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
-        gamesettings();
+        Gamesettings();
         List<Piece> pieces = [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
                                   .Cast<Piece>()];
@@ -179,7 +179,7 @@ public class _4ChessGame : BIERGame
         if (pieces.All(p => p != null))
             _4ChessMouse.MouseUpdate(pieces, this);
 
-        isGameDone(pieces);
+        IsGameDone(pieces);
     }
 
     public override void GameRender()
