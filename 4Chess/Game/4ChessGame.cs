@@ -148,20 +148,10 @@ public class _4ChessGame : BIERGame
             }
         }
     }
-    public override void GameUpdate()
+
+    public void isGameDone(List<Piece> pieces)
     {
-        //var moveCounter = new MoveCounter();
-        //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
-        gamesettings();
-
-        List<Piece> pieces = [.. Board.SelectMany(row => row)
-                                  .Where(piece => piece != null)
-                                  .Cast<Piece>()];
-
-        if (pieces.All(p => p != null))
-            _4ChessMouse.MouseUpdate(pieces, this);
-
-        //Sschachmatt Logik
+        //Schachmatt Logik
         List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves())];
         List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves())];
         if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
@@ -176,6 +166,20 @@ public class _4ChessGame : BIERGame
             gameEnds = true;
             continueGame = false;
         }
+    }
+    public override void GameUpdate()
+    {
+        //var moveCounter = new MoveCounter();
+        //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
+        gamesettings();
+        List<Piece> pieces = [.. Board.SelectMany(row => row)
+                                  .Where(piece => piece != null)
+                                  .Cast<Piece>()];
+
+        if (pieces.All(p => p != null))
+            _4ChessMouse.MouseUpdate(pieces, this);
+
+        isGameDone(pieces);
     }
 
     public override void GameRender()
