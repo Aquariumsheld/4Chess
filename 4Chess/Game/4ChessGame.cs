@@ -133,7 +133,6 @@ public class _4ChessGame : BIERGame
                 }
             }
         }
-        RenderObjects.Add(new BIERRenderText("HALLOOOO", 20, 20, 200, RED, _romulusFont, 3));
         BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
 
