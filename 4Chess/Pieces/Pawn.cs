@@ -1,28 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
     class Pawn : Piece
     {
+        /// <summary>
+        /// Legt fest, ob die Figur über den gesamten Spielverlauf hinweg schon einmal bewegt wurde.
+        /// </summary>
         public bool IsUnmoved { get; set; } = true;
 
-        public Pawn(int yPosition, int xPosition, Color alignment)
+        /// <summary>
+        /// Legt fest, ob die Figur gerade mithilfe von EnPassent geschlagen werden kann.
+        /// </summary>
+        public bool IsEnPassant { get; set; } = false;
+
+        public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhitePawn.png" : "BlackPawn.png";
-
-            PossibleMoves = GetMoves();
+            Game = game;
         }
 
-        public override List<(int, int)> GetMoves()
+        /// <summary>
+        /// Ermittelt alle für den Bauer möglichen Züge in Abhängigkeit von verbündeten und feindlichen Spielfiguren.
+        /// </summary>
+        /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
+        /// diesen Wert eine Rekursion vermieden.</param>
+        /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
+        public override List<Vector2> GetMoves(bool validate = true)
         {
-            List<(int, int)> moves = [];
+            List<Vector2> moves = new List<Vector2>();
 
             int yDiff = Alignment switch
             {
@@ -31,29 +41,50 @@ namespace _4Chess.Pieces
                 _ => 0
             };
 
-            if (yDiff == 0) Console.WriteLine("Der Bauer hat keine Farbe !!!");
+            if (yDiff == 0)
+                Console.WriteLine("Der Bauer hat keine Farbe !!!");
 
-            moves.Add((Y + yDiff, X));
-
-            if (IsUnmoved) moves.Add((Y + yDiff * 2, X));
-
-            if(X - 1 >= 0)
+            // Ein Feld vorwärts, falls frei
+            if (Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
             {
-                if (TempGame.Board[Y + yDiff][X - 1]?.Alignment != this.Alignment)
-                    moves.Add((Y + yDiff, X - 1));
+                if (Game?.Board[Y + yDiff][X] == null)
+                {
+                    moves.Add(new Vector2(X, Y + yDiff));
+                }
             }
 
-            if (X + 1 >= 0)
+            bool onStartingRow = (Alignment == Color.White && Y == 6) || (Alignment == Color.Black && Y == 1);
+            if (IsUnmoved && onStartingRow && Y + yDiff * 2 >= 0 && Y + yDiff * 2 < _4ChessGame.BOARD_DIMENSIONS)
             {
-                if (TempGame.Board[Y + yDiff][X + 1]?.Alignment != this.Alignment)
-                    moves.Add((Y + yDiff, X + 1));
+                if (Game?.Board[Y + yDiff][X] == null && Game?.Board[Y + yDiff * 2][X] == null)
+                {
+                    moves.Add(new Vector2(X, Y + yDiff * 2));
+                }
             }
 
-            //en passant implementieren
+            if (X - 1 >= 0 && Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
+            {
+                var leftCapture = Game?.Board[Y + yDiff][X - 1];
+                if (leftCapture != null && leftCapture.Alignment != this.Alignment)
+                {
+                    moves.Add(new Vector2(X - 1, Y + yDiff));
+                }
+            }
 
-            ValidateMoves();
+            if (X + 1 < _4ChessGame.BOARD_DIMENSIONS && Y + yDiff >= 0 && Y + yDiff < _4ChessGame.BOARD_DIMENSIONS)
+            {
+                var rightCapture = Game?.Board[Y + yDiff][X + 1];
+                if (rightCapture != null && rightCapture.Alignment != this.Alignment)
+                {
+                    moves.Add(new Vector2(X + 1, Y + yDiff));
+                }
+            }
 
-            return moves;
+            if (validate)
+                return ValidateMoves(moves);
+
+            else
+                return moves;
         }
     }
 }

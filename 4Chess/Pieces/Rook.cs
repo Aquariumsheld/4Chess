@@ -1,47 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using _4Chess;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
     class Rook : Piece
     {
+        /// <summary>
+        /// Legt fest, ob die Figur über den gesamten Spielverlauf hinweg schon einmal bewegt wurde.
+        /// </summary>
         public bool IsUnmoved { get; set; } = true;
 
-        public Rook(int yPosition, int xPosition, Color alignment)
+        public Rook(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
             Y = yPosition;
             X = xPosition;
-            FilePath = alignment == Color.White ? "Assets/WhiteRook.png" : "Assets/BlackRook.png";
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhiteRook.png" : "BlackRook.png";
-
-            PossibleMoves = GetMoves();
+            Game = game;
         }
 
-        public override List<(int, int)> GetMoves()
+        /// <summary>
+        /// Ermittelt alle für den Turm möglichen Züge in Abhängigkeit von verbündeten und feindlichen Spielfiguren.
+        /// </summary>
+        /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
+        /// diesen Wert eine Rekursion vermieden.</param>
+        /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
+        public override List<Vector2> GetMoves(bool validate = true)
         {
-            List<(int, int)> moves = [];
+            List<Vector2> moves = [];
 
             bool left = true;
             bool right = true;
             bool up = true;
             bool down = true;
 
-            for(int i = 1; i < TempGame.Board.Count; i++)
+            for(int i = 1; i < Game?.Board.Count; i++)
             {
                 //Felder links der Figur
                 if (X - i >= 0 && left)
                 {
-                    if (TempGame.Board[Y][X - i] == null)
-                        moves.Add((Y, X - i));
+                    if (Game.Board[Y][X - i] == null)
+                        moves.Add(new Vector2(X - i, Y));
 
-                    else if (TempGame.Board[Y][X - i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y][X - i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y, X - i));
+                        moves.Add(new Vector2(X - i, Y));
                         left = false;
                     }
 
@@ -51,12 +54,12 @@ namespace _4Chess.Pieces
                 //Felder rechts der Figur
                 if(X + i <= 7 && right)
                 {
-                    if (TempGame.Board[Y][X + i] == null)
-                        moves.Add((Y, X + i));
+                    if (Game.Board[Y][X + i] == null)
+                        moves.Add(new Vector2(X + i, Y));
 
-                    else if (TempGame.Board[Y][X + i]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y][X + i]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y, X + i));
+                        moves.Add(new Vector2(X + i, Y));
                         right = false;
                     }
 
@@ -66,12 +69,12 @@ namespace _4Chess.Pieces
                 //Felder oberhalb der Figur
                 if (Y - i >= 0 && up)
                 {
-                    if (TempGame.Board[Y - i][X] == null)
-                        moves.Add((Y - i, X));
+                    if (Game.Board[Y - i][X] == null)
+                        moves.Add(new Vector2(X, Y - i));
 
-                    else if (TempGame.Board[Y - i][X]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y - i][X]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y - i, X));
+                        moves.Add(new Vector2(X, Y - i));
                         up = false;
                     }
 
@@ -81,21 +84,23 @@ namespace _4Chess.Pieces
                 //Felder oberhalb der Figur
                 if (Y + i <= 7 && down)
                 {
-                    if (TempGame.Board[Y + i][X] == null)
-                        moves.Add((Y + i, X));
+                    if (Game.Board[Y + i][X] == null)
+                        moves.Add(new Vector2(X, Y + i));
 
-                    else if (TempGame.Board[Y + i][X]?.Alignment != this.Alignment)
+                    else if (Game.Board[Y + i][X]?.Alignment != this.Alignment)
                     {
-                        moves.Add((Y + i, X));
+                        moves.Add(new Vector2(X, Y + i));
                         down = false;
                     }
                     else down = false;
                 }
             }
 
-            ValidateMoves();
+            if (validate)
+                return ValidateMoves(moves);
 
-            return moves;
+            else
+                return moves;
         }
     }
 }

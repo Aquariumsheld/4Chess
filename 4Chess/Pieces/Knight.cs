@@ -1,6 +1,8 @@
-﻿using System;
+﻿using _4Chess.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,79 +10,86 @@ namespace _4Chess.Pieces
 {
     class Knight : Piece
     {
-        public Knight(int yPosition, int xPosition, Color alignment)
+        public Knight(int yPosition, int xPosition, Color alignment, _4ChessGame game)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhiteKnight.png" : "BlackKnight.png";
-
-            PossibleMoves = GetMoves();
+            Game = game;
         }
 
-        public override List<(int, int)> GetMoves()
+        /// <summary>
+        /// Ermittelt alle für den Springer möglichen Züge in Abhängigkeit von verbündeten und feindlichen Spielfiguren.
+        /// </summary>
+        /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
+        /// diesen Wert eine Rekursion vermieden.</param>
+        /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
+        public override List<Vector2> GetMoves(bool validate = true)
         {
-            List<(int, int)> moves = [];
+            List<Vector2> moves = [];
 
             //oben links
             if(X-1 >= 0 && Y-2 >= 0)
             {
-                if (TempGame.Board[Y - 2][X - 1] == null || TempGame.Board[Y - 2][X - 1]?.Alignment != this.Alignment)
-                    moves.Add((Y - 2, X - 1));
+                if (Game?.Board[Y - 2][X - 1] == null || Game.Board[Y - 2][X - 1]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X - 1, Y - 2));
             }
 
             //oben rechts
-            if (X + 1 < TempGame.Board.Count && Y - 2 >= 0)
+            if (X + 1 < Game?.Board.Count && Y - 2 >= 0)
             {
-                if (TempGame.Board[Y - 2][X + 1] == null || TempGame.Board[Y - 2][X + 1]?.Alignment != this.Alignment)
-                    moves.Add((Y - 2, X + 1));
+                if (Game.Board[Y - 2][X + 1] == null || Game.Board[Y - 2][X + 1]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X + 1, Y - 2));
             }
 
             //rechts oben
-            if (X + 2 < TempGame.Board.Count && Y - 1 >= 0)
+            if (X + 2 < Game?.Board.Count && Y - 1 >= 0)
             {
-                if (TempGame.Board[Y - 1][X + 2] == null || TempGame.Board[Y - 1][X + 2]?.Alignment != this.Alignment)
-                    moves.Add((Y - 1, X + 2));
+                if (Game.Board[Y - 1][X + 2] == null || Game.Board[Y - 1][X + 2]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X + 2, Y - 1));
             }
 
             //rechts unten
-            if (X + 2 < TempGame.Board.Count && Y + 1 < TempGame.Board.Count)
+            if (X + 2 < Game?.Board.Count && Y + 1 < Game?.Board.Count)
             {
-                if (TempGame.Board[Y + 1][X + 2] == null || TempGame.Board[Y + 1][X + 2]?.Alignment != this.Alignment)
-                    moves.Add((Y + 1, X + 2));
+                if (Game.Board[Y + 1][X + 2] == null || Game.Board[Y + 1][X + 2]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X + 2, Y + 1));
             }
 
             //unten rechts
-            if (X + 1 < TempGame.Board.Count && Y + 2 < TempGame.Board.Count)
+            if (X + 1 < Game?.Board.Count && Y + 2 < Game?.Board.Count)
             {
-                if (TempGame.Board[Y + 2][X + 1] == null || TempGame.Board[Y + 2][X + 1]?.Alignment != this.Alignment)
-                    moves.Add((Y + 2, X + 1));
+                if (Game.Board[Y + 2][X + 1] == null || Game.Board[Y + 2][X + 1]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X + 1, Y + 2));
             }
 
             //unten links
-            if (X - 1 >= 0 && Y + 2 < TempGame.Board.Count)
+            if (X - 1 >= 0 && Y + 2 < Game?.Board.Count)
             {
-                if (TempGame.Board[Y + 2][X - 1] == null || TempGame.Board[Y + 2][X - 1]?.Alignment != this.Alignment)
-                    moves.Add((Y + 2, X - 1));
+                if (Game.Board[Y + 2][X - 1] == null || Game.Board[Y + 2][X - 1]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X - 1, Y + 2));
             }
 
             //links unten
-            if (X - 2 >= 0 && Y + 1 < TempGame.Board.Count)
+            if (X - 2 >= 0 && Y + 1 < Game?.Board.Count)
             {
-                if (TempGame.Board[Y + 1][X - 2] == null || TempGame.Board[Y + 1][X - 2]?.Alignment != this.Alignment)
-                    moves.Add((Y + 1, X - 2));
+                if (Game.Board[Y + 1][X - 2] == null || Game.Board[Y + 1][X - 2]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X - 2, Y + 1));
             }
 
             //links oben
             if (X - 2 >= 0 && Y - 1 >= 0)
             {
-                if (TempGame.Board[Y - 1][X - 2] == null || TempGame.Board[Y - 1][X - 2]?.Alignment != this.Alignment)
-                    moves.Add((Y - 1, X - 2));
+                if (Game?.Board[Y - 1][X - 2] == null || Game.Board[Y - 1][X - 2]?.Alignment != this.Alignment)
+                    moves.Add(new Vector2(X - 2, Y - 1));
             }
 
-            ValidateMoves();
+            if (validate)
+                return ValidateMoves(moves);
 
-            return moves;
+            else
+                return moves;
         }
     }
 }

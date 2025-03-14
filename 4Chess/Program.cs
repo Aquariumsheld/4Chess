@@ -10,7 +10,5 @@ internal class Program
     {
         var _4chessGame = new _4ChessGame();
         _4chessGame.Run();
-
-        Console.ReadKey();
     }
 }

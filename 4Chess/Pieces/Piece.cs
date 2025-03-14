@@ -1,25 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using _4Chess.Game;
+using System.Numerics;
 
 namespace _4Chess.Pieces
 {
     public abstract class Piece
     {
-        public string FilePath { get; set; } = "";
+        public _4ChessGame? Game { get; set; }
 
-        public static (int,int) Indexer { get; set; }
-        public string FilePath { get; set; }
-
+        public string? FilePath { get; set; }
         public int X { get; set; }
 
         public int Y { get; set; }
-
-        public List<(int, int)> PossibleMoves { get; set; } = [];// erst Y, dann X -> Konsistenz in Reihenfolge
-
-        public List<(int, int)>? SpecialMoves { get; set; } = null;
 
         public Color Alignment { get; set; }
 
@@ -30,31 +21,88 @@ namespace _4Chess.Pieces
             None
         }
 
-        public abstract List<(int, int)> GetMoves();
+        public abstract List<Vector2> GetMoves(bool validate = true);
 
-        public void ValidateMoves()
+        public List<Vector2> ValidateMoves(List<Vector2> moves)
         {
-            (int, int) kingPosition = Alignment switch
+            if (Game != null)
             {
-                Color.Black => TempGame.BlackKingPosition,
-                Color.White => TempGame.WhiteKingPosition,
-                //Kann eigentlich nicht passieren
-                _ => (0,0)
-            };
+                Vector2 kingPosition = GetKingPosition(Game);
 
-            for(int i = 0; i < PossibleMoves.Count; i++)
-            {
-                List<Piece> temp = [.. TempGame.AllPieces.Where(elem => elem.Alignment != this.Alignment)];
+                List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
 
-                foreach(var piece in temp)
+                foreach (var piece in temp)
                 {
-                    if (piece.PossibleMoves.Contains(kingPosition))
-                        this.PossibleMoves.RemoveAt(i);
+                    for (int i = moves.Count - 1; i >= 0; i--)
+                    {
+                        List<Vector2> enemyMoves = piece.GetMoves(false);
+
+                        if (typeof(King) != GetType())
+                        {
+                            if (enemyMoves.Contains(kingPosition) || enemyMoves.Contains(new Vector2(X, Y)))
+                            {
+                                Piece? tileContent = Game.Board[(int)moves[i].Y][(int)moves[i].X];
+                                Game.Board[(int)moves[i].Y][(int)moves[i].X] = this;
+                                Game.Board[Y][X] = null;
+
+                                if ((piece.GetMoves(false).Contains(kingPosition)) && (piece.X != moves[i].X || piece.Y != moves[i].Y))
+                                {
+                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
+                                    Game.Board[Y][X] = this;
+                                    moves.RemoveAt(i);
+                                }
+
+                                else
+                                {
+                                    Game.Board[Y][X] = this;
+                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (piece.GetType() != typeof(Pawn))
+                            {
+                                if (enemyMoves.Contains(moves[i]))
+                                    moves.RemoveAt(i);
+                            }
+                            else
+                            {
+                                switch (Alignment)
+                                {
+                                    case Color.Black:
+                                        moves.Remove(new Vector2(piece.X - 1, piece.Y - 1));
+                                        moves.Remove(new Vector2(piece.X + 1, piece.Y - 1));
+                                        break;
+                                    case Color.White:
+                                        moves.Remove(new Vector2(piece.X - 1, piece.Y + 1));
+                                        moves.Remove(new Vector2(piece.X + 1, piece.Y + 1));
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
                 }
+
+                return moves;
             }
 
-            //TODO Für den König eigenes Aufruf-Szenario generieren
-            //TODO Diese Methode muss immer sofort nach GetMoves() aufgerufen werden
+            return [];
+        }
+
+        public Vector2 GetKingPosition(_4ChessGame game)
+        {
+            Vector2 kingPosition = Alignment switch
+            {
+                Color.Black => game.BlackKingPosition,
+                Color.White => game.WhiteKingPosition,
+                //Kann eigentlich nicht passieren
+                _ => new()
+            };
+
+            return kingPosition;
         }
     }
 }
