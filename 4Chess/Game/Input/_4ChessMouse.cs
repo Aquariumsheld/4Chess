@@ -105,12 +105,14 @@ namespace _4Chess.Game.Input
                     {
                         if (DraggedPiece.X - OriginalPosition.X == 2)
                         {
+                            
                             game.Board[DraggedPiece.Y][7] = null;
                             game.Board[DraggedPiece.Y][5] = game.Board[DraggedPiece.Y][7];
                             game.Board[DraggedPiece.Y][5] = new Rook(DraggedPiece.Y, 5, DraggedPiece.Alignment, game);
                         }
                         else if (DraggedPiece.X - OriginalPosition.X == -2)
                         {
+                            
                             game.Board[DraggedPiece.Y][0] = null;
                             game.Board[DraggedPiece.Y][3] = game.Board[DraggedPiece.Y][0];
                             game.Board[DraggedPiece.Y][3] = new Rook(DraggedPiece.Y, 3, DraggedPiece.Alignment, game);
@@ -126,9 +128,13 @@ namespace _4Chess.Game.Input
                         }
                     }
 
-                    if (DraggedPiece is Pawn pawn) pawn.IsUnmoved = false;
-                    if (DraggedPiece is King king) king.IsUnmoved = false;
-                    if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
+                    if(DraggedPiece.X != (int)OriginalPosition.X && DraggedPiece.Y != (int)OriginalPosition.Y)
+                    {
+                        if (DraggedPiece is Pawn pawn) pawn.IsUnmoved = false;
+                        if (DraggedPiece is King king) king.IsUnmoved = false;
+                        if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
+                    }
+                    
 
                     moveCounter++;
                     TurnChange();
