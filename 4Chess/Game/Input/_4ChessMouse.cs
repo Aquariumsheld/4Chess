@@ -75,12 +75,18 @@ namespace _4Chess.Game.Input
 
                 game.UIComponents.ForEach(c =>
                 {
+                    if (DraggedPiece is King king) king.IsUnmoved = false;
+                  
                     if (c.CompnentHitboxes.Any(h => Raylib.CheckCollisionRecs(MouseRect, h)))
                     {
                         if (c.IsVisible && c.IsClickable)
                             c.ClickEvent.Invoke();
                     }
                 });
+
+                if (DraggedPiece is Pawn pawn) pawn.IsUnmoved = false;
+
+                if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
             }
 
             if (Raylib.IsMouseButtonReleased(MouseButton.MOUSE_BUTTON_LEFT) && DraggedPiece != null)

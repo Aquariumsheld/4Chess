@@ -14,6 +14,12 @@ namespace _4Chess.Pieces
             Game = game;
         }
 
+        /// <summary>
+        /// Ermittelt alle für den Läufer möglichen Züge in Abhängigkeit von verbündeten und feindlichen Spielfiguren.
+        /// </summary>
+        /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
+        /// diesen Wert eine Rekursion vermieden.</param>
+        /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
         public override List<Vector2> GetMoves(bool validate = true)
         {
             List<Vector2> moves = [];
@@ -81,6 +87,7 @@ namespace _4Chess.Pieces
                         moves.Add(new Vector2(X + i, Y + i));
                         rightDown = false;
                     }
+
                     else rightDown = false;
                 }
             }
