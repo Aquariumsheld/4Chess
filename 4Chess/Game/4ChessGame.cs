@@ -31,6 +31,7 @@ public class _4ChessGame : BIERGame
 
     //=========DEBUG-VARS===============
     private bool _debugUiHitboxes = false;
+    public static bool debugMoveMode = false;
     //==================================
 
     public Vector2 WhiteKingPosition { get; set; }
