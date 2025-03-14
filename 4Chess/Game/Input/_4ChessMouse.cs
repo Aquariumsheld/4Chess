@@ -13,8 +13,6 @@ namespace _4Chess.Game.Input
         public static Piece? DraggedPiece = null;
         public static Vector2 OriginalPosition = Vector2.Zero;
 
-        private static bool gameMode = _4ChessGame.debugMoveMode;
-
         private static int moveCounter = 1;
         private static bool isWhiteTurn = true;
 
@@ -25,7 +23,7 @@ namespace _4Chess.Game.Input
         /// </summary>
         public static void TurnChange()
         {
-            if (!gameMode)
+            if (!_4ChessGame.debugMoveMode)
             {
                 isWhiteTurn = !isWhiteTurn;
             }
@@ -38,6 +36,9 @@ namespace _4Chess.Game.Input
 
         public static void MouseUpdate(List<Piece> pieces, _4ChessGame game)
         {
+            if (!_4ChessGame.continueGame)
+                return;
+
             MouseRect.x = Raylib.GetMousePosition().X;
             MouseRect.y = Raylib.GetMousePosition().Y;
 
@@ -45,7 +46,7 @@ namespace _4Chess.Game.Input
             {
                 foreach (var piece in pieces)
                 {
-                    if (!gameMode && piece.Alignment != (isWhiteTurn ? Piece.Color.White : Piece.Color.Black))
+                    if (!_4ChessGame.debugMoveMode && piece.Alignment != (isWhiteTurn ? Piece.Color.White : Piece.Color.Black))
                         continue;
 
                     Rectangle hitbox = new Rectangle(
