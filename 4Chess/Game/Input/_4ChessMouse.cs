@@ -13,7 +13,7 @@ namespace _4Chess.Game.Input
         public static Piece? DraggedPiece = null;
         public static Vector2 OriginalPosition = Vector2.Zero;
 
-        private static bool gameMode = _4ChessGame.gameMode;
+        private static bool gameMode = _4ChessGame.debugMoveMode;
 
         private static int moveCounter = 1;
         private static bool isWhiteTurn = true;
