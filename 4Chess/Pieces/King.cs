@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using _4Chess;
+﻿using System.Numerics;
 using _4Chess.Game;
 
 namespace _4Chess.Pieces
@@ -47,11 +41,19 @@ namespace _4Chess.Pieces
         {
             List<Vector2> moves = [];
 
+            //Rocharde
+            (bool DoRocharde, float moveLeft, float moveRight) = Rocharde(this);
+            if (DoRocharde)
+            {
+                moves.Add(new Vector2(X + moveLeft * 2, Y));
+                moves.Add(new Vector2(X + moveRight * 2, Y));
+            }
+
             //Felder links der Figur
             if (X - 1 >= 0)
             {
                 if (Game?.Board[Y][X - 1] == null)
-                    moves.Add(new Vector2(X-1,Y));
+                    moves.Add(new Vector2(X - 1, Y));
 
                 else if (Game.Board[Y][X - 1]?.Alignment != this.Alignment)
                 {

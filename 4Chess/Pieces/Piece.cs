@@ -1,5 +1,6 @@
 ﻿using _4Chess.Game;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace _4Chess.Pieces
 {
@@ -23,67 +24,75 @@ namespace _4Chess.Pieces
 
         public abstract List<Vector2> GetMoves(bool validate = true);
 
-        internal (bool, int?) Rocharde(King king)
+        internal (bool, float, float) Rocharde(King king)
         {
+            bool rocharde = false;
+            int rochardeLeft = 0;
+            int rochardeRight = 0;
             switch (Alignment)
             {
                 case Color.Black:
                     if (king.IsUnmoved && Game?.Board[0][0] is Rook rookLeft1 && rookLeft1.IsUnmoved)
                     {
-                        if(Game.Board[0][1] == null && Game.Board[0][2] == null && 
+                        if(Game.Board[0][1] == null && Game.Board[0][2] == null && Game.Board[0][3] == null &&
                             !GetAllEnemyMoves().Contains(new Vector2(X,Y)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(0,0)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(0,1)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(0,2)))
+                            !GetAllEnemyMoves().Contains(new Vector2(0, 0)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(1, 0)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(2, 0)))
                         {
-                            return (true, -1);
+                            rocharde = true;
+                            rochardeLeft = -1;
                         }
                     }
 
                     if(king.IsUnmoved && Game?.Board[0][7] is Rook rookRight1 && rookRight1.IsUnmoved)
                     {
-                        if (Game.Board[0][4] == null && Game.Board[0][5] == null && Game.Board[0][6] == null &&
+                        if (Game.Board[0][5] == null && Game.Board[0][6] == null &&
                             !GetAllEnemyMoves().Contains(new Vector2(X, Y)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(0, 4)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(0, 5)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(0, 6)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(0, 7)))
+                            !GetAllEnemyMoves().Contains(new Vector2(4, 0)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(5, 0)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(6, 0)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(7, 0)))
                         {
-                            return (true, 1);
+                            rocharde = true;
+                            rochardeRight = 1;
                         }
                     }
-                    break;
+                    return (rocharde, rochardeLeft, rochardeRight);
                 case Color.White:
-                    if (king.IsUnmoved && Game?.Board[7][7] is Rook rookLeft2 && rookLeft2.IsUnmoved)
+                    if (king.IsUnmoved && Game?.Board[7][0] is Rook rookLeft2 && rookLeft2.IsUnmoved)
                     {
-                        if (Game.Board[7][1] == null && Game.Board[7][2] == null &&
+                        if (Game.Board[7][1] == null && Game.Board[7][2] == null && Game.Board[7][3] == null &&
                             !GetAllEnemyMoves().Contains(new Vector2(X, Y)) &&
                             !GetAllEnemyMoves().Contains(new Vector2(7, 7)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(7, 1)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(7, 2)))
+                            !GetAllEnemyMoves().Contains(new Vector2(1, 7)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(2, 7)))
                         {
-                            return (true, -1);
+                            rocharde = true;
+                            rochardeLeft = -1;
                         }
                     }
 
-                    if (king.IsUnmoved && Game?.Board[7][7] is Rook rookRight2 && rookRight2.IsUnmoved)
+                    if (Game?.Board[7][5] == null && Game?.Board[7][6] == null && king.IsUnmoved && Game?.Board[7][7] is Rook rookRight2 && rookRight2.IsUnmoved)
                     {
-                        if (Game.Board[7][4] == null && Game.Board[7][5] == null && Game.Board[7][6] == null &&
+                        if (
                             !GetAllEnemyMoves().Contains(new Vector2(X, Y)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(7, 4)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(7, 5)) &&
-                            !GetAllEnemyMoves().Contains(new Vector2(7, 6)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(4, 7)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(5, 7)) &&
+                            !GetAllEnemyMoves().Contains(new Vector2(6, 7)) &&
                             !GetAllEnemyMoves().Contains(new Vector2(7, 7)))
                         {
-                            return (true, 1);
+                            rocharde = true;
+                            rochardeRight = 1;
                         }
                     }
-                    break;
+                    return (rocharde, rochardeLeft, rochardeRight);
+
                 default:
                     break;
             }
 
-            return (false, null);
+            return (false, 0, 0);
         }
 
         public List<Vector2> GetAllEnemyMoves()

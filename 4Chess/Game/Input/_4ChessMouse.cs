@@ -103,6 +103,18 @@ namespace _4Chess.Game.Input
 
                     if (DraggedPiece.GetType() == typeof(King))
                     {
+                        if (DraggedPiece.X - OriginalPosition.X == 2)
+                        {
+                            game.Board[DraggedPiece.Y][7] = null;
+                            game.Board[DraggedPiece.Y][5] = game.Board[DraggedPiece.Y][7];
+                            game.Board[DraggedPiece.Y][5] = new Rook(DraggedPiece.Y, 5, DraggedPiece.Alignment, game);
+                        }
+                        else if (DraggedPiece.X - OriginalPosition.X == -2)
+                        {
+                            game.Board[DraggedPiece.Y][0] = null;
+                            game.Board[DraggedPiece.Y][3] = game.Board[DraggedPiece.Y][0];
+                            game.Board[DraggedPiece.Y][3] = new Rook(DraggedPiece.Y, 3, DraggedPiece.Alignment, game);
+                        }
                         switch (DraggedPiece.Alignment)
                         {
                             case Piece.Color.Black:
