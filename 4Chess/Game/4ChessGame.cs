@@ -20,7 +20,9 @@ public class _4ChessGame : BIERGame
     public static readonly int BOARDYPos = WINDOW_HEIGHT / 8;
     public static readonly int TILE_SIZE = (WINDOW_WIDTH - (BOARDXPos * 2)) / BOARD_DIMENSIONS;
     public static readonly Color SELECT_COLOR = ColorFromHSV(157f, 27f, 63f);
-
+    private static bool gameEnds = false;
+    private static readonly KeyboardKey[] restartKeys = [KeyboardKey.KEY_ENTER, KeyboardKey.KEY_SPACE, KeyboardKey.KEY_R];
+    public static bool continueGame = true;
 
     private Raylib_CsLo.Font _romulusFont;
     public List<BIERRenderObject> RenderObjects { get; set; } = [];
@@ -28,9 +30,11 @@ public class _4ChessGame : BIERGame
     public List<List<Piece?>> Board { get; set; } = [];
 
     private Dictionary<string, Texture> _pieceTextureDict = [];
+    
 
     //=========DEBUG-VARS===============
-    private bool _debugUiHitboxes = false;
+    private bool _debugUiHitboxes = false; //F1
+    public static bool debugMoveMode = false; //F2
     //==================================
 
     public Vector2 WhiteKingPosition { get; set; }
@@ -104,11 +108,68 @@ public class _4ChessGame : BIERGame
         ];
     }
 
+    public void Gamesettings()
+    {
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_F1))
+        {
+            _debugUiHitboxes = !_debugUiHitboxes;
+        }
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_F2))
+        {
+            debugMoveMode = !debugMoveMode;
+        }
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_F3))
+        {
+            Board =
+            [
+                [null, null, null, null, new King(0, 4, Piece.Color.Black, this), null, null, null,],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [new Rook(7, 0, Piece.Color.White, this), new Knight(7, 1, Piece.Color.White, this), new Bishop(7, 2, Piece.Color.White, this), new Queen(7, 3, Piece.Color.White, this), new King(7, 4, Piece.Color.White, this), new Bishop(7, 5, Piece.Color.White, this), new Knight(7, 6, Piece.Color.White, this), new Rook(7, 7, Piece.Color.White, this)]
+            ];
+            debugMoveMode = true;
+        }
+
+        if (gameEnds)
+        {
+            if (restartKeys.Any(key => Raylib.IsKeyPressed(key)))
+            {
+                continueGame = true;
+                gameEnds = false;
+                debugMoveMode = false;
+                UIComponents.RemoveAll(c => c is BIERButton);
+                CloseWindow();
+                GameDispose();
+                GameInit();
+            }
+        }
+    }
+    public void IsGameDone(List<Piece> pieces)
+    {
+        List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves(false))];
+        List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves(false))];
+        if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
+        {
+            UIComponents.Add(new BIERButton(" Schachmatt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
+            gameEnds = true;
+            continueGame = false;
+        }
+        if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
+        {
+            UIComponents.Add(new BIERButton("    Patt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
+            gameEnds = true;
+            continueGame = false;
+        }
+    }
     public override void GameUpdate()
     {
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
-
+        Gamesettings();
         List<Piece> pieces = [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
                                   .Cast<Piece>()];
@@ -116,17 +177,7 @@ public class _4ChessGame : BIERGame
         if (pieces.All(p => p != null))
             _4ChessMouse.MouseUpdate(pieces, this);
 
-        //Sschachmatt Logik
-        List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves(false))];
-        List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves(false))];
-        if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
-        {
-            UIComponents.Add(new BIERButton(" Schachmatt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
-        }
-        if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
-        {
-            UIComponents.Add(new BIERButton("    Patt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
-        }
+        IsGameDone(pieces);
     }
 
     public override void GameRender()
