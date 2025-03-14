@@ -1,5 +1,6 @@
 ﻿using _4Chess.Game;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace _4Chess.Pieces
 {
@@ -22,6 +23,21 @@ namespace _4Chess.Pieces
         }
 
         public abstract List<Vector2> GetMoves(bool validate = true);
+
+        public List<Vector2> GetAllEnemyMoves()
+        {
+            List<Vector2> moves = [];
+            List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
+            
+            if(temp != null)
+            {
+                foreach (var piece in temp)
+                {
+                    moves.AddRange(piece.GetMoves(false));
+                }
+            }
+            return moves;
+        }
 
         public List<Vector2> ValidateMoves(List<Vector2> moves)
         {
