@@ -5,6 +5,9 @@ namespace _4Chess.Pieces
 {
     class Rook : Piece
     {
+        /// <summary>
+        /// Legt fest, ob die Figur über den gesamten Spielverlauf hinweg schon einmal bewegt wurde.
+        /// </summary>
         public bool IsUnmoved { get; set; } = true;
 
         public Rook(int yPosition, int xPosition, Color alignment, _4ChessGame game)
@@ -16,6 +19,12 @@ namespace _4Chess.Pieces
             Game = game;
         }
 
+        /// <summary>
+        /// Ermittelt alle für den Turm möglichen Züge in Abhängigkeit von verbündeten und feindlichen Spielfiguren.
+        /// </summary>
+        /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
+        /// diesen Wert eine Rekursion vermieden.</param>
+        /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
         public override List<Vector2> GetMoves(bool validate = true)
         {
             List<Vector2> moves = [];

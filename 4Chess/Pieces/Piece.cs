@@ -25,7 +25,7 @@ namespace _4Chess.Pieces
 
         public List<Vector2> ValidateMoves(List<Vector2> moves)
         {
-            if(Game != null)
+            if (Game != null)
             {
                 Vector2 kingPosition = GetKingPosition(Game);
 
@@ -61,7 +61,7 @@ namespace _4Chess.Pieces
                         }
                         else
                         {
-                            if(piece.GetType() != typeof(Pawn))
+                            if (piece.GetType() != typeof(Pawn))
                             {
                                 if (enemyMoves.Contains(moves[i]))
                                     moves.RemoveAt(i);

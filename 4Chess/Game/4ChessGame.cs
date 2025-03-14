@@ -109,7 +109,6 @@ public class _4ChessGame : BIERGame
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
 
-
         List<Piece> pieces = [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
                                   .Cast<Piece>()];

@@ -78,6 +78,8 @@ public static class _4ChessMouse
 
                 if (DraggedPiece.GetType() == typeof(King))
                 {
+                    if (DraggedPiece is King king) king.IsUnmoved = false;
+
                     switch (DraggedPiece.Alignment)
                     {
                         case Piece.Color.Black:
@@ -90,6 +92,10 @@ public static class _4ChessMouse
                             break;
                     }
                 }
+
+                if (DraggedPiece is Pawn pawn) pawn.IsUnmoved = false;
+
+                if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
             }
             else
             {
