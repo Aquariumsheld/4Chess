@@ -1,4 +1,4 @@
-﻿using _4Chess.Game.Input;
+﻿using _4Chess.Game.Move;
 using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
@@ -152,13 +152,14 @@ public class _4ChessGame : BIERGame
     {
         List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves(false))];
         List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves(false))];
+
         if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
         {
             UIComponents.Add(new BIERButton(" Schachmatt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;
             continueGame = false;
         }
-        if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
+        else if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
         {
             UIComponents.Add(new BIERButton("    Patt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;
@@ -175,7 +176,7 @@ public class _4ChessGame : BIERGame
                                   .Cast<Piece>()];
 
         if (pieces.All(p => p != null))
-            _4ChessMouse.MouseUpdate(pieces, this);
+            _4ChessMove.MouseUpdate(pieces, this);
 
         IsGameDone(pieces);
     }
@@ -190,7 +191,7 @@ public class _4ChessGame : BIERGame
         {
             if (p != null && p.FilePath != null)
             {
-                if (p != _4ChessMouse.DraggedPiece)
+                if (p != _4ChessMove.DraggedPiece)
                 {
                     renderX = p.X * TILE_SIZE + BOARDXPos;
                     renderY = p.Y * TILE_SIZE + BOARDYPos;
@@ -203,15 +204,15 @@ public class _4ChessGame : BIERGame
         }
 
         
-        if (_4ChessMouse.IsCastlingAnimationActive && _4ChessMouse.CastlingRook != null)
+        if (_4ChessMove.IsCastlingAnimationActive && _4ChessMove.CastlingRook != null)
         {
-            renderX = (int)(_4ChessMouse.AnimatedCastlingRookPos.X * TILE_SIZE + BOARDXPos);
-            renderY = (int)(_4ChessMouse.AnimatedCastlingRookPos.Y * TILE_SIZE + BOARDYPos);
+            renderX = (int)(_4ChessMove.AnimatedCastlingRookPos.X * TILE_SIZE + BOARDXPos);
+            renderY = (int)(_4ChessMove.AnimatedCastlingRookPos.Y * TILE_SIZE + BOARDYPos);
 
             
             RenderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
             {
-                Texture = _pieceTextureDict[$"{_4ChessMouse.CastlingRook.FilePath}"]
+                Texture = _pieceTextureDict[$"{_4ChessMove.CastlingRook.FilePath}"]
             });
         }
         BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
@@ -231,7 +232,7 @@ public class _4ChessGame : BIERGame
 
     private void RenderDraggedPiece()
     {
-        var draggedPiece = Board.SelectMany(p => p).Where(p => p == _4ChessMouse.DraggedPiece).First();
+        var draggedPiece = Board.SelectMany(p => p).Where(p => p == _4ChessMove.DraggedPiece).First();
         Vector2 mousePos = Raylib.GetMousePosition();
         int renderX = (int)mousePos.X - TILE_SIZE / 2;
         int renderY = (int)mousePos.Y - TILE_SIZE / 2;
@@ -253,7 +254,7 @@ public class _4ChessGame : BIERGame
 
     private void RenderPossibleMoveRenderTiles()
     {
-        _4ChessMouse.PossibleMoveRenderTiles.ForEach(r => r.Render());
+        _4ChessMove.PossibleMoveRenderTiles.ForEach(r => r.Render());
     }
 
     private void RenderBoard()
