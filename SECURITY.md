@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Supported Versions
-Alle bixn sind zurzeit sicher
+Alle Bixn sind zurzeit sicher
 
 | Version | Supported          |
 | ------- | ------------------ |
