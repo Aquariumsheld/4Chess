@@ -26,7 +26,7 @@ namespace _4Chess.Game.Input
         public static Vector2 CastlingRookStart = Vector2.Zero;
         public static Vector2 CastlingRookTarget = Vector2.Zero;
         public static float CastlingAnimationTimer = 0f;
-        public static float CastlingAnimationDuration = 0.5f; // Dauer der Animation (in Sekunden)
+        public static float CastlingAnimationDuration = 4.5f; // Dauer der Animation (in Sekunden)
         public static Vector2 AnimatedCastlingRookPos = Vector2.Zero;
         // ------------------------------------------------
 
@@ -48,27 +48,21 @@ namespace _4Chess.Game.Input
 
         public static void MouseUpdate(List<Piece> pieces, _4ChessGame game)
         {
-            // Aktualisiere die Castling-Animation, falls aktiv:
             if (IsCastlingAnimationActive && CastlingRook != null)
             {
                 float dt = Raylib.GetFrameTime();
                 CastlingAnimationTimer += dt;
                 float t = Math.Min(CastlingAnimationTimer / CastlingAnimationDuration, 1.0f);
 
-                // Berechne die interpolierte (fließende) Position in Board-Koordinaten (als float)
                 Vector2 newRookPos = new Vector2(
                     CastlingRookStart.X + t * (CastlingRookTarget.X - CastlingRookStart.X),
                     CastlingRookStart.Y + t * (CastlingRookTarget.Y - CastlingRookStart.Y)
                 );
 
-                // Speichere die animierte Position
                 AnimatedCastlingRookPos = newRookPos;
 
-                // Statt die Position als int zu setzen, überlässt du dem Rendercode, die animierte Position zu nutzen.
-                // Sobald die Animation fertig ist, wird der Turm an die Zielposition übernommen.
                 if (t >= 1.0f)
                 {
-                    // Animation abgeschlossen: Aktualisiere den Turm im Board
                     CastlingRook.X = (int)CastlingRookTarget.X;
                     CastlingRook.Y = (int)CastlingRookTarget.Y;
                     game.Board[(int)CastlingRookTarget.Y][(int)CastlingRookTarget.X] = CastlingRook;
@@ -156,6 +150,7 @@ namespace _4Chess.Game.Input
                             }
                             CastlingRookStart = new Vector2(7, DraggedPiece.Y);
                             CastlingRookTarget = new Vector2(5, DraggedPiece.Y);
+                            game.Board[DraggedPiece.Y][5] = new Rook(DraggedPiece.Y, 5, DraggedPiece.Alignment, game);
                             CastlingAnimationTimer = 0f;
                             IsCastlingAnimationActive = true;
                         }
@@ -169,6 +164,7 @@ namespace _4Chess.Game.Input
                             }
                             CastlingRookStart = new Vector2(0, DraggedPiece.Y);
                             CastlingRookTarget = new Vector2(3, DraggedPiece.Y);
+                            game.Board[DraggedPiece.Y][3] = new Rook(DraggedPiece.Y, 3, DraggedPiece.Alignment, game);
                             CastlingAnimationTimer = 0f;
                             IsCastlingAnimationActive = true;
                         }
