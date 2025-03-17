@@ -4,6 +4,14 @@ using Raylib_CsLo;
 using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
+using BIERKELLER.BIERUI;
+using System.Collections;
+using System.ComponentModel;
+using System;
+using _4Chess.Game.Move;
+using System.IO;
+using static Raylib_CsLo.Raylib;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace _4Chess.Game.Move
 {
@@ -144,12 +152,13 @@ namespace _4Chess.Game.Move
                         c.ClickEvent.Invoke();
                 }
             });
+
+            game.UIComponents.Clear();
         }
 
         /// <summary>
         /// Behandelt die Logik, wenn die linke Maustaste losgelassen wird (Figurenbewegung, Validierung und Castling).
         /// </summary>
-
         private static void KingCasteling(_4ChessGame game, int newX, int newY)
         {
             if (DraggedPiece.GetType() == typeof(King))
@@ -192,6 +201,35 @@ namespace _4Chess.Game.Move
                 }
             }
         }
+
+        private static void SwitchPiece(_4ChessGame game, int y, int x)
+        {
+            if (DraggedPiece != null)
+            {
+                game.UIComponents.Add(new BIERButton(" Bishop  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 * 2 + 30, 350, 120, BLACK, GOLD, spacing: 3));
+                game.UIComponents[0].ClickEvent += () =>
+                {
+                    game.Board[y][x] = new Bishop(y, x, game.Board[y][x].Alignment, game);
+                };
+                game.UIComponents.Add(new BIERButton(" Rook  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 + 50, 350, 120, BLACK, GOLD, spacing: 3));
+                game.UIComponents[1].ClickEvent += () =>
+                {
+                    game.Board[y][x] = new Rook(y, x, game.Board[y][x].Alignment, game);
+                };
+                game.UIComponents.Add(new BIERButton(" Queen  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 - 50, 350, 120, BLACK, GOLD, spacing: 3));
+                game.UIComponents[2].ClickEvent += () =>
+                {
+                    game.Board[y][x] = new Queen(y, x, game.Board[y][x].Alignment, game);
+                };
+                game.UIComponents.Add(new BIERButton(" Knight  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 * 2 - 30, 350, 120, BLACK, GOLD, spacing: 3));
+                game.UIComponents[3].ClickEvent += () =>
+                {
+                    game.Board[y][x] = new Knight(y, x, game.Board[y][x].Alignment, game);
+                };
+                 
+            }
+        }
+
         private static void HandleMouseReleased(List<Piece> pieces, _4ChessGame game)
         {
             int newX = (int)((MouseRect.x - _4ChessGame.BOARDXPos) / _4ChessGame.TILE_SIZE);
@@ -225,13 +263,45 @@ namespace _4Chess.Game.Move
                 KingCasteling(game, newX, newY);
 
                 // Aktualisiere den IsUnmoved-Status, falls die Figur sich bewegt hat
-                if (DraggedPiece.X != (int)OriginalPosition.X && DraggedPiece.Y != (int)OriginalPosition.Y)
+                if (DraggedPiece.X != (int)OriginalPosition.X || DraggedPiece.Y != (int)OriginalPosition.Y)
                 {
-                    if (DraggedPiece is Pawn pawn) pawn.IsUnmoved = false;
+                    if (DraggedPiece is Pawn pawn)
+                    {
+                        int diff = DraggedPiece.Y - (int)OriginalPosition.Y;
+                        if (diff == 2 || diff == -2)
+                        {
+                            pawn.IsEnPassant = true;
+                        }
+                        else
+                        {
+                            pawn.IsEnPassant = false;
+                        }
+
+                        pawn.IsUnmoved = false;
+                    }
                     if (DraggedPiece is King king) king.IsUnmoved = false;
                     if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
                 }
 
+                if (DraggedPiece is Pawn pawnPassant)
+                {
+                    if (pawnPassant.X - (int)OriginalPosition.X == 1 || pawnPassant.X - (int)OriginalPosition.X == -1)
+                    {
+                        if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant)
+                        {
+                            game.Board[pawnPassant.Y - 1][pawnPassant.X] = null;
+                        }
+                        else if (game.Board[pawnPassant.Y + 1][pawnPassant.X] is Pawn pawn6 && pawn6.IsEnPassant)
+                        {
+                            game.Board[pawnPassant.Y + 1][pawnPassant.X] = null;
+                        }
+                    }
+                }
+
+                if (DraggedPiece is Pawn pawn2 && pawn2.IsAtEnd())
+                {
+                    SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
+                }
                 moveCounter++;
                 TurnChange();
             }
