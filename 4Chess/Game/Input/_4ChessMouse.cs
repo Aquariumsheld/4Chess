@@ -127,6 +127,18 @@ namespace _4Chess.Game.Input
                 newX = Math.Clamp(newX, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
                 newY = Math.Clamp(newY, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
 
+                if (IsCastlingAnimationActive &&
+                newX == (int)_4ChessMouse.CastlingRookTarget.X &&
+                newY == (int)_4ChessMouse.CastlingRookTarget.Y)
+                {
+                    // Option: Ausgabe einer Nachricht oder einfach Abbruch des Zugs
+                    DraggedPiece.X = (int)OriginalPosition.X;
+                    DraggedPiece.Y = (int)OriginalPosition.Y;
+                    DraggedPiece = null;
+                    PossibleMoveRenderTiles.Clear();
+                    return;
+                }
+
                 Vector2 newPos = new(newX, newY);
                 bool isValidMove = DraggedPiece.GetMoves().Any(move => (int)move.X == newX && (int)move.Y == newY);
                 if (isValidMove)
@@ -150,7 +162,6 @@ namespace _4Chess.Game.Input
                             }
                             CastlingRookStart = new Vector2(7, DraggedPiece.Y);
                             CastlingRookTarget = new Vector2(5, DraggedPiece.Y);
-                            game.Board[DraggedPiece.Y][5] = new Rook(DraggedPiece.Y, 5, DraggedPiece.Alignment, game);
                             CastlingAnimationTimer = 0f;
                             IsCastlingAnimationActive = true;
                         }
@@ -164,7 +175,6 @@ namespace _4Chess.Game.Input
                             }
                             CastlingRookStart = new Vector2(0, DraggedPiece.Y);
                             CastlingRookTarget = new Vector2(3, DraggedPiece.Y);
-                            game.Board[DraggedPiece.Y][3] = new Rook(DraggedPiece.Y, 3, DraggedPiece.Alignment, game);
                             CastlingAnimationTimer = 0f;
                             IsCastlingAnimationActive = true;
                         }

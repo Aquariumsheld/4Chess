@@ -215,7 +215,6 @@ public class _4ChessGame : BIERGame
             });
         }
         BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
-        Raylib.DrawRectangle(renderX, renderY, TILE_SIZE, TILE_SIZE, LIGHTGRAY);
     }
 
 
