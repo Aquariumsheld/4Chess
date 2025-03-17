@@ -269,13 +269,9 @@ namespace _4Chess.Game.Move
                     {
                         int diff = DraggedPiece.Y - (int)OriginalPosition.Y;
                         if (diff == 2 || diff == -2)
-                        {
                             pawn.IsEnPassant = true;
-                        }
                         else
-                        {
                             pawn.IsEnPassant = false;
-                        }
 
                         pawn.IsUnmoved = false;
                     }
@@ -287,13 +283,14 @@ namespace _4Chess.Game.Move
                 {
                     if (pawnPassant.X - (int)OriginalPosition.X == 1 || pawnPassant.X - (int)OriginalPosition.X == -1)
                     {
-                        if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant)
+                        int diffy = pawnPassant.Y - 1;
+                        if (diffy >= 0)
                         {
-                            game.Board[pawnPassant.Y - 1][pawnPassant.X] = null;
-                        }
-                        else if (game.Board[pawnPassant.Y + 1][pawnPassant.X] is Pawn pawn6 && pawn6.IsEnPassant)
-                        {
-                            game.Board[pawnPassant.Y + 1][pawnPassant.X] = null;
+                            if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant)
+                                game.Board[pawnPassant.Y - 1][pawnPassant.X] = null;
+
+                            else if (game.Board[pawnPassant.Y + 1][pawnPassant.X] is Pawn pawn6 && pawn6.IsEnPassant)
+                                game.Board[pawnPassant.Y + 1][pawnPassant.X] = null;
                         }
                     }
                 }
