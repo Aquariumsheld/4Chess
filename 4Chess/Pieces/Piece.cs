@@ -29,12 +29,9 @@ namespace _4Chess.Pieces
             List<Vector2> moves = [];
             List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
             
-            if(temp != null)
+            foreach (var piece in temp)
             {
-                foreach (var piece in temp)
-                {
-                    moves.AddRange(piece.GetMoves(false));
-                }
+                moves.AddRange(piece.GetMoves(false));
             }
             return moves;
         }
@@ -43,78 +40,37 @@ namespace _4Chess.Pieces
         {
             if (Game != null)
             {
-                Vector2 kingPosition = GetKingPosition(Game);
-
-                List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
-
-                foreach (var piece in temp)
+                for (int i = moves.Count - 1; i >= 0; i--)
                 {
-                    for (int i = moves.Count - 1; i >= 0; i--)
+                    //aktuellen Zustand speichern
+                    int tempY = (int)moves[i].Y;
+                    int tempX = (int)moves[i].X;
+
+                    Piece? tileContent = Game.Board[tempY][tempX];
+                    Game.Board[tempY][tempX] = this;
+                    Game.Board[Y][X] = null;
+
+                    //alle jetzt gegnerischen Züge ohne Validierung abfragen
+                    List<Vector2> enemyMoves = 
+                        [.. Game.Board.
+                        SelectMany(x => x).
+                        Where(elem => elem != null && 
+                        elem.Alignment != Alignment).
+                        SelectMany(p => p.GetMoves(false))];
+
+                    if(typeof(King) == GetType())
                     {
-                        List<Vector2> enemyMoves = piece.GetMoves(false);
-
-                        if (typeof(King) != GetType())
-                        {
-                            if (enemyMoves.Contains(kingPosition) || enemyMoves.Contains(new Vector2(X, Y)))
-                            {
-                                Piece? tileContent = Game.Board[(int)moves[i].Y][(int)moves[i].X];
-                                Game.Board[(int)moves[i].Y][(int)moves[i].X] = this;
-                                Game.Board[Y][X] = null;
-
-                                if ((piece.GetMoves(false).Contains(kingPosition)) && (piece.X != moves[i].X || piece.Y != moves[i].Y))
-                                {
-                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
-                                    Game.Board[Y][X] = this;
-                                    moves.RemoveAt(i);
-                                }
-
-                                else
-                                {
-                                    Game.Board[Y][X] = this;
-                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (piece.GetType() != typeof(Pawn))
-                            {
-                                Piece? tileContent = Game.Board[(int)moves[i].Y][(int)moves[i].X];
-                                Game.Board[(int)moves[i].Y][(int)moves[i].X] = this;
-                                Game.Board[Y][X] = null;
-
-                                if ((piece.GetMoves(false).Contains(moves[i])) && (piece.X != moves[i].X || piece.Y != moves[i].Y))
-                                {
-                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
-                                    Game.Board[Y][X] = this;
-                                    moves.RemoveAt(i);
-                                }
-
-                                else
-                                {
-                                    Game.Board[Y][X] = this;
-                                    Game.Board[(int)moves[i].Y][(int)moves[i].X] = tileContent;
-                                }
-                            }
-
-                            else
-                            {
-                                switch (Alignment)
-                                {
-                                    case Color.Black:
-                                        moves.Remove(new Vector2(piece.X - 1, piece.Y - 1));
-                                        moves.Remove(new Vector2(piece.X + 1, piece.Y - 1));
-                                        break;
-                                    case Color.White:
-                                        moves.Remove(new Vector2(piece.X - 1, piece.Y + 1));
-                                        moves.Remove(new Vector2(piece.X + 1, piece.Y + 1));
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        }
+                        if (enemyMoves.Contains(moves[i])) moves.RemoveAt(i);
                     }
+                    else
+                    {
+                        //prüfen, ob König bedroht würde
+                        if (enemyMoves.Contains(GetKingPosition())) moves.RemoveAt(i);
+                    }
+
+                    //vorherigen Zustand wiederherstellen
+                    Game.Board[tempY][tempX] = tileContent;
+                    Game.Board[Y][X] = this;
                 }
 
                 return moves;
@@ -123,17 +79,22 @@ namespace _4Chess.Pieces
             return [];
         }
 
-        public Vector2 GetKingPosition(_4ChessGame game)
+        public Vector2 GetKingPosition()
         {
-            Vector2 kingPosition = Alignment switch
+            if(Game != null)
             {
-                Color.Black => game.BlackKingPosition,
-                Color.White => game.WhiteKingPosition,
-                //Kann eigentlich nicht passieren
-                _ => new()
-            };
+                Vector2 kingPosition = Alignment switch
+                {
+                    Color.Black => Game.BlackKingPosition,
+                    Color.White => Game.WhiteKingPosition,
+                    //Kann eigentlich nicht passieren
+                    _ => new()
+                };
 
-            return kingPosition;
+                return kingPosition;
+            }
+
+            return new();
         }
     }
 }

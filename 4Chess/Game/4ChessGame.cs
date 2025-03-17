@@ -150,15 +150,15 @@ public class _4ChessGame : BIERGame
     }
     public void IsGameDone(List<Piece> pieces)
     {
-        List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves(false))];
-        List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves(false))];
+        List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves())];
+        List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves())];
         if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
         {
             UIComponents.Add(new BIERButton(" Schachmatt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;
             continueGame = false;
         }
-        if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
+        else if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
         {
             UIComponents.Add(new BIERButton("    Patt ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;
@@ -170,14 +170,18 @@ public class _4ChessGame : BIERGame
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
         Gamesettings();
-        List<Piece> pieces = [.. Board.SelectMany(row => row)
+
+        if (GetActivePieces().All(p => p != null))
+            _4ChessMouse.MouseUpdate(GetActivePieces(), this);
+
+        IsGameDone(GetActivePieces());
+    }
+
+    private List<Piece> GetActivePieces()
+    {
+        return [.. Board.SelectMany(row => row)
                                   .Where(piece => piece != null)
                                   .Cast<Piece>()];
-
-        if (pieces.All(p => p != null))
-            _4ChessMouse.MouseUpdate(pieces, this);
-
-        IsGameDone(pieces);
     }
 
     public override void GameRender()
