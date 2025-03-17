@@ -182,12 +182,14 @@ public class _4ChessGame : BIERGame
 
     public override void GameRender()
     {
+        int renderX = 0;
+        int renderY = 0;
         RenderObjects.Clear();
+
         foreach (var p in Board.SelectMany(row => row))
         {
             if (p != null && p.FilePath != null)
             {
-                int renderX, renderY;
                 if (p != _4ChessMouse.DraggedPiece)
                 {
                     renderX = p.X * TILE_SIZE + BOARDXPos;
@@ -199,8 +201,22 @@ public class _4ChessGame : BIERGame
                 }
             }
         }
+
+        
+        if (_4ChessMouse.IsCastlingAnimationActive && _4ChessMouse.CastlingRook != null)
+        {
+            renderX = (int)(_4ChessMouse.AnimatedCastlingRookPos.X * TILE_SIZE + BOARDXPos);
+            renderY = (int)(_4ChessMouse.AnimatedCastlingRookPos.Y * TILE_SIZE + BOARDYPos);
+
+            
+            RenderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
+            {
+                Texture = _pieceTextureDict[$"{_4ChessMouse.CastlingRook.FilePath}"]
+            });
+        }
         BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
+
 
     private void RenderUIComponents()
     {
