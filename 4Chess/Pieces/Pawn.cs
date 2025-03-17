@@ -80,11 +80,62 @@ namespace _4Chess.Pieces
                 }
             }
 
+            moves.AddRange(GetEnPassantMoves());
+
             if (validate)
                 return ValidateMoves(moves);
 
             else
                 return moves;
+        }
+
+        public List<Vector2> GetEnPassantMoves()
+        {
+            List<Vector2> enPassantMoves = new List<Vector2>();
+            int yDiff = (Alignment == Color.White) ? -1 : 1;
+
+            // Linker Nachbar
+            if (X - 1 >= 0)
+            {
+                var leftPiece = Game.Board[Y][X - 1];
+                if (leftPiece is Pawn enemyPawn && enemyPawn.Alignment != this.Alignment && enemyPawn.IsEnPassant)
+                {
+                    // Das Zielfeld befindet sich diagonal vorne
+                    enPassantMoves.Add(new Vector2(X - 1, Y + yDiff));
+                }
+            }
+            // Rechter Nachbar
+            if (X + 1 < _4ChessGame.BOARD_DIMENSIONS)
+            {
+                var rightPiece = Game.Board[Y][X + 1];
+                if (rightPiece is Pawn enemyPawn && enemyPawn.Alignment != this.Alignment && enemyPawn.IsEnPassant)
+                {
+                    enPassantMoves.Add(new Vector2(X + 1, Y + yDiff));
+                }
+            }
+            return enPassantMoves;
+        }
+
+        public bool IsAtEnd()
+        {
+            bool result = false;
+
+            switch (Alignment)
+            {
+                case Color.White:
+                    if (Y == 0) result = true;
+                    else result = false;
+                    break;
+                case Color.Black:
+                    if (Y == 7) result = true;
+                    else result = false;
+                    break;
+                default:
+                    result = true;
+                    break;
+            }
+
+            return result;
         }
     }
 }
