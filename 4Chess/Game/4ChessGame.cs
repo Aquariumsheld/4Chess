@@ -172,7 +172,7 @@ public class _4ChessGame : BIERGame
         Gamesettings();
 
         if (GetActivePieces().All(p => p != null))
-            _4ChessMouse.MouseUpdate(GetActivePieces(), this);
+            _4ChessMove.MouseUpdate(GetActivePieces(), this);
 
         IsGameDone(GetActivePieces());
     }
