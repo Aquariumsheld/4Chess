@@ -46,12 +46,13 @@ namespace _4Chess.Game.Move
         {
             if (!_4ChessGame.debugMoveMode)
             {
-                isWhiteTurn = !isWhiteTurn;
+                isWhiteTurn = _4ChessGame.IsLocalTurn;
             }
             else
             {
-                if (moveCounter % 2 == 0)
-                    isWhiteTurn = !isWhiteTurn;
+                //if (moveCounter % 2 == 0)
+                //    isWhiteTurn = !isWhiteTurn;
+                isWhiteTurn = _4ChessGame.IsLocalTurn;
             }
         }
 
