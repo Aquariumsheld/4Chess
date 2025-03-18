@@ -10,7 +10,7 @@ namespace _4Chess.Game.Multiplayer
     public static class MultiplayerManager
     {
         public static bool IsMultiplayer = false;
-        public static bool IsHost = false;
+        public static bool IsHost = true;
         public static int Port = 5000;
         public static string HostIp = "";
 
