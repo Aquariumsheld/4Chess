@@ -274,18 +274,18 @@ public class _4ChessGame : BIERGame
         game.UIComponents.Add(new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 550, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
         game.UIComponents[0].ClickEvent += () => 
         {
-            
+            _4ChessGame.continueGame = false;
+            Multiplayer.MultiplayerManager.IsMultiplayer = true;
+            Multiplayer.MultiplayerManager.IsHost = true;
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                await Multiplayer.MultiplayerManager.StartHostingAsync();
+                _4ChessGame.continueGame = true;
+                multiplayerMenuActive = false;
+            });
             game.UIComponents.Clear();
         };
-        _4ChessGame.continueGame = false;
-        Multiplayer.MultiplayerManager.IsMultiplayer = true;
-        Multiplayer.MultiplayerManager.IsHost = true;
-        System.Threading.Tasks.Task.Run(async () =>
-        {
-            await Multiplayer.MultiplayerManager.StartHostingAsync();
-            _4ChessGame.continueGame = true;
-            multiplayerMenuActive = false;
-        });
+        
 
         game.UIComponents.Add(new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
         game.UIComponents[1].ClickEvent += () =>
