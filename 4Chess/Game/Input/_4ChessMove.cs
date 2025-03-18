@@ -35,7 +35,7 @@ namespace _4Chess.Game.Move
         public static Vector2 CastlingRookStart = Vector2.Zero;
         public static Vector2 CastlingRookTarget = Vector2.Zero;
         public static float CastlingAnimationTimer = 0f;
-        public static float CastlingAnimationDuration = 0.5f; // Dauer der Animation (in Sekunden)
+        public static float CastlingAnimationDuration = 0.0f; // Dauer der Animation (in Sekunden)
         public static Vector2 AnimatedCastlingRookPos = Vector2.Zero;
         // ------------------------------------------------
 
