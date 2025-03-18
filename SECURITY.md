@@ -4,6 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 4Chess V2   | :white_check_mark: |
 | 0.1.x   | :white_check_mark: |
 | 0.0.x   | :x: |
 
