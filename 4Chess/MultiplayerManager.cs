@@ -11,7 +11,7 @@ namespace _4Chess.Game.Multiplayer
     {
         public static bool IsMultiplayer = false;
         public static bool IsHost = false;
-        public static int Port = 8080;
+        public static int Port = 5000;
         public static string HostIp = "";
 
         private static HttpListener listener;
@@ -61,8 +61,13 @@ namespace _4Chess.Game.Multiplayer
         {
             try
             {
+                string trimmedIp = serverIp.Trim();
+                if (trimmedIp.Contains(":"))
+                {
+                    trimmedIp = trimmedIp.Split(':')[0];
+                }
+                Uri serverUri = new Uri($"ws://{trimmedIp}:{Port}/");
                 ClientSocket = new ClientWebSocket();
-                Uri serverUri = new Uri("ws://" + serverIp + ":" + Port + "/");
                 await ClientSocket.ConnectAsync(serverUri, CancellationToken.None);
                 Connected = true;
                 Console.WriteLine("Connected to host.");
@@ -73,6 +78,7 @@ namespace _4Chess.Game.Multiplayer
                 Console.WriteLine("Error joining game: " + ex.Message);
             }
         }
+
 
         /// <summary>
         /// Sendet eine Nachricht (z. B. Move‑Nachricht) über den aktiven Socket.
