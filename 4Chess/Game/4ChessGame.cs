@@ -33,7 +33,7 @@ public class _4ChessGame : BIERGame
     
 
     //=========DEBUG-VARS===============
-    private bool _debugUiHitboxes = false; //F1
+    private bool _debugUiHitboxes = true; //F1
     public static bool debugMoveMode = false; //F2
     //==================================
 
@@ -91,6 +91,7 @@ public class _4ChessGame : BIERGame
             UnloadImage(img);
 
             _pieceTextureDict.Add($"SELECTED{d.Key}", selectTexture);
+            
         });
 
         _romulusFont = LoadFont("res/font_romulus.png");
@@ -106,6 +107,7 @@ public class _4ChessGame : BIERGame
             [new Pawn(6, 0, Piece.Color.White, this), new Pawn(6, 1, Piece.Color.White, this), new Pawn(6, 2, Piece.Color.White, this), new Pawn(6, 3, Piece.Color.White, this), new Pawn(6, 4, Piece.Color.White, this), new Pawn(6, 5, Piece.Color.White, this), new Pawn(6, 6, Piece.Color.White, this), new Pawn(6, 7, Piece.Color.White, this)],
             [new Rook(7, 0, Piece.Color.White, this), new Knight(7, 1, Piece.Color.White, this), new Bishop(7, 2, Piece.Color.White, this), new Queen(7, 3, Piece.Color.White, this), new King(7, 4, Piece.Color.White, this), new Bishop(7, 5, Piece.Color.White, this), new Knight(7, 6, Piece.Color.White, this), new Rook(7, 7, Piece.Color.White, this)]
         ];
+        ShowMultiplayerMenu(this);
     }
 
     public void Gamesettings()
@@ -167,6 +169,11 @@ public class _4ChessGame : BIERGame
     }
     public override void GameUpdate()
     {
+
+        if (multiplayerMenuActive)
+        {
+            return;
+        }
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
         Gamesettings();
@@ -259,6 +266,45 @@ public class _4ChessGame : BIERGame
     {
         _4ChessMove.PossibleMoveRenderTiles.ForEach(r => r.Render());
     }
+
+    private bool multiplayerMenuActive = true;
+
+    private void ShowMultiplayerMenu(_4ChessGame game)
+    {
+        game.UIComponents.Add(new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 550, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
+        game.UIComponents[0].ClickEvent += () => 
+        {
+            _4ChessGame.continueGame = false;
+            game.UIComponents.Clear();
+            
+            game.UIComponents.Clear();
+        };
+        Multiplayer.MultiplayerManager.IsMultiplayer = true;
+        Multiplayer.MultiplayerManager.IsHost = true;
+        System.Threading.Tasks.Task.Run(async () =>
+        {
+            await Multiplayer.MultiplayerManager.StartHostingAsync();
+            _4ChessGame.continueGame = true;
+            multiplayerMenuActive = false;
+        });
+
+        game.UIComponents.Add(new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
+        game.UIComponents[1].ClickEvent += () =>
+        {
+            string serverIp = "10.4.12.58:8080";
+            Multiplayer.MultiplayerManager.IsMultiplayer = true;
+            Multiplayer.MultiplayerManager.IsHost = false;
+            game.UIComponents.Clear();
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                await Multiplayer.MultiplayerManager.JoinGameAsync(serverIp);
+                _4ChessGame.continueGame = true;
+                multiplayerMenuActive = false;
+            });
+            UIComponents.Clear();
+        };
+    }
+
 
     private void RenderBoard()
     {
