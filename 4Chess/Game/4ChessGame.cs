@@ -199,9 +199,6 @@ public class _4ChessGame : BIERGame
             _4ChessMove.MouseUpdate(GetActivePieces(), this);
 
         IsGameDone(GetActivePieces());
-
-        string state = MoveCounter.SerializeBoard(Board);
-        Board = MoveCounter.DeserializeBoard(state, this);
     }
 
     private List<Piece> GetActivePieces()
