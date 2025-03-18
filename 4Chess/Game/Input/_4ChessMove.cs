@@ -44,21 +44,21 @@ namespace _4Chess.Game.Move
         /// </summary>
         public static void TurnChange()
         {
-            if (!_4ChessGame.debugMoveMode)
+            if (MultiplayerManager.IsHost)
             {
-                isWhiteTurn = _4ChessGame.IsLocalTurn;
-                //isWhiteTurn = !isWhiteTurn;
+                isWhiteTurn = true;
             }
             else
             {
-                //if (moveCounter % 2 == 0)
-                //    isWhiteTurn = !isWhiteTurn;
-                isWhiteTurn = _4ChessGame.IsLocalTurn;
+                isWhiteTurn = false;
             }
         }
 
         public static void MouseUpdate(List<Piece> pieces, _4ChessGame game)
         {
+            if (!_4ChessGame.IsLocalTurn)
+                return;
+
             // Aktualisiere die Castling-Animation, falls aktiv
             UpdateCastlingAnimation(game);
 
