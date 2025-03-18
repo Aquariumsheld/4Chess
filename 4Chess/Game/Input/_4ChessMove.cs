@@ -144,6 +144,7 @@ namespace _4Chess.Game.Move
                 }
             }
 
+            
             // Behandle UI-Komponenten-Klicks
             game.UIComponents.ForEach(c =>
             {

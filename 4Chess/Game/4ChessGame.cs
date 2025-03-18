@@ -293,7 +293,6 @@ public class _4ChessGame : BIERGame
                 MultiplayerMode = true;
                 LocalPlayerColor = Piece.Color.White; 
                 IsLocalTurn = true;
-                UIComponents.Clear();
                 System.Threading.Tasks.Task.Run(async () =>
                 {
                     await MultiplayerManager.StartHostingAsync();
@@ -307,8 +306,7 @@ public class _4ChessGame : BIERGame
                 MultiplayerMode = true;
                 LocalPlayerColor = Piece.Color.Black; 
                 IsLocalTurn = false;
-                UIComponents.Clear();
-                string serverIp = "192.168.1.100";
+                string serverIp = "10.4.12.58:8080";
                 System.Threading.Tasks.Task.Run(async () =>
                 {
                     await MultiplayerManager.JoinGameAsync(serverIp);
