@@ -22,7 +22,7 @@ namespace _4Chess.Pieces
             None
         }
 
-        public abstract List<Vector2> GetMoves(bool validate = true);
+        public abstract List<Vector2> GetMoves(bool validate = true, bool rocharde = true);
 
         public List<Vector2> GetAllEnemyMoves()
         {
@@ -31,9 +31,37 @@ namespace _4Chess.Pieces
             
             foreach (var piece in temp)
             {
-                moves.AddRange(piece.GetMoves(false));
+                moves.AddRange(piece.GetMoves(false, false));
             }
             return moves;
+        }
+
+        protected bool AddMoveIfValid(List<Vector2> moves, int x, int y, bool flag = false)
+        {
+            if (x >= 0 && x < Game.Board.Count && y >= 0 && y < Game.Board.Count)
+            {
+                var piece = Game.Board[y][x];
+
+                if (piece == null)
+                {
+                    moves.Add(new Vector2(x, y));
+                    return true;
+                }
+
+                else if(piece.Alignment != this.Alignment)
+                {
+                    moves.Add(new Vector2(x, y));
+                    return false;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public List<Vector2> ValidateMoves(List<Vector2> moves)

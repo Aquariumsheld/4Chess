@@ -20,77 +20,27 @@ namespace _4Chess.Pieces
         /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
         /// diesen Wert eine Rekursion vermieden.</param>
         /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
-        public override List<Vector2> GetMoves(bool validate = true)
+        public override List<Vector2> GetMoves(bool validate = true, bool rocharde = true)
         {
-            List<Vector2> moves = [];
-
             bool leftUp = true;
             bool rightUp = true;
             bool leftDown = true;
             bool rightDown = true;
 
-            for (int i = 1; i < Game?.Board.Count; i++)
+
+            List<Vector2> moves = [];
+
+            if (Game == null || Game.Board == null)
+                return moves;
+
+            for (int i = 1;  i < Game.Board.Count; i++)
             {
-                //Felder links über der Figur
-                if (X - i >= 0 && Y - i >= 0 && leftUp)
-                {
-                    if (Game.Board[Y - i][X - i] == null)
-                        moves.Add(new Vector2(X-i,Y-i));
-
-                    else if (Game.Board[Y - i][X - i]?.Alignment != this.Alignment)
-                    {
-                        moves.Add(new Vector2(X - i, Y - i));
-                        leftUp = false;
-                    }
-
-                    else leftUp = false;
-                }
-
-                //Felder rechts über der Figur
-                if (X + i < Game.Board.Count && Y - i >= 0 && rightUp)
-                {
-                    if (Game.Board[Y - i][X + i] == null)
-                        moves.Add(new Vector2(X + i, Y - i));
-
-                    else if (Game.Board[Y - i][X + i]?.Alignment != this.Alignment)
-                    {
-                        moves.Add(new Vector2(X + i, Y - i));
-                        rightUp = false;
-                    }
-
-                    else rightUp = false;
-                }
-
-                //Felder links unter der Figur
-                if (Y + i < Game?.Board.Count && X - i >= 0 && leftDown)
-                {
-                    if (Game.Board[Y + i][X - i] == null)
-                        moves.Add(new Vector2(X - i, Y + i));
-
-                    else if (Game.Board[Y + i][X - i]?.Alignment != this.Alignment)
-                    {
-                        moves.Add(new Vector2(X - i, Y + i));
-                        leftDown = false;
-                    }
-
-                    else leftDown = false;
-                }
-
-                //Felder rechts unter der Figur
-                if (Y + i < Game?.Board.Count && X + i < Game.Board.Count && rightDown)
-                {
-                    if (Game.Board[Y + i][X + i] == null)
-                        moves.Add(new Vector2(X + i, Y + i));
-
-                    else if (Game.Board[Y + i][X + i]?.Alignment != this.Alignment)
-                    {
-                        moves.Add(new Vector2(X + i, Y + i));
-                        rightDown = false;
-                    }
-
-                    else rightDown = false;
-                }
+                if(leftUp) leftUp = AddMoveIfValid(moves, X - i, Y - i); // links oben
+                if(rightUp) rightUp = AddMoveIfValid(moves, X + i, Y - i); // rechts oben
+                if(leftDown) leftDown = AddMoveIfValid(moves, X - i, Y + i); // links unten
+                if(rightDown) rightDown = AddMoveIfValid(moves, X + i, Y + i); // rechts unten
             }
+            
 
             if (validate) 
                 return ValidateMoves(moves);

@@ -30,7 +30,7 @@ namespace _4Chess.Pieces
         /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
         /// diesen Wert eine Rekursion vermieden.</param>
         /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
-        public override List<Vector2> GetMoves(bool validate = true)
+        public override List<Vector2> GetMoves(bool validate = true, bool rocharde = true)
         {
             List<Vector2> moves = new List<Vector2>();
 
