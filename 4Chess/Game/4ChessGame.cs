@@ -293,6 +293,7 @@ public class _4ChessGame : BIERGame
                 MultiplayerMode = true;
                 LocalPlayerColor = Piece.Color.White; 
                 IsLocalTurn = true;
+                MultiplayerManager.IsHost = true;
                 System.Threading.Tasks.Task.Run(async () =>
                 {
                     await MultiplayerManager.StartHostingAsync();
