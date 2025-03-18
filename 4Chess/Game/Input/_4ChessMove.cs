@@ -138,9 +138,9 @@ namespace _4Chess.Game.Move
                 {
                     CastlingRook = game.Board[DraggedPiece.Y][7];
                     game.Board[DraggedPiece.Y][7] = null;
-                    if (CastlingRook == null)
+                    if (CastlingRook != null)
                     {
-                        CastlingRook = new Rook(DraggedPiece.Y, 7, DraggedPiece.Alignment, game);
+                        game.Board[DraggedPiece.Y][7 - 2] = new Rook(DraggedPiece.Y, 7 - 2, DraggedPiece.Alignment, game);
                     }
                     CastlingRookStart = new Vector2(7, DraggedPiece.Y);
                     CastlingRookTarget = new Vector2(5, DraggedPiece.Y);
@@ -149,9 +149,9 @@ namespace _4Chess.Game.Move
                 {
                     CastlingRook = game.Board[DraggedPiece.Y][0];
                     game.Board[DraggedPiece.Y][0] = null;
-                    if (CastlingRook == null)
+                    if (CastlingRook != null)
                     {
-                        CastlingRook = new Rook(DraggedPiece.Y, 0, DraggedPiece.Alignment, game);
+                        game.Board[DraggedPiece.Y][0 + 3] = new Rook(DraggedPiece.Y, 0 + 3, DraggedPiece.Alignment, game);
                     }
                     CastlingRookStart = new Vector2(0, DraggedPiece.Y);
                     CastlingRookTarget = new Vector2(3, DraggedPiece.Y);
