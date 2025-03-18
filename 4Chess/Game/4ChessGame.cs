@@ -122,7 +122,7 @@ public class _4ChessGame : BIERGame
         {
             Board =
             [
-                [null, null, null, null, new King(0, 4, Piece.Color.Black, this), null, null, null,],
+                [new Rook(0, 0, Piece.Color.White, this), null, null, null, new King(0, 4, Piece.Color.Black, this), null, null, null,],
                 [null,null,null,null,null,null,null,null],
                 [null,null,null,null,null,null,null,null],
                 [null,null,null,null,null,null,null,null],
