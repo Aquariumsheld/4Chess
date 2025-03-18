@@ -304,10 +304,10 @@ namespace _4Chess.Game.Move
                 {
                     SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
                 }
-
                 if (_4ChessGame.MultiplayerMode)
                 {
-                    string msg = $"MOVE {(int)OriginalPosition.X} {(int)OriginalPosition.Y} {newX} {newY}";
+                    string msg = $"{MoveCounter.SerializeBoard(game.Board)}";
+                    //string msg = $"MOVE {(int)OriginalPosition.X} {(int)OriginalPosition.Y} {newX} {newY}";
                     System.Threading.Tasks.Task.Run(async () => {
                         await MultiplayerManager.SendMessageAsync(msg);
                     });

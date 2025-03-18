@@ -7,6 +7,7 @@ using BIERKELLER.BIERUI;
 using Raylib_CsLo;
 using System.IO;
 using System.Numerics;
+using System.Text;
 using static Raylib_CsLo.Raylib;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -357,38 +358,55 @@ public class _4ChessGame : BIERGame
     {
         try
         {
-            string[] parts = message.Split(' ');
-            if (parts.Length == 5 && parts[0] == "MOVE")
-            {
-                int origX = int.Parse(parts[1]);
-                int origY = int.Parse(parts[2]);
-                int newX = int.Parse(parts[3]);
-                int newY = int.Parse(parts[4]);
+            Board = DeserializeBoard(message, this);
 
-                // Finde die Figur am Ursprungsfeld
-                Piece piece = Board[origY][origX];
-                if (piece != null)
-                {
-                    Board[origY][origX] = null;
-                    piece.X = newX;
-                    piece.Y = newY;
-                    Board[newY][newX] = piece;
-                    // Aktualisiere König-Positionen falls nötig:
-                    if (piece is King)
-                    {
-                        if (piece.Alignment == Piece.Color.White)
-                            WhiteKingPosition = new Vector2(newX, newY);
-                        else
-                            BlackKingPosition = new Vector2(newX, newY);
-                    }
-                }
-                // Nach einem Gegnerzug ist nun der lokale Spieler wieder dran:
-                IsLocalTurn = true;
-            }
+            IsLocalTurn = true;
         }
         catch (Exception ex)
         {
             Console.WriteLine("Fehler beim Verarbeiten der Move-Nachricht: " + ex.Message);
         }
     }
+
+    public static List<List<Piece?>> DeserializeBoard(string serializedBoard, _4ChessGame game)
+    {
+        var board = new List<List<Piece?>>();
+        // Zerlege den String an jedem '|' (leere Einträge entfernen)
+        string[] rows = serializedBoard.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+        for (int y = 0; y < rows.Length; y++)
+        {
+            var row = new List<Piece?>();
+            string rowString = rows[y];
+            for (int x = 0; x < rowString.Length; x++)
+            {
+                char c = rowString[x];
+                if (c == '.')
+                {
+                    row.Add(null);
+                }
+                else
+                {
+                    // Farbe: Kleinbuchstabe = Weiß, Großbuchstabe = Schwarz
+                    Piece.Color color = char.IsLower(c) ? Piece.Color.White : Piece.Color.Black;
+                    // Vereinheitliche den Buchstaben, um den Typ zu bestimmen
+                    char typeChar = char.ToUpper(c);
+                    Piece piece = typeChar switch
+                    {
+                        'P' => new Pawn(y, x, color, game),
+                        'N' => new Knight(y, x, color, game),
+                        'B' => new Bishop(y, x, color, game),
+                        'R' => new Rook(y, x, color, game),
+                        'Q' => new Queen(y, x, color, game),
+                        'K' => new King(y, x, color, game),
+                        _ => throw new Exception("Unbekannter Figurentyp: " + c)
+                    };
+                    row.Add(piece);
+                }
+            }
+            board.Add(row);
+        }
+        return board;
+    }
+
 }
