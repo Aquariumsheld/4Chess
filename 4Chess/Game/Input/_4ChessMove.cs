@@ -4,6 +4,8 @@ using Raylib_CsLo;
 using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using BIERKELLER.BIERUI;
 
 namespace _4Chess.Game.Move
 {
@@ -227,10 +229,13 @@ namespace _4Chess.Game.Move
                 // Aktualisiere den IsUnmoved-Status, falls die Figur sich bewegt hat
                 if (DraggedPiece.X != (int)OriginalPosition.X && DraggedPiece.Y != (int)OriginalPosition.Y)
                 {
-                    if (DraggedPiece is Pawn pawn) pawn.IsUnmoved = false;
+                    if (DraggedPiece is Pawn pawn1) pawn1.IsUnmoved = false;
                     if (DraggedPiece is King king) king.IsUnmoved = false;
                     if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
                 }
+
+                if (DraggedPiece is Pawn pawn2 && pawn2.IsAtEnd())
+                    SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
 
                 moveCounter++;
                 TurnChange();
@@ -243,6 +248,45 @@ namespace _4Chess.Game.Move
             }
             DraggedPiece = null;
             PossibleMoveRenderTiles.Clear();
+        }
+
+        private static void SwitchPiece(_4ChessGame game, int y, int x)
+        {
+            //Liste mit RenderObjects erstellen
+            List<(BIERRenderTexture, Type)> buttonTextures = game.Board[y][x].Alignment switch
+            {
+                Piece.Color.White => WhiteButtons(),
+                Piece.Color.Black => BlackButtons(),
+                _ => []
+            };
+
+            
+        }
+
+        private static List<(BIERRenderTexture,Type)> WhiteButtons()
+        {
+            List<(BIERRenderTexture, Type)> buttons =
+                [
+                    (new BIERRenderTexture(0,0,60,60,"WhiteBishop.png"), typeof(Bishop)),
+                    (new BIERRenderTexture(0, 0, 60, 60, "WhiteRook.png"), typeof(Rook)),
+                    (new BIERRenderTexture(0, 0, 60, 60, "WhiteKnight.png"), typeof(Knight)),
+                    (new BIERRenderTexture(0, 0, 60, 60, "WhiteQueen.png"), typeof(Queen))
+                ];
+
+            return buttons;
+        }
+
+        private static List<(BIERRenderTexture,Rectangle)> BlackButtons()
+        {
+            List<(BIERRenderTexture,Rectangle)> buttons =
+                [
+                    (new BIERRenderTexture(0, 0, 60, 60, "BlackBishop.png"), new Rectangle(0, 0, 60, 60)),
+                    (new BIERRenderTexture(0, 0, 60, 60, "BlackRook.png"), new Rectangle(0, 0, 60, 60)),
+                    (new BIERRenderTexture(0, 0, 60, 60, "BlackKnight.png"), new Rectangle(0, 0, 60, 60)),
+                    (new BIERRenderTexture(0, 0, 60, 60, "BlackQueen.png"), new Rectangle(0, 0, 60, 60))
+                ];
+
+            return buttons;
         }
     }
 }

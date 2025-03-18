@@ -86,5 +86,24 @@ namespace _4Chess.Pieces
             else
                 return moves;
         }
+
+        public bool IsAtEnd()
+        {
+            bool result = false;
+
+            switch (Alignment)
+            {
+                case Color.White:
+                    if (Y == 0) result = true;
+                    break;
+                case Color.Black:
+                    if (Y == 7) result = true;
+                    break;
+                default:
+                    break;
+            }
+
+            return result;
+        }
     }
 }
