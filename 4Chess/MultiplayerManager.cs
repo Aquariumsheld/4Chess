@@ -97,6 +97,7 @@ namespace _4Chess.Game.Multiplayer
             {
                 await ClientSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
             }
+            _4ChessGame.IsLocalTurn = false;
         }
 
         /// <summary>

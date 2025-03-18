@@ -308,6 +308,7 @@ public class _4ChessGame : BIERGame
                 LocalPlayerColor = Piece.Color.Black; 
                 IsLocalTurn = false;
                 string serverIp = "10.4.12.58";
+                MultiplayerManager.IsHost = false;
                 System.Threading.Tasks.Task.Run(async () =>
                 {
                     await MultiplayerManager.JoinGameAsync(serverIp);
