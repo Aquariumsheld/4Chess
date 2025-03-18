@@ -74,7 +74,7 @@ namespace _4Chess.Game.Multiplayer
         /// </summary>
         public static string GetLocalIPAddress()
         {
-            string localIP = "127.0.0.1";
+            string localIP = "10.4.10.4";
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
             {

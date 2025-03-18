@@ -274,11 +274,10 @@ public class _4ChessGame : BIERGame
         game.UIComponents.Add(new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 550, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
         game.UIComponents[0].ClickEvent += () => 
         {
-            _4ChessGame.continueGame = false;
-            game.UIComponents.Clear();
             
             game.UIComponents.Clear();
         };
+        _4ChessGame.continueGame = false;
         Multiplayer.MultiplayerManager.IsMultiplayer = true;
         Multiplayer.MultiplayerManager.IsHost = true;
         System.Threading.Tasks.Task.Run(async () =>
@@ -291,18 +290,18 @@ public class _4ChessGame : BIERGame
         game.UIComponents.Add(new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
         game.UIComponents[1].ClickEvent += () =>
         {
-            string serverIp = "10.4.12.58:8080";
+            string serverIp = "10.4.12.58";
             Multiplayer.MultiplayerManager.IsMultiplayer = true;
             Multiplayer.MultiplayerManager.IsHost = false;
-            game.UIComponents.Clear();
             System.Threading.Tasks.Task.Run(async () =>
             {
                 await Multiplayer.MultiplayerManager.JoinGameAsync(serverIp);
                 _4ChessGame.continueGame = true;
                 multiplayerMenuActive = false;
             });
-            UIComponents.Clear();
+            game.UIComponents.Clear();
         };
+        
     }
 
 
