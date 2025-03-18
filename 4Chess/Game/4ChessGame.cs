@@ -275,7 +275,7 @@ public class _4ChessGame : BIERGame
     private void ShowMultiplayerMenu()
     {
         UIComponents.Clear();
-        UIComponents.Add(new BIERButton("Host Game", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add(new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
@@ -289,7 +289,7 @@ public class _4ChessGame : BIERGame
                 });
             }
         });
-        UIComponents.Add(new BIERButton("Join Game", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add(new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
