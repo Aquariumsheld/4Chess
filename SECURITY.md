@@ -12,4 +12,4 @@
 
 
 ## Reporting a Vulnerability
-Ihr erreicht uns hier: Random.Email@SuperRandom.de
+Ihr erreicht uns hier: 4Chess@RandomMail.de
