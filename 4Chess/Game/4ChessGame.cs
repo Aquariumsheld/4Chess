@@ -230,18 +230,6 @@ public class _4ChessGame : BIERGame
             }
         }
 
-        
-        if (_4ChessMove.IsCastlingAnimationActive && _4ChessMove.CastlingRook != null)
-        {
-            renderX = (int)(_4ChessMove.AnimatedCastlingRookPos.X * TILE_SIZE + BOARDXPos);
-            renderY = (int)(_4ChessMove.AnimatedCastlingRookPos.Y * TILE_SIZE + BOARDYPos);
-
-            
-            RenderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
-            {
-                Texture = _pieceTextureDict[$"{_4ChessMove.CastlingRook.FilePath}"]
-            });
-        }
         BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
 
