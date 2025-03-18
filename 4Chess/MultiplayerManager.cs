@@ -9,35 +9,38 @@ namespace _4Chess.Game.Multiplayer
 {
     public static class MultiplayerManager
     {
-        public static bool IsMultiplayer { get; set; } = false;
-        public static bool IsHost { get; set; } = false;
-        public static string HostIp { get; set; } = "";
-        public static int Port { get; set; } = 8080;
+        public static bool IsMultiplayer = false;
+        public static bool IsHost = false;
+        public static int Port = 8080;
+        public static string HostIp = "";
 
         private static HttpListener listener;
-        public static WebSocket HostSocket { get; private set; }
-        public static ClientWebSocket ClientSocket { get; private set; }
+        public static WebSocket HostSocket;
+        public static ClientWebSocket ClientSocket;
+        public static bool Connected = false;
+
+        private static readonly System.Collections.Concurrent.ConcurrentQueue<string> ReceivedMessages = new System.Collections.Concurrent.ConcurrentQueue<string>();
 
         /// <summary>
-        /// Startet einen WebSocket-Server auf der lokalen IP und wartet auf eine Verbindung.
+        /// Startet den WebSocket‑Server (Host) und wartet auf einen Client.
         /// </summary>
         public static async Task StartHostingAsync()
         {
             try
             {
-               HostIp = GetLocalIPAddress();
-                Console.WriteLine("Hosting on: " + HostIp);
+                HostIp = GetLocalIPAddress();
                 listener = new HttpListener();
                 listener.Prefixes.Add("http://" + HostIp + ":" + Port + "/");
                 listener.Start();
-                Console.WriteLine("WebSocket server started. Waiting for client...");
-
+                Console.WriteLine("Hosting on: " + HostIp + ":" + Port);
                 HttpListenerContext context = await listener.GetContextAsync();
                 if (context.Request.IsWebSocketRequest)
                 {
                     var wsContext = await context.AcceptWebSocketAsync(null);
                     HostSocket = wsContext.WebSocket;
+                    Connected = true;
                     Console.WriteLine("Client connected.");
+                    await ReceiveLoop(HostSocket);
                 }
                 else
                 {
@@ -52,7 +55,7 @@ namespace _4Chess.Game.Multiplayer
         }
 
         /// <summary>
-        /// Verbindet als Client zu einem WebSocket-Server, dessen IP der Spieler eingegeben hat.
+        /// Verbindet als Client zu einem WebSocket‑Server.
         /// </summary>
         public static async Task JoinGameAsync(string serverIp)
         {
@@ -61,7 +64,9 @@ namespace _4Chess.Game.Multiplayer
                 ClientSocket = new ClientWebSocket();
                 Uri serverUri = new Uri("ws://" + serverIp + ":" + Port + "/");
                 await ClientSocket.ConnectAsync(serverUri, CancellationToken.None);
+                Connected = true;
                 Console.WriteLine("Connected to host.");
+                await ReceiveLoop(ClientSocket);
             }
             catch (Exception ex)
             {
@@ -70,11 +75,60 @@ namespace _4Chess.Game.Multiplayer
         }
 
         /// <summary>
+        /// Sendet eine Nachricht (z. B. Move‑Nachricht) über den aktiven Socket.
+        /// </summary>
+        public static async Task SendMessageAsync(string message)
+        {
+            if (!Connected)
+                return;
+            byte[] buffer = Encoding.UTF8.GetBytes(message);
+            var segment = new ArraySegment<byte>(buffer);
+            if (IsHost)
+            {
+                await HostSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            else
+            {
+                await ClientSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+        }
+
+        /// <summary>
+        /// Empfängt Nachrichten in einer Schleife und legt sie in einer Queue ab.
+        /// </summary>
+        private static async Task ReceiveLoop(WebSocket socket)
+        {
+            byte[] buffer = new byte[1024];
+            while (socket.State == WebSocketState.Open)
+            {
+                var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                }
+                else
+                {
+                    string msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    ReceivedMessages.Enqueue(msg);
+                    Console.WriteLine("Received: " + msg);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gibt die nächste empfangene Nachricht zurück, falls vorhanden.
+        /// </summary>
+        public static bool TryDequeueMessage(out string message)
+        {
+            return ReceivedMessages.TryDequeue(out message);
+        }
+
+        /// <summary>
         /// Ermittelt die lokale IPv4-Adresse.
         /// </summary>
         public static string GetLocalIPAddress()
         {
-            string localIP = "10.4.10.4";
+            string localIP = "127.0.0.1";
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
             {

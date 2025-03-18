@@ -1,4 +1,5 @@
 ﻿using _4Chess.Game.Move;
+using _4Chess.Game.Multiplayer;
 using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
@@ -30,7 +31,12 @@ public class _4ChessGame : BIERGame
     public List<List<Piece?>> Board { get; set; } = [];
 
     private Dictionary<string, Texture> _pieceTextureDict = [];
-    
+
+    public static bool MultiplayerMode = false;
+    public static Piece.Color LocalPlayerColor = Piece.Color.White;
+    public static bool IsLocalTurn { get; set; } = true;
+    private bool multiplayerMenuActive = true;
+
 
     //=========DEBUG-VARS===============
     private bool _debugUiHitboxes = true; //F1
@@ -43,7 +49,6 @@ public class _4ChessGame : BIERGame
     public _4ChessGame()
     {
         CustomPreRenderFuncs.Add(RenderBoard);
-
         CustomPostRenderFuncs.Add(RenderPossibleMoveRenderTiles);
         CustomPostRenderFuncs.Add(RenderDraggedPiece);
         CustomPostRenderFuncs.Add(RenderUIComponents);
@@ -107,7 +112,10 @@ public class _4ChessGame : BIERGame
             [new Pawn(6, 0, Piece.Color.White, this), new Pawn(6, 1, Piece.Color.White, this), new Pawn(6, 2, Piece.Color.White, this), new Pawn(6, 3, Piece.Color.White, this), new Pawn(6, 4, Piece.Color.White, this), new Pawn(6, 5, Piece.Color.White, this), new Pawn(6, 6, Piece.Color.White, this), new Pawn(6, 7, Piece.Color.White, this)],
             [new Rook(7, 0, Piece.Color.White, this), new Knight(7, 1, Piece.Color.White, this), new Bishop(7, 2, Piece.Color.White, this), new Queen(7, 3, Piece.Color.White, this), new King(7, 4, Piece.Color.White, this), new Bishop(7, 5, Piece.Color.White, this), new Knight(7, 6, Piece.Color.White, this), new Rook(7, 7, Piece.Color.White, this)]
         ];
-        ShowMultiplayerMenu(this);
+        if (!MultiplayerMode)
+        {
+            ShowMultiplayerMenu();
+        }
     }
 
     public void Gamesettings()
@@ -169,14 +177,22 @@ public class _4ChessGame : BIERGame
     }
     public override void GameUpdate()
     {
-
-        if (multiplayerMenuActive)
+        Gamesettings();
+        if (MultiplayerMode)
         {
-            return;
+            string msg;
+            if (MultiplayerManager.TryDequeueMessage(out msg))
+            {
+                ProcessIncomingMove(msg);
+            }
+            // Nur erlauben, dass der lokale Spieler input verarbeitet, wenn er am Zug ist
+            if (!IsLocalTurn)
+                return;
         }
+
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
-        Gamesettings();
+        
 
         if (GetActivePieces().All(p => p != null))
             _4ChessMove.MouseUpdate(GetActivePieces(), this);
@@ -267,44 +283,40 @@ public class _4ChessGame : BIERGame
         _4ChessMove.PossibleMoveRenderTiles.ForEach(r => r.Render());
     }
 
-    private bool multiplayerMenuActive = true;
-
-    private void ShowMultiplayerMenu(_4ChessGame game)
+    private void ShowMultiplayerMenu()
     {
-        game.UIComponents.Add(new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 550, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
-        game.UIComponents[0].ClickEvent += () => 
+        UIComponents.Clear();
+        UIComponents.Add(new BIERButton("Host Game", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
-            _4ChessGame.continueGame = false;
-            Multiplayer.MultiplayerManager.IsMultiplayer = true;
-            Multiplayer.MultiplayerManager.IsHost = true;
-            System.Threading.Tasks.Task.Run(async () =>
+            ClickEvent = () =>
             {
-                await Multiplayer.MultiplayerManager.StartHostingAsync();
-                _4ChessGame.continueGame = true;
-                multiplayerMenuActive = false;
-            });
-            game.UIComponents.Clear();
-            multiplayerMenuActive = false;
-        };
-        
-
-        game.UIComponents.Add(new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 50, 450, 150, Raylib.WHITE, Raylib.BLACK, isClickable: true));
-        game.UIComponents[1].ClickEvent += () =>
+                MultiplayerMode = true;
+                LocalPlayerColor = Piece.Color.White; 
+                IsLocalTurn = true;
+                UIComponents.Clear();
+                System.Threading.Tasks.Task.Run(async () =>
+                {
+                    await MultiplayerManager.StartHostingAsync();
+                });
+            }
+        });
+        UIComponents.Add(new BIERButton("Join Game", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
-            string serverIp = "10.4.12.58";
-            Multiplayer.MultiplayerManager.IsMultiplayer = true;
-            Multiplayer.MultiplayerManager.IsHost = false;
-            System.Threading.Tasks.Task.Run(async () =>
+            ClickEvent = () =>
             {
-                await Multiplayer.MultiplayerManager.JoinGameAsync(serverIp);
-                _4ChessGame.continueGame = true;
-                multiplayerMenuActive = false;
-            });
-            game.UIComponents.Clear();
-            multiplayerMenuActive = false;
-        };
-        
+                MultiplayerMode = true;
+                LocalPlayerColor = Piece.Color.Black; 
+                IsLocalTurn = false;
+                UIComponents.Clear();
+                string serverIp = "192.168.1.100";
+                System.Threading.Tasks.Task.Run(async () =>
+                {
+                    await MultiplayerManager.JoinGameAsync(serverIp);
+                });
+            }
+        });
     }
+
 
 
     private void RenderBoard()
@@ -334,6 +346,49 @@ public class _4ChessGame : BIERGame
                 'w' => 'b',
                 _ => 'w'
             };
+        }
+    }
+
+    /// <summary>
+    /// Parst eine empfangene Move-Nachricht und aktualisiert das Board.
+    /// Erwartetes Format: "MOVE origX origY newX newY"
+    /// </summary>
+    private void ProcessIncomingMove(string message)
+    {
+        try
+        {
+            string[] parts = message.Split(' ');
+            if (parts.Length == 5 && parts[0] == "MOVE")
+            {
+                int origX = int.Parse(parts[1]);
+                int origY = int.Parse(parts[2]);
+                int newX = int.Parse(parts[3]);
+                int newY = int.Parse(parts[4]);
+
+                // Finde die Figur am Ursprungsfeld
+                Piece piece = Board[origY][origX];
+                if (piece != null)
+                {
+                    Board[origY][origX] = null;
+                    piece.X = newX;
+                    piece.Y = newY;
+                    Board[newY][newX] = piece;
+                    // Aktualisiere König-Positionen falls nötig:
+                    if (piece is King)
+                    {
+                        if (piece.Alignment == Piece.Color.White)
+                            WhiteKingPosition = new Vector2(newX, newY);
+                        else
+                            BlackKingPosition = new Vector2(newX, newY);
+                    }
+                }
+                // Nach einem Gegnerzug ist nun der lokale Spieler wieder dran:
+                IsLocalTurn = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Fehler beim Verarbeiten der Move-Nachricht: " + ex.Message);
         }
     }
 }

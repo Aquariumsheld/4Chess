@@ -12,6 +12,7 @@ using _4Chess.Game.Move;
 using System.IO;
 using static Raylib_CsLo.Raylib;
 using static System.Net.Mime.MediaTypeNames;
+using _4Chess.Game.Multiplayer;
 
 namespace _4Chess.Game.Move
 {
@@ -299,12 +300,20 @@ namespace _4Chess.Game.Move
                 {
                     SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
                 }
+
+                if (_4ChessGame.MultiplayerMode)
+                {
+                    string msg = $"MOVE {(int)OriginalPosition.X} {(int)OriginalPosition.Y} {newX} {newY}";
+                    System.Threading.Tasks.Task.Run(async () => {
+                        await MultiplayerManager.SendMessageAsync(msg);
+                    });
+                    _4ChessGame.IsLocalTurn = false;
+                }
                 moveCounter++;
                 TurnChange();
             }
             else
             {
-                // Ungültiger Zug: Setze die Figur zurück
                 DraggedPiece.X = (int)OriginalPosition.X;
                 DraggedPiece.Y = (int)OriginalPosition.Y;
             }
