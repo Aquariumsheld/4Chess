@@ -257,8 +257,7 @@ public class _4ChessGame : BIERGame
                 Raylib.DrawTextureEx(_pieceTextureDict[draggedPiece.FilePath], new Vector2(renderX, renderY), 0f, 1f, SELECT_COLOR);
             else
                 Raylib.DrawTextureEx(_pieceTextureDict[$"SELECTED{draggedPiece.FilePath}"], new Vector2(renderX, renderY), 0f, 1f, WHITE);
-        }
-            
+        }     
     }
 
     public override void GameDispose()
