@@ -15,13 +15,14 @@ namespace _4Chess.Pieces
         /// </summary>
         public bool IsEnPassant { get; set; } = false;
 
-        public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game)
+        public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game, bool isEnPassent = false)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhitePawn.png" : "BlackPawn.png";
             Game = game;
+            IsEnPassant = isEnPassent;
         }
 
         /// <summary>

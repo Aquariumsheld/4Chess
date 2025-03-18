@@ -199,6 +199,9 @@ public class _4ChessGame : BIERGame
             _4ChessMove.MouseUpdate(GetActivePieces(), this);
 
         IsGameDone(GetActivePieces());
+
+        string state = MoveCounter.SerializeBoard(Board);
+        Board = MoveCounter.DeserializeBoard(state, this);
     }
 
     private List<Piece> GetActivePieces()
@@ -346,7 +349,7 @@ public class _4ChessGame : BIERGame
     {
         try
         {
-            Board = DeserializeBoard(message, this);
+            Board = MoveCounter.DeserializeBoard(message, this);
 
             IsLocalTurn = true;
         }
@@ -356,45 +359,6 @@ public class _4ChessGame : BIERGame
         }
     }
 
-    public static List<List<Piece?>> DeserializeBoard(string serializedBoard, _4ChessGame game)
-    {
-        var board = new List<List<Piece?>>();
-        // Zerlege den String an jedem '|' (leere Einträge entfernen)
-        string[] rows = serializedBoard.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-
-        for (int y = 0; y < rows.Length; y++)
-        {
-            var row = new List<Piece?>();
-            string rowString = rows[y];
-            for (int x = 0; x < rowString.Length; x++)
-            {
-                char c = rowString[x];
-                if (c == '.')
-                {
-                    row.Add(null);
-                }
-                else
-                {
-                    // Farbe: Kleinbuchstabe = Weiß, Großbuchstabe = Schwarz
-                    Piece.Color color = char.IsLower(c) ? Piece.Color.White : Piece.Color.Black;
-                    // Vereinheitliche den Buchstaben, um den Typ zu bestimmen
-                    char typeChar = char.ToUpper(c);
-                    Piece piece = typeChar switch
-                    {
-                        'P' => new Pawn(y, x, color, game),
-                        'N' => new Knight(y, x, color, game),
-                        'B' => new Bishop(y, x, color, game),
-                        'R' => new Rook(y, x, color, game),
-                        'Q' => new Queen(y, x, color, game),
-                        'K' => new King(y, x, color, game),
-                        _ => throw new Exception("Unbekannter Figurentyp: " + c)
-                    };
-                    row.Add(piece);
-                }
-            }
-            board.Add(row);
-        }
-        return board;
-    }
+    
 
 }
