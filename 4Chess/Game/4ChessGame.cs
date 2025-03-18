@@ -284,6 +284,7 @@ public class _4ChessGame : BIERGame
                 multiplayerMenuActive = false;
             });
             game.UIComponents.Clear();
+            multiplayerMenuActive = false;
         };
         
 
@@ -300,6 +301,7 @@ public class _4ChessGame : BIERGame
                 multiplayerMenuActive = false;
             });
             game.UIComponents.Clear();
+            multiplayerMenuActive = false;
         };
         
     }
