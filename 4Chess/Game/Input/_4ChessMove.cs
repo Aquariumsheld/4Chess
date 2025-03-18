@@ -47,6 +47,7 @@ namespace _4Chess.Game.Move
             if (!_4ChessGame.debugMoveMode)
             {
                 isWhiteTurn = _4ChessGame.IsLocalTurn;
+                //isWhiteTurn = !isWhiteTurn;
             }
             else
             {
@@ -60,12 +61,6 @@ namespace _4Chess.Game.Move
         {
             // Aktualisiere die Castling-Animation, falls aktiv
             UpdateCastlingAnimation(game);
-
-            //if(!MultiplayerManager.IsHost && isWhiteTurn)
-            //    return;
-
-            //if(MultiplayerManager.IsHost && !isWhiteTurn)
-            //    return;
 
             if (!_4ChessGame.continueGame)
                 return;
