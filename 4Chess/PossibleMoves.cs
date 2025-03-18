@@ -272,7 +272,7 @@ namespace _4Chess
         /// <summary>
         /// Serialisiert den aktuellen Zustand des Boards in einen String, der zur Identifikation einzigartiger Stellungen dient.
         /// </summary>
-        private static string SerializeBoard(List<List<Piece?>> board)
+        public static string SerializeBoard(List<List<Piece?>> board)
         {
             var sb = new StringBuilder();
             foreach (var row in board)

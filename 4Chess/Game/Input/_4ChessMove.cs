@@ -12,6 +12,7 @@ using _4Chess.Game.Move;
 using System.IO;
 using static Raylib_CsLo.Raylib;
 using static System.Net.Mime.MediaTypeNames;
+using _4Chess.Game.Multiplayer;
 
 namespace _4Chess.Game.Move
 {
@@ -29,13 +30,9 @@ namespace _4Chess.Game.Move
         public static List<BIERRenderRect> PossibleMoveRenderTiles { get; set; } = new List<BIERRenderRect>();
 
         // --- Variablen für die Castling-Animation ---
-        public static bool IsCastlingAnimationActive = false;
         public static Piece? CastlingRook = null;
         public static Vector2 CastlingRookStart = Vector2.Zero;
         public static Vector2 CastlingRookTarget = Vector2.Zero;
-        public static float CastlingAnimationTimer = 0f;
-        public static float CastlingAnimationDuration = 0.5f; // Dauer der Animation (in Sekunden)
-        public static Vector2 AnimatedCastlingRookPos = Vector2.Zero;
         // ------------------------------------------------
 
         /// <summary>
@@ -43,21 +40,22 @@ namespace _4Chess.Game.Move
         /// </summary>
         public static void TurnChange()
         {
-            if (!_4ChessGame.debugMoveMode)
+            if (MultiplayerManager.IsHost)
             {
-                isWhiteTurn = !isWhiteTurn;
+                isWhiteTurn = true;
             }
             else
             {
-                if (moveCounter % 2 == 0)
-                    isWhiteTurn = !isWhiteTurn;
+                isWhiteTurn = false;
             }
         }
 
         public static void MouseUpdate(List<Piece> pieces, _4ChessGame game)
         {
-            // Aktualisiere die Castling-Animation, falls aktiv
-            UpdateCastlingAnimation(game);
+            if (!_4ChessGame.IsLocalTurn)
+                return;
+
+            TurnChange();
 
             if (!_4ChessGame.continueGame)
                 return;
@@ -76,36 +74,7 @@ namespace _4Chess.Game.Move
                 HandleMouseReleased(pieces, game);
             }
         }
-
-        /// <summary>
-        /// Aktualisiert die Position der Figur bei einer aktiven Castling-Animation.
-        /// </summary>
-        private static void UpdateCastlingAnimation(_4ChessGame game)
-        {
-            if (IsCastlingAnimationActive && CastlingRook != null)
-            {
-                float dt = Raylib.GetFrameTime();
-                CastlingAnimationTimer += dt;
-                float t = Math.Min(CastlingAnimationTimer / CastlingAnimationDuration, 1.0f);
-
-                Vector2 newRookPos = new Vector2(
-                    CastlingRookStart.X + t * (CastlingRookTarget.X - CastlingRookStart.X),
-                    CastlingRookStart.Y + t * (CastlingRookTarget.Y - CastlingRookStart.Y)
-                );
-
-                AnimatedCastlingRookPos = newRookPos;
-
-                if (t >= 1.0f)
-                {
-                    CastlingRook.X = (int)CastlingRookTarget.X;
-                    CastlingRook.Y = (int)CastlingRookTarget.Y;
-                    game.Board[(int)CastlingRookTarget.Y][(int)CastlingRookTarget.X] = CastlingRook;
-                    IsCastlingAnimationActive = false;
-                    CastlingRook = null;
-                }
-            }
-        }
-
+        
         /// <summary>
         /// Behandelt die Logik, wenn die linke Maustaste gedrückt wird (Figurenauswahl und UI-Klicks).
         /// </summary>
@@ -143,6 +112,7 @@ namespace _4Chess.Game.Move
                 }
             }
 
+            
             // Behandle UI-Komponenten-Klicks
             game.UIComponents.ForEach(c =>
             {
@@ -168,27 +138,23 @@ namespace _4Chess.Game.Move
                 {
                     CastlingRook = game.Board[DraggedPiece.Y][7];
                     game.Board[DraggedPiece.Y][7] = null;
-                    if (CastlingRook == null)
+                    if (CastlingRook != null)
                     {
-                        CastlingRook = new Rook(DraggedPiece.Y, 7, DraggedPiece.Alignment, game);
+                        game.Board[DraggedPiece.Y][7 - 2] = new Rook(DraggedPiece.Y, 7 - 2, DraggedPiece.Alignment, game);
                     }
                     CastlingRookStart = new Vector2(7, DraggedPiece.Y);
                     CastlingRookTarget = new Vector2(5, DraggedPiece.Y);
-                    CastlingAnimationTimer = 0f;
-                    IsCastlingAnimationActive = true;
                 }
                 else if (diff == -2)
                 {
                     CastlingRook = game.Board[DraggedPiece.Y][0];
                     game.Board[DraggedPiece.Y][0] = null;
-                    if (CastlingRook == null)
+                    if (CastlingRook != null)
                     {
-                        CastlingRook = new Rook(DraggedPiece.Y, 0, DraggedPiece.Alignment, game);
+                        game.Board[DraggedPiece.Y][0 + 3] = new Rook(DraggedPiece.Y, 0 + 3, DraggedPiece.Alignment, game);
                     }
                     CastlingRookStart = new Vector2(0, DraggedPiece.Y);
                     CastlingRookTarget = new Vector2(3, DraggedPiece.Y);
-                    CastlingAnimationTimer = 0f;
-                    IsCastlingAnimationActive = true;
                 }
                 switch (DraggedPiece.Alignment)
                 {
@@ -238,7 +204,7 @@ namespace _4Chess.Game.Move
             newY = Math.Clamp(newY, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
 
             // Abbruch, wenn Castling-Ziel getroffen wird
-            if (IsCastlingAnimationActive &&
+            if (
                 newX == (int)CastlingRookTarget.X &&
                 newY == (int)CastlingRookTarget.Y)
             {
@@ -299,12 +265,20 @@ namespace _4Chess.Game.Move
                 {
                     SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
                 }
+                if (_4ChessGame.MultiplayerMode)
+                {
+                    string msg = $"{MoveCounter.SerializeBoard(game.Board)}";
+                    //string msg = $"MOVE {(int)OriginalPosition.X} {(int)OriginalPosition.Y} {newX} {newY}";
+                    System.Threading.Tasks.Task.Run(async () => {
+                        await MultiplayerManager.SendMessageAsync(msg);
+                    });
+                    _4ChessGame.IsLocalTurn = false;
+                }
                 moveCounter++;
                 TurnChange();
             }
             else
             {
-                // Ungültiger Zug: Setze die Figur zurück
                 DraggedPiece.X = (int)OriginalPosition.X;
                 DraggedPiece.Y = (int)OriginalPosition.Y;
             }

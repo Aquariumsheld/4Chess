@@ -1,4 +1,5 @@
 ﻿using _4Chess.Game.Move;
+using _4Chess.Game.Multiplayer;
 using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
@@ -6,6 +7,7 @@ using BIERKELLER.BIERUI;
 using Raylib_CsLo;
 using System.IO;
 using System.Numerics;
+using System.Text;
 using static Raylib_CsLo.Raylib;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -30,10 +32,15 @@ public class _4ChessGame : BIERGame
     public List<List<Piece?>> Board { get; set; } = [];
 
     private Dictionary<string, Texture> _pieceTextureDict = [];
-    
+
+    public static bool MultiplayerMode = false;
+    public static Piece.Color LocalPlayerColor = Piece.Color.White;
+    public static bool IsLocalTurn { get; set; } = true;
+    private bool multiplayerMenuActive = true;
+
 
     //=========DEBUG-VARS===============
-    private bool _debugUiHitboxes = false; //F1
+    private bool _debugUiHitboxes = true; //F1
     public static bool debugMoveMode = false; //F2
     //==================================
 
@@ -43,7 +50,6 @@ public class _4ChessGame : BIERGame
     public _4ChessGame()
     {
         CustomPreRenderFuncs.Add(RenderBoard);
-
         CustomPostRenderFuncs.Add(RenderPossibleMoveRenderTiles);
         CustomPostRenderFuncs.Add(RenderDraggedPiece);
         CustomPostRenderFuncs.Add(RenderUIComponents);
@@ -91,6 +97,7 @@ public class _4ChessGame : BIERGame
             UnloadImage(img);
 
             _pieceTextureDict.Add($"SELECTED{d.Key}", selectTexture);
+            
         });
 
         _romulusFont = LoadFont("res/font_romulus.png");
@@ -106,6 +113,10 @@ public class _4ChessGame : BIERGame
             [new Pawn(6, 0, Piece.Color.White, this), new Pawn(6, 1, Piece.Color.White, this), new Pawn(6, 2, Piece.Color.White, this), new Pawn(6, 3, Piece.Color.White, this), new Pawn(6, 4, Piece.Color.White, this), new Pawn(6, 5, Piece.Color.White, this), new Pawn(6, 6, Piece.Color.White, this), new Pawn(6, 7, Piece.Color.White, this)],
             [new Rook(7, 0, Piece.Color.White, this), new Knight(7, 1, Piece.Color.White, this), new Bishop(7, 2, Piece.Color.White, this), new Queen(7, 3, Piece.Color.White, this), new King(7, 4, Piece.Color.White, this), new Bishop(7, 5, Piece.Color.White, this), new Knight(7, 6, Piece.Color.White, this), new Rook(7, 7, Piece.Color.White, this)]
         ];
+        if (!MultiplayerMode)
+        {
+            ShowMultiplayerMenu();
+        }
     }
 
     public void Gamesettings()
@@ -167,9 +178,22 @@ public class _4ChessGame : BIERGame
     }
     public override void GameUpdate()
     {
+        Gamesettings();
+        if (MultiplayerMode)
+        {
+            string msg;
+            if (MultiplayerManager.TryDequeueMessage(out msg))
+            {
+                ProcessIncomingMove(msg);
+            }
+            // Nur erlauben, dass der lokale Spieler input verarbeitet, wenn er am Zug ist
+            if (!IsLocalTurn)
+                return;
+        }
+
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
-        Gamesettings();
+        
 
         if (GetActivePieces().All(p => p != null))
             _4ChessMove.MouseUpdate(GetActivePieces(), this);
@@ -206,18 +230,6 @@ public class _4ChessGame : BIERGame
             }
         }
 
-        
-        if (_4ChessMove.IsCastlingAnimationActive && _4ChessMove.CastlingRook != null)
-        {
-            renderX = (int)(_4ChessMove.AnimatedCastlingRookPos.X * TILE_SIZE + BOARDXPos);
-            renderY = (int)(_4ChessMove.AnimatedCastlingRookPos.Y * TILE_SIZE + BOARDYPos);
-
-            
-            RenderObjects.Add(new BIERRenderTexture(renderX, renderY, TILE_SIZE, TILE_SIZE, color: WHITE)
-            {
-                Texture = _pieceTextureDict[$"{_4ChessMove.CastlingRook.FilePath}"]
-            });
-        }
         BIERRenderer.Render(RenderObjects, BEIGE, CustomPreRenderFuncs, CustomPostRenderFuncs);
     }
 
@@ -260,6 +272,42 @@ public class _4ChessGame : BIERGame
         _4ChessMove.PossibleMoveRenderTiles.ForEach(r => r.Render());
     }
 
+    private void ShowMultiplayerMenu()
+    {
+        UIComponents.Clear();
+        UIComponents.Add(new BIERButton("Host Game", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        {
+            ClickEvent = () =>
+            {
+                MultiplayerMode = true;
+                LocalPlayerColor = Piece.Color.White; 
+                IsLocalTurn = true;
+                MultiplayerManager.IsHost = true;
+                System.Threading.Tasks.Task.Run(async () =>
+                {
+                    await MultiplayerManager.StartHostingAsync();
+                });
+            }
+        });
+        UIComponents.Add(new BIERButton("Join Game", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        {
+            ClickEvent = () =>
+            {
+                MultiplayerMode = true;
+                LocalPlayerColor = Piece.Color.Black; 
+                IsLocalTurn = false;
+                string serverIp = "10.4.12.58";
+                MultiplayerManager.IsHost = false;
+                System.Threading.Tasks.Task.Run(async () =>
+                {
+                    await MultiplayerManager.JoinGameAsync(serverIp);
+                });
+            }
+        });
+    }
+
+
+
     private void RenderBoard()
     {
         char c = 'w';
@@ -289,4 +337,64 @@ public class _4ChessGame : BIERGame
             };
         }
     }
+
+    /// <summary>
+    /// Parst eine empfangene Move-Nachricht und aktualisiert das Board.
+    /// Erwartetes Format: "MOVE origX origY newX newY"
+    /// </summary>
+    private void ProcessIncomingMove(string message)
+    {
+        try
+        {
+            Board = DeserializeBoard(message, this);
+
+            IsLocalTurn = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Fehler beim Verarbeiten der Move-Nachricht: " + ex.Message);
+        }
+    }
+
+    public static List<List<Piece?>> DeserializeBoard(string serializedBoard, _4ChessGame game)
+    {
+        var board = new List<List<Piece?>>();
+        // Zerlege den String an jedem '|' (leere Einträge entfernen)
+        string[] rows = serializedBoard.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+        for (int y = 0; y < rows.Length; y++)
+        {
+            var row = new List<Piece?>();
+            string rowString = rows[y];
+            for (int x = 0; x < rowString.Length; x++)
+            {
+                char c = rowString[x];
+                if (c == '.')
+                {
+                    row.Add(null);
+                }
+                else
+                {
+                    // Farbe: Kleinbuchstabe = Weiß, Großbuchstabe = Schwarz
+                    Piece.Color color = char.IsLower(c) ? Piece.Color.White : Piece.Color.Black;
+                    // Vereinheitliche den Buchstaben, um den Typ zu bestimmen
+                    char typeChar = char.ToUpper(c);
+                    Piece piece = typeChar switch
+                    {
+                        'P' => new Pawn(y, x, color, game),
+                        'N' => new Knight(y, x, color, game),
+                        'B' => new Bishop(y, x, color, game),
+                        'R' => new Rook(y, x, color, game),
+                        'Q' => new Queen(y, x, color, game),
+                        'K' => new King(y, x, color, game),
+                        _ => throw new Exception("Unbekannter Figurentyp: " + c)
+                    };
+                    row.Add(piece);
+                }
+            }
+            board.Add(row);
+        }
+        return board;
+    }
+
 }
