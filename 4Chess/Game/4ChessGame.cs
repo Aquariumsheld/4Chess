@@ -257,8 +257,7 @@ public class _4ChessGame : BIERGame
                 Raylib.DrawTextureEx(_pieceTextureDict[draggedPiece.FilePath], new Vector2(renderX, renderY), 0f, 1f, SELECT_COLOR);
             else
                 Raylib.DrawTextureEx(_pieceTextureDict[$"SELECTED{draggedPiece.FilePath}"], new Vector2(renderX, renderY), 0f, 1f, WHITE);
-        }
-            
+        }     
     }
 
     public override void GameDispose()
@@ -275,7 +274,7 @@ public class _4ChessGame : BIERGame
     private void ShowMultiplayerMenu()
     {
         UIComponents.Clear();
-        UIComponents.Add(new BIERButton("Host Game", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add(new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
@@ -289,7 +288,7 @@ public class _4ChessGame : BIERGame
                 });
             }
         });
-        UIComponents.Add(new BIERButton("Join Game", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add(new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
@@ -346,7 +345,7 @@ public class _4ChessGame : BIERGame
     {
         try
         {
-            Board = DeserializeBoard(message, this);
+            Board = MoveCounter.DeserializeBoard(message, this);
 
             IsLocalTurn = true;
         }
@@ -356,45 +355,6 @@ public class _4ChessGame : BIERGame
         }
     }
 
-    public static List<List<Piece?>> DeserializeBoard(string serializedBoard, _4ChessGame game)
-    {
-        var board = new List<List<Piece?>>();
-        // Zerlege den String an jedem '|' (leere Einträge entfernen)
-        string[] rows = serializedBoard.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-
-        for (int y = 0; y < rows.Length; y++)
-        {
-            var row = new List<Piece?>();
-            string rowString = rows[y];
-            for (int x = 0; x < rowString.Length; x++)
-            {
-                char c = rowString[x];
-                if (c == '.')
-                {
-                    row.Add(null);
-                }
-                else
-                {
-                    // Farbe: Kleinbuchstabe = Weiß, Großbuchstabe = Schwarz
-                    Piece.Color color = char.IsLower(c) ? Piece.Color.White : Piece.Color.Black;
-                    // Vereinheitliche den Buchstaben, um den Typ zu bestimmen
-                    char typeChar = char.ToUpper(c);
-                    Piece piece = typeChar switch
-                    {
-                        'P' => new Pawn(y, x, color, game),
-                        'N' => new Knight(y, x, color, game),
-                        'B' => new Bishop(y, x, color, game),
-                        'R' => new Rook(y, x, color, game),
-                        'Q' => new Queen(y, x, color, game),
-                        'K' => new King(y, x, color, game),
-                        _ => throw new Exception("Unbekannter Figurentyp: " + c)
-                    };
-                    row.Add(piece);
-                }
-            }
-            board.Add(row);
-        }
-        return board;
-    }
+    
 
 }

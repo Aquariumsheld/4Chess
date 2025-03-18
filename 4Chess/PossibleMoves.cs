@@ -282,24 +282,83 @@ namespace _4Chess
                     if (piece == null)
                     {
                         sb.Append('.');
-                        continue;
                     }
-                    char c = piece switch
+                    else
                     {
-                        Pawn => 'P',
-                        Knight => 'N',
-                        Bishop => 'B',
-                        Rook => 'R',
-                        Queen => 'Q',
-                        King => 'K',
-                        _ => '?'
-                    };
-                    // Beispiel: Kleinbuchstabe für Weiß, Großbuchstabe für Schwarz
-                    sb.Append(piece.Alignment == Piece.Color.White ? char.ToLower(c) : c);
+                        string c = piece switch
+                        {
+                            Pawn => $"P{GetBoolValue(piece)}",
+                            Knight => "N",
+                            Bishop => "B",
+                            Rook => "R",
+                            Queen => "Q",
+                            King => "K",
+                            _ => "?"
+                        };
+                        // Beispiel: Kleinbuchstabe für Weiß, Großbuchstabe für Schwarz
+                        sb.Append(piece.Alignment == Piece.Color.White ? c.ToLower() : c);
+                    }
+                    sb.Append(' ');
                 }
                 sb.Append('|');
             }
             return sb.ToString();
+        }
+
+        private static int GetBoolValue(Piece piece)
+        {
+            if(piece is Pawn pawn)
+            {
+                if (pawn.IsEnPassant) return 1;
+
+                else return 0;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public static List<List<Piece?>> DeserializeBoard(string serializedBoard, _4ChessGame game)
+        {
+            var board = new List<List<Piece?>>();
+            // Zerlege den String an jedem '|' (leere Einträge entfernen)
+            string[] rows = serializedBoard.Split(["|"], StringSplitOptions.RemoveEmptyEntries);
+
+            for (int y = 0; y < rows.Length; y++)
+            {
+                var row = new List<Piece?>();
+                string[] rowString = rows[y].Split([" "], StringSplitOptions.RemoveEmptyEntries);
+                for (int x = 0; x < rowString.Length; x++)
+                {
+                    string c = rowString[x];
+                    if (c == ".")
+                    {
+                        row.Add(null);
+                    }
+                    else
+                    {
+                        // Farbe: Kleinbuchstabe = Weiß, Großbuchstabe = Schwarz
+                        Piece.Color color = char.IsLower(c[0]) ? Piece.Color.White : Piece.Color.Black;
+                        // Vereinheitliche den Buchstaben, um den Typ zu bestimmen
+                        string typeString = c.ToUpper();
+                        Piece piece = typeString switch
+                        {
+                            "P0" => new Pawn(y, x, color, game),
+                            "P1" => new Pawn(y,x,color,game,true),
+                            "N" => new Knight(y, x, color, game),
+                            "B" => new Bishop(y, x, color, game),
+                            "R" => new Rook(y, x, color, game),
+                            "Q" => new Queen(y, x, color, game),
+                            "K" => new King(y, x, color, game), 
+                            _ => throw new Exception("Unbekannter Figurentyp: " + c)
+                        };
+                        row.Add(piece);
+                    }
+                }
+                board.Add(row);
+            }
+            return board;
         }
     }
 }
