@@ -59,6 +59,7 @@ namespace _4Chess.Game.Move
             if (!_4ChessGame.IsLocalTurn)
                 return;
 
+            TurnChange();
             // Aktualisiere die Castling-Animation, falls aktiv
             UpdateCastlingAnimation(game);
 
