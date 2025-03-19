@@ -33,7 +33,7 @@ namespace _4Chess.Pieces
         /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
         public override List<Vector2> GetMoves(bool validate = true, bool rocharde = true)
         {
-            List<Vector2> moves = new List<Vector2>();
+            List<Vector2> moves = new();
 
             int yDiff = Alignment switch
             {
@@ -98,7 +98,7 @@ namespace _4Chess.Pieces
             // Linker Nachbar
             if (X - 1 >= 0)
             {
-                var leftPiece = Game.Board[Y][X - 1];
+                var leftPiece = Game?.Board[Y][X - 1];
                 if (leftPiece is Pawn enemyPawn && enemyPawn.Alignment != this.Alignment && enemyPawn.IsEnPassant)
                 {
                     // Das Zielfeld befindet sich diagonal vorne
@@ -108,7 +108,7 @@ namespace _4Chess.Pieces
             // Rechter Nachbar
             if (X + 1 < _4ChessGame.BOARD_DIMENSIONS)
             {
-                var rightPiece = Game.Board[Y][X + 1];
+                var rightPiece = Game?.Board[Y][X + 1];
                 if (rightPiece is Pawn enemyPawn && enemyPawn.Alignment != this.Alignment && enemyPawn.IsEnPassant)
                 {
                     enPassantMoves.Add(new Vector2(X + 1, Y + yDiff));

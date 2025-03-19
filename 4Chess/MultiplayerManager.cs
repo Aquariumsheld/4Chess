@@ -14,12 +14,12 @@ namespace _4Chess.Game.Multiplayer
         public static int Port = 5000;
         public static string HostIp = "";
 
-        private static HttpListener listener;
-        public static WebSocket HostSocket;
-        public static ClientWebSocket ClientSocket;
+        private static HttpListener? _listener;
+        public static WebSocket? HostSocket;
+        public static ClientWebSocket? ClientSocket;
         public static bool Connected = false;
 
-        private static readonly System.Collections.Concurrent.ConcurrentQueue<string> ReceivedMessages = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        private static readonly System.Collections.Concurrent.ConcurrentQueue<string> ReceivedMessages = new();
 
         /// <summary>
         /// Startet den WebSocket‑Server (Host) und wartet auf einen Client.
@@ -29,11 +29,11 @@ namespace _4Chess.Game.Multiplayer
             try
             {
                 HostIp = GetLocalIPAddress();
-                listener = new HttpListener();
-                listener.Prefixes.Add("http://" + HostIp + ":" + Port + "/");
-                listener.Start();
+                _listener = new HttpListener();
+                _listener.Prefixes.Add("http://" + HostIp + ":" + Port + "/");
+                _listener.Start();
                 Console.WriteLine("Hosting on: " + HostIp + ":" + Port);
-                HttpListenerContext context = await listener.GetContextAsync();
+                HttpListenerContext context = await _listener.GetContextAsync();
                 if (context.Request.IsWebSocketRequest)
                 {
                     var wsContext = await context.AcceptWebSocketAsync(null);
@@ -66,7 +66,7 @@ namespace _4Chess.Game.Multiplayer
                 {
                     trimmedIp = trimmedIp.Split(':')[0];
                 }
-                Uri serverUri = new Uri($"ws://{trimmedIp}:{Port}/");
+                Uri serverUri = new($"ws://{trimmedIp}:{Port}/");
                 ClientSocket = new ClientWebSocket();
                 await ClientSocket.ConnectAsync(serverUri, CancellationToken.None);
                 Connected = true;
@@ -89,11 +89,11 @@ namespace _4Chess.Game.Multiplayer
                 return;
             byte[] buffer = Encoding.UTF8.GetBytes(message);
             var segment = new ArraySegment<byte>(buffer);
-            if (IsHost)
+            if (IsHost && HostSocket != null)
             {
                 await HostSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
             }
-            else
+            else if (ClientSocket != null)
             {
                 await ClientSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
             }
@@ -127,7 +127,9 @@ namespace _4Chess.Game.Multiplayer
         /// </summary>
         public static bool TryDequeueMessage(out string message)
         {
-            return ReceivedMessages.TryDequeue(out message);
+            var msg = ReceivedMessages.TryDequeue(out string? result);
+            message = result ?? "";
+            return msg;
         }
 
         /// <summary>

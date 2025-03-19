@@ -1,4 +1,4 @@
-﻿using _4Chess.Game.Move;
+﻿using _4Chess.Game.Input;
 using _4Chess.Game.Multiplayer;
 using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;

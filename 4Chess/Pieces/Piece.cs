@@ -27,18 +27,23 @@ namespace _4Chess.Pieces
         public List<Vector2> GetAllEnemyMoves()
         {
             List<Vector2> moves = [];
-            List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
-            
-            foreach (var piece in temp)
+
+            if (Game != null)
             {
-                moves.AddRange(piece.GetMoves(false, false));
+                List<Piece> temp = [.. Game.Board.SelectMany(x => x).Where(elem => elem != null && elem.Alignment != this.Alignment)];
+
+                foreach (var piece in temp)
+                {
+                    moves.AddRange(piece.GetMoves(false, false));
+                }
             }
+            
             return moves;
         }
 
-        protected bool AddMoveIfValid(List<Vector2> moves, int x, int y, bool flag = false)
+        protected bool AddMoveIfValid(List<Vector2> moves, int x, int y)
         {
-            if (x >= 0 && x < Game.Board.Count && y >= 0 && y < Game.Board.Count)
+            if (x >= 0 && x < Game?.Board.Count && y >= 0 && y < Game.Board.Count)
             {
                 var piece = Game.Board[y][x];
 
@@ -84,7 +89,7 @@ namespace _4Chess.Pieces
                         SelectMany(x => x).
                         Where(elem => elem != null && 
                         elem.Alignment != Alignment).
-                        SelectMany(p => p.GetMoves(false))];
+                        SelectMany(p => p?.GetMoves(false) ?? [])];
 
                     if(typeof(King) == GetType())
                     {
@@ -93,7 +98,7 @@ namespace _4Chess.Pieces
                     else
                     {
                         //prüfen, ob König bedroht würde
-                        if (enemyMoves.Contains(GetKingPosition())) moves.RemoveAt(i);
+                        if (enemyMoves.Contains(GetKingPosition() ?? new Vector2(-99f, -99f))) moves.RemoveAt(i);
                     }
 
                     //vorherigen Zustand wiederherstellen
@@ -107,7 +112,7 @@ namespace _4Chess.Pieces
             return [];
         }
 
-        public Vector2 GetKingPosition()
+        public Vector2? GetKingPosition()
         {
             if(Game != null)
             {
@@ -122,7 +127,7 @@ namespace _4Chess.Pieces
                 return kingPosition;
             }
 
-            return new();
+            return null;
         }
     }
 }

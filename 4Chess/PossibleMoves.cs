@@ -307,16 +307,7 @@ namespace _4Chess
 
         private static int GetBoolValue(Piece piece)
         {
-            if(piece is Pawn pawn)
-            {
-                if (pawn.IsEnPassant) return 1;
-
-                else return 0;
-            }
-            else
-            {
-                return 0;
-            }
+            return piece is Pawn pawn && pawn.IsEnPassant ? 1 : 0;
         }
 
         public static List<List<Piece?>> DeserializeBoard(string serializedBoard, _4ChessGame game)
