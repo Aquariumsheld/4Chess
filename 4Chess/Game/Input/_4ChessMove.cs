@@ -32,22 +32,13 @@ public static class _4ChessMove
     /// </summary>
     public static void TurnChange()
     {
-        if (MultiplayerManager.IsHost)
-        {
-            isWhiteTurn = true;
-        }
-        else
-        {
-            isWhiteTurn = false;
-        }
+        isWhiteTurn = !isWhiteTurn;
     }
 
     public static void MouseUpdate(List<Piece> pieces, _4ChessGame game)
     {
         if (!_4ChessGame.IsLocalTurn)
             return;
-
-        TurnChange();
 
         if (!_4ChessGame.continueGame)
             return;
