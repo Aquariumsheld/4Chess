@@ -69,6 +69,9 @@ public static class _4ChessMove
             if (!_4ChessGame.debugMoveMode && piece.Alignment != (isWhiteTurn ? Piece.Color.White : Piece.Color.Black))
                 continue;
 
+            if (!_4ChessGame.debugMoveMode && _4ChessGame.MultiplayerMode && !_4ChessGame.IsLocalTurn)
+                continue;
+
             Rectangle hitbox = new(
                 piece.X * _4ChessGame.TILE_SIZE + _4ChessGame.BOARDXPos,
                 piece.Y * _4ChessGame.TILE_SIZE + _4ChessGame.BOARDYPos,
