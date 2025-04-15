@@ -25,6 +25,7 @@ public class _4ChessGame : BIERGame
     private static bool gameEnds = false;
     private static readonly KeyboardKey[] restartKeys = [KeyboardKey.KEY_ENTER, KeyboardKey.KEY_SPACE, KeyboardKey.KEY_R];
     public static bool continueGame = true;
+    private BIERInput _ipInput;
 
     private int frameCount = 0;        
     private int currentFps = 0;        
@@ -59,6 +60,7 @@ public class _4ChessGame : BIERGame
         CustomPostRenderFuncs.Add(RenderPossibleMoveRenderTiles);
         CustomPostRenderFuncs.Add(RenderDraggedPiece);
         CustomPostRenderFuncs.Add(RenderUIComponents);
+        CustomPostRenderFuncs.Add(RenderIpInput);
     }
 
     public unsafe override void GameInit()
@@ -107,6 +109,18 @@ public class _4ChessGame : BIERGame
         });
 
         _romulusFont = LoadFont("res/font_romulus.png");
+
+        _ipInput = new
+        (
+            "",
+            BOARDXPos,
+            40,
+            TILE_SIZE * BOARD_DIMENSIONS,
+            50,
+            Raylib.WHITE,
+            Raylib.BLACK,
+            _romulusFont
+        );
 
         Board =
         [
@@ -229,9 +243,33 @@ public class _4ChessGame : BIERGame
         if (GetActivePieces().All(p => p != null))
             _4ChessMove.MouseUpdate(GetActivePieces(), this);
 
+        if (_ipInput.IsVisible)
+            HandleKeyTextInput(_ipInput);
+
         IsGameDone(GetActivePieces());
     }
 
+    private void HandleKeyTextInput(BIERInput bierInput)
+    {
+        int key = GetCharPressed();
+
+        while (key > 0)
+        {
+            if (key >= 32 && key <= 125)
+            {
+                bierInput.TextValue += (char)key;
+            }
+
+            key = GetCharPressed();
+        }
+
+        if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE))
+        {
+            bierInput.TextValue = bierInput.TextValue[..^1];
+        }
+
+        bierInput.SyncText();
+    }
 
     private List<Piece> GetActivePieces()
     {
@@ -277,6 +315,12 @@ public class _4ChessGame : BIERGame
         UIComponents.Where(c => c.IsVisible).SelectMany(c => c.ComponentRenderObjects).ToList().ForEach(o => o.Render());
     }
 
+    private void RenderIpInput()
+    {
+        if (_ipInput.IsVisible)
+            _ipInput.ComponentRenderObjects.ForEach(o => o.Render());
+    }
+
     private void RenderDraggedPiece()
     {
         var draggedPiece = Board.SelectMany(p => p).Where(p => p == _4ChessMove.DraggedPiece).First();
@@ -296,6 +340,7 @@ public class _4ChessGame : BIERGame
     {
         RenderObjects.ForEach(o => o.Dispose());
         _pieceTextureDict.Values.ToList().ForEach(t => UnloadTexture(t));
+        UnloadFont(_romulusFont);
     }
 
     private void RenderPossibleMoveRenderTiles()
@@ -327,7 +372,8 @@ public class _4ChessGame : BIERGame
                 MultiplayerMode = true;
                 LocalPlayerColor = Piece.Color.Black; 
                 IsLocalTurn = false;
-                string serverIp = "10.4.12.58";
+                _ipInput.Hide();
+                string serverIp = _ipInput.TextValue.Replace(" ", "").Replace("\n", "");
                 MultiplayerManager.IsHost = false;
                 System.Threading.Tasks.Task.Run(async () =>
                 {
