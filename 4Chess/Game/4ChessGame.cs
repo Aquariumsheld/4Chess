@@ -25,7 +25,7 @@ public class _4ChessGame : BIERGame
     private static bool gameEnds = false;
     private static readonly KeyboardKey[] restartKeys = [KeyboardKey.KEY_ENTER, KeyboardKey.KEY_SPACE, KeyboardKey.KEY_R];
     public static bool continueGame = true;
-    public BIERInput IpInput;
+    public BIERInput IpInput = default!;
 
     private int frameCount = 0;        
     private int currentFps = 0;        
