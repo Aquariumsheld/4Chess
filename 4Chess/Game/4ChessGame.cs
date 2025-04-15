@@ -441,6 +441,7 @@ public class _4ChessGame : BIERGame
             Board = MoveCounter.DeserializeBoard(message, this);
 
             IsLocalTurn = true;
+            _4ChessMove.TurnChange();
         }
         catch (Exception ex)
         {

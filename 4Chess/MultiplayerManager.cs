@@ -9,6 +9,7 @@ using System.ComponentModel;
 using static Raylib_CsLo.Raylib;
 using static System.Net.Mime.MediaTypeNames;
 using Raylib_CsLo;
+using _4Chess.Game.Input;
 
 namespace _4Chess.Game.Multiplayer
 {
@@ -90,7 +91,7 @@ namespace _4Chess.Game.Multiplayer
                 await ReceiveLoop(ClientSocket);
 
                 IsPlayerContected = true;
-
+                _4ChessMove.TurnChange();
             }
             catch (Exception ex)
             {
