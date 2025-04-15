@@ -15,6 +15,7 @@ namespace _4Chess.Game;
 
 public class _4ChessGame : BIERGame
 {
+    //Render Werte
     public const int WINDOW_WIDTH = 1920;
     public const int WINDOW_HEIGHT = 1200;
     public const int BOARD_DIMENSIONS = 8;
@@ -202,7 +203,10 @@ public class _4ChessGame : BIERGame
         else UIComponents["HostingText"].Hide();
 
         if (MultiplayerManager.IsHostingLiveERROR)
+        {
             UIComponents["ErrorHostingText"].Show();
+            MultiplayerManager.IsPlayerContected = false;
+        }
         else UIComponents["ErrorHostingText"].Hide();
 
         if (MultiplayerManager.IsPlayerContected)

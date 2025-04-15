@@ -157,31 +157,44 @@ public static class _4ChessMove
 
     private static void SwitchPiece(_4ChessGame game, int y, int x)
     {
+        //TODO Sehr unwarscheinlicher bug wenn man 2 Bauern hinten hat
         var piece = game.Board[y][x];
         if (DraggedPiece != null && piece != null)
         {
-            game.UIComponents.Add("SelectBishopBtn", new BIERButton(" Bishop  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 * 2 + 30, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents["SelectBishopBtn"].ClickEvent += () =>
+            int z = 0;
+            foreach (var e in new List<string>() { "SelectBishopBtn", "SelectRookBtn", "SelectQueenBtn", "SelectKnightBtn" })
             {
-                game.Board[y][x] = new Bishop(y, x, piece.Alignment, game);
-            };
-            game.UIComponents.Add("SelectRookBtn", new BIERButton(" Rook  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 + 50, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents["SelectRookBtn"].ClickEvent += () =>
-            {
-                game.Board[y][x] = new Rook(y, x, piece.Alignment, game);
-            };
-            game.UIComponents.Add("SelectQueenBtn", new BIERButton(" Queen  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 - 50, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents["SelectQueenBtn"].ClickEvent += () =>
-            {
-                game.Board[y][x] = new Queen(y, x, piece.Alignment, game);
-            };
-            game.UIComponents.Add("SelectKnightBtn", new BIERButton(" Knight  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 * 2 - 30, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents["SelectKnightBtn"].ClickEvent += () =>
-            {
-                game.Board[y][x] = new Knight(y, x, piece.Alignment, game);
-            };
-
+                if (game.UIComponents.TryGetValue(e, out BIERUIComponent? value))
+                {
+                    value.Show();
+                }
+                else
+                {
+                    game.UIComponents.Add(e, new BIERButton($" {e.Replace("Select", "").Replace("Btn", "")}  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 * 2 + 30 + z, 350, 120, BLACK, GOLD, spacing: 3));
+                    game.UIComponents[e].ClickEvent += () =>
+                    {
+                        game.Board[y][x] = e.Replace("Select", "").Replace("Btn", "") switch
+                        {
+                            "Bishop" => new Bishop(y, x, piece.Alignment, game),
+                            "Rook" => new Rook(y, x, piece.Alignment, game),
+                            "Queen" => new Queen(y, x, piece.Alignment, game),
+                            "Knight" => new Knight(y, x, piece.Alignment, game),
+                            _ => new Queen(y, x, piece.Alignment, game),
+                        };
+                        HideAllSelectBtns(game);
+                    };
+                }
+                z += 150;
+            }
         }
+    }
+
+    private static void HideAllSelectBtns(_4ChessGame game)
+    {
+        game.UIComponents["SelectBishopBtn"].Hide();
+        game.UIComponents["SelectRookBtn"].Hide();
+        game.UIComponents["SelectQueenBtn"].Hide();
+        game.UIComponents["SelectKnightBtn"].Hide();
     }
 
     private static void HandleMouseReleased(_4ChessGame game)

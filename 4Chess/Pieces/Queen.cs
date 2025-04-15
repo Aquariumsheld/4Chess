@@ -37,8 +37,10 @@ namespace _4Chess.Pieces
 
             for (int i = 1; i < Game?.Board.Count; i++)
             {
+                //TODO: ggf. den Region Namen anpassen
+                #region Jede menge if BIXN
                 // Bewegungen in alle Richtungen
-                if(left) left = AddMoveIfValid(moves, X - i, Y); // links
+                if (left) left = AddMoveIfValid(moves, X - i, Y); // links
                 if(right) right = AddMoveIfValid(moves, X + i, Y); // rechts
                 if(up) up = AddMoveIfValid(moves, X, Y - i); // oben
                 if(down) down = AddMoveIfValid(moves, X, Y + i); // unten
@@ -46,6 +48,7 @@ namespace _4Chess.Pieces
                 if(rightUp) rightUp = AddMoveIfValid(moves, X + i, Y - i); // rechts oben
                 if(leftDown) leftDown = AddMoveIfValid(moves, X - i, Y + i); // links unten
                 if(rightDown) rightDown = AddMoveIfValid(moves, X + i, Y + i); // rechts unten
+                #endregion 
             }
 
             if (validate)

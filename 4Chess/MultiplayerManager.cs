@@ -91,7 +91,7 @@ namespace _4Chess.Game.Multiplayer
                 await ReceiveLoop(ClientSocket);
 
                 IsPlayerContected = true;
-               // _4ChessMove.TurnChange();
+               //_4ChessMove.TurnChange();
             }
             catch (Exception ex)
             {
