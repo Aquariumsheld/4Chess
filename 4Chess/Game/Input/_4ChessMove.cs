@@ -80,6 +80,9 @@ public static class _4ChessMove
             );
             if (CheckCollisionRecs(hitbox, MouseRect))
             {
+                game.IpInput.Hide();
+                game.UIComponents["JoinGameBtn"].Hide();
+                game.UIComponents["HostGameBtn"].Hide();
                 DraggedPiece = piece;
                 OriginalPosition = new Vector2(piece.X, piece.Y);
 
@@ -100,7 +103,7 @@ public static class _4ChessMove
 
 
         // Behandle UI-Komponenten-Klicks
-        game.UIComponents.ForEach(c =>
+        game.UIComponents.Values.ToList().ForEach(c =>
         {
             if (c.CompnentHitboxes.Any(h => CheckCollisionRecs(MouseRect, h)))
             {
@@ -108,8 +111,6 @@ public static class _4ChessMove
                     c.ClickEvent.Invoke();
             }
         });
-
-        game.UIComponents.Clear();
     }
 
     /// <summary>
@@ -159,23 +160,23 @@ public static class _4ChessMove
         var piece = game.Board[y][x];
         if (DraggedPiece != null && piece != null)
         {
-            game.UIComponents.Add(new BIERButton(" Bishop  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 * 2 + 30, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents[0].ClickEvent += () =>
+            game.UIComponents.Add("SelectBishopBtn", new BIERButton(" Bishop  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 * 2 + 30, 350, 120, BLACK, GOLD, spacing: 3));
+            game.UIComponents["SelectBishopBtn"].ClickEvent += () =>
             {
                 game.Board[y][x] = new Bishop(y, x, piece.Alignment, game);
             };
-            game.UIComponents.Add(new BIERButton(" Rook  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 + 50, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents[1].ClickEvent += () =>
+            game.UIComponents.Add("SelectRookBtn", new BIERButton(" Rook  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 + 50, 350, 120, BLACK, GOLD, spacing: 3));
+            game.UIComponents["SelectRookBtn"].ClickEvent += () =>
             {
                 game.Board[y][x] = new Rook(y, x, piece.Alignment, game);
             };
-            game.UIComponents.Add(new BIERButton(" Queen  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 - 50, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents[2].ClickEvent += () =>
+            game.UIComponents.Add("SelectQueenBtn", new BIERButton(" Queen  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 - 50, 350, 120, BLACK, GOLD, spacing: 3));
+            game.UIComponents["SelectQueenBtn"].ClickEvent += () =>
             {
                 game.Board[y][x] = new Queen(y, x, piece.Alignment, game);
             };
-            game.UIComponents.Add(new BIERButton(" Knight  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 * 2 - 30, 350, 120, BLACK, GOLD, spacing: 3));
-            game.UIComponents[3].ClickEvent += () =>
+            game.UIComponents.Add("SelectKnightBtn", new BIERButton(" Knight  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 + 120 * 2 - 30, 350, 120, BLACK, GOLD, spacing: 3));
+            game.UIComponents["SelectKnightBtn"].ClickEvent += () =>
             {
                 game.Board[y][x] = new Knight(y, x, piece.Alignment, game);
             };

@@ -25,7 +25,7 @@ public class _4ChessGame : BIERGame
     private static bool gameEnds = false;
     private static readonly KeyboardKey[] restartKeys = [KeyboardKey.KEY_ENTER, KeyboardKey.KEY_SPACE, KeyboardKey.KEY_R];
     public static bool continueGame = true;
-    private BIERInput _ipInput;
+    public BIERInput IpInput;
 
     private int frameCount = 0;        
     private int currentFps = 0;        
@@ -35,7 +35,7 @@ public class _4ChessGame : BIERGame
 
     private Raylib_CsLo.Font _romulusFont;
     public List<BIERRenderObject> RenderObjects { get; set; } = [];
-    public List<BIERUIComponent> UIComponents { get; set; } = [];
+    public Dictionary<string, BIERUIComponent> UIComponents { get; set; } = [];
     public List<List<Piece?>> Board { get; set; } = [];
 
     private Dictionary<string, Texture> _pieceTextureDict = [];
@@ -47,7 +47,7 @@ public class _4ChessGame : BIERGame
 
 
     //=========DEBUG-VARS===============
-    private bool _debugUiHitboxes = true; //F1
+    private bool _debugUiHitboxes = false; //F1
     public static bool debugMoveMode = false; //F2
     //==================================
 
@@ -110,7 +110,7 @@ public class _4ChessGame : BIERGame
 
         _romulusFont = LoadFont("res/font_romulus.png");
 
-        _ipInput = new
+        IpInput = new
         (
             "",
             BOARDXPos,
@@ -121,6 +121,11 @@ public class _4ChessGame : BIERGame
             Raylib.BLACK,
             _romulusFont
         );
+
+        UIComponents.Add("HostingText", new BIERButton($"Hosting...         ", 30, 90, 400, 70, BEIGE, GREEN, _romulusFont, 3, false));
+        UIComponents.Add("ErrorHostingText", new BIERButton($"ERROR Hosting!     ", 30, 90, 400, 70, BEIGE, RED, _romulusFont, 3, false));
+        UIComponents.Add("JoinSuccessText", new BIERButton($"Successfully joined", 30, 150, 400, 70, BEIGE, GREEN, _romulusFont, 3, false));
+        UIComponents.Add("ErrorJoinText", new BIERButton($"ERROR Joining!     ", 30, 30, 400, 70, BEIGE, RED, _romulusFont, 3, false));
 
         Board =
         [
@@ -172,7 +177,7 @@ public class _4ChessGame : BIERGame
                 continueGame = true;
                 gameEnds = false;
                 debugMoveMode = false;
-                UIComponents.RemoveAll(c => c is BIERButton || c is BIERInput);
+                UIComponents.Values.ToList().RemoveAll(c => c is BIERButton || c is BIERInput);
                 CloseWindow();
                 GameDispose();
                 GameInit();
@@ -185,13 +190,13 @@ public class _4ChessGame : BIERGame
         List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves())];
         if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
         {
-            UIComponents.Add(new BIERButton(" Schachmatt ", 0, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
+            UIComponents.Add("SchachmattBtn", new BIERButton(" Schachmatt ", 0, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;
             continueGame = false;
         }
         else if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
         {
-            UIComponents.Add(new BIERButton("   P a t t   ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
+            UIComponents.Add("PattBtn", new BIERButton("   P a t t   ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;              //" Schachmatt "
             continueGame = false;
         }
@@ -213,16 +218,21 @@ public class _4ChessGame : BIERGame
         }
 
         if (MultiplayerManager.IsHostingLive)
-            UIComponents.Add(new BIERButton($"Hosting...         ", 30, 90, 400, 70, BEIGE, GREEN, _romulusFont, 3, false));
+            UIComponents["HostingText"].Show();
+        else UIComponents["HostingText"].Hide();
 
         if (MultiplayerManager.IsHostingLiveERROR)
-            UIComponents.Add(new BIERButton($"ERROR Hosting!     ", 30, 90, 400, 70, BEIGE, RED, _romulusFont, 3, false));
+            UIComponents["ErrorHostingText"].Show();
+        else UIComponents["ErrorHostingText"].Hide();
 
         if (MultiplayerManager.IsPlayerContected)
-            UIComponents.Add(new BIERButton($"Successfully joined", 30, 150, 400, 70, BEIGE, GREEN, _romulusFont, 3, false));
+            UIComponents["JoinSuccessText"].Show();
+        else UIComponents["JoinSuccessText"].Hide();
 
         if (MultiplayerManager.IsPlayerContectedERROR)
-            UIComponents.Add(new BIERButton($"ERROR Joining!     ", 30, 30, 400, 70, BEIGE, RED, _romulusFont, 3, false));
+            UIComponents["ErrorJoinText"].Show();
+        else UIComponents["ErrorJoinText"].Hide();
+
 
         Gamesettings();
 
@@ -238,13 +248,14 @@ public class _4ChessGame : BIERGame
         }
 
         string localIP = MultiplayerManager.GetLocalIPAddress();
-        UIComponents.Add(new BIERButton($"Deine IP: {localIP} FPS: {currentFps}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
+        UIComponents.Remove("YourIpText");
+        UIComponents.Add("YourIpText", new BIERButton($"Deine IP: {localIP} FPS: {currentFps}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
 
         if (GetActivePieces().All(p => p != null))
             _4ChessMove.MouseUpdate(GetActivePieces(), this);
 
-        if (_ipInput.IsVisible)
-            HandleKeyTextInput(_ipInput);
+        if (IpInput.IsVisible)
+            HandleKeyTextInput(IpInput);
 
         IsGameDone(GetActivePieces());
     }
@@ -307,18 +318,18 @@ public class _4ChessGame : BIERGame
     private void RenderUIComponents()
     {
         if (_debugUiHitboxes)
-            UIComponents.SelectMany(c => c.CompnentHitboxes).ToList().ForEach(h =>
+            UIComponents.SelectMany(c => c.Value.CompnentHitboxes).ToList().ForEach(h =>
             {
                 Raylib.DrawRectangle((int)h.x, (int)h.y, (int)h.width, (int)h.height, ColorFromHSV(186, 1f, 0.4f));
             });
 
-        UIComponents.Where(c => c.IsVisible).SelectMany(c => c.ComponentRenderObjects).ToList().ForEach(o => o.Render());
+        UIComponents.Values.Where(c => c.IsVisible).SelectMany(c => c.ComponentRenderObjects).ToList().ForEach(o => o.Render());
     }
 
     private void RenderIpInput()
     {
-        if (_ipInput.IsVisible)
-            _ipInput.ComponentRenderObjects.ForEach(o => o.Render());
+        if (IpInput.IsVisible)
+            IpInput.ComponentRenderObjects.ForEach(o => o.Render());
     }
 
     private void RenderDraggedPiece()
@@ -350,14 +361,16 @@ public class _4ChessGame : BIERGame
 
     private void ShowMultiplayerMenu()
     {
-        UIComponents.Clear();
-        UIComponents.Add(new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add("HostGameBtn", new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
                 MultiplayerMode = true;
                 LocalPlayerColor = Piece.Color.White; 
                 IsLocalTurn = true;
+                IpInput.Hide();
+                UIComponents["JoinGameBtn"].Hide();
+                UIComponents["HostGameBtn"].Hide();
                 MultiplayerManager.IsHost = true;
                 System.Threading.Tasks.Task.Run(async () =>
                 {
@@ -365,15 +378,17 @@ public class _4ChessGame : BIERGame
                 });
             }
         });
-        UIComponents.Add(new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add("JoinGameBtn", new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
                 MultiplayerMode = true;
                 LocalPlayerColor = Piece.Color.Black; 
                 IsLocalTurn = false;
-                _ipInput.Hide();
-                string serverIp = _ipInput.TextValue.Replace(" ", "").Replace("\n", "");
+                IpInput.Hide();
+                UIComponents["JoinGameBtn"].Hide();
+                UIComponents["HostGameBtn"].Hide();
+                string serverIp = IpInput.TextValue.Replace(" ", "").Replace("\n", "");
                 MultiplayerManager.IsHost = false;
                 System.Threading.Tasks.Task.Run(async () =>
                 {
