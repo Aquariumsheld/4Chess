@@ -27,6 +27,12 @@ public class _4ChessGame : BIERGame
     public static bool continueGame = true;
     private BIERInput _ipInput;
 
+    private int frameCount = 0;        
+    private int currentFps = 0;        
+    private double timeAccumulator = 0; 
+    private DateTime lastUpdateTime = DateTime.Now; 
+
+
     private Raylib_CsLo.Font _romulusFont;
     public List<BIERRenderObject> RenderObjects { get; set; } = [];
     public List<BIERUIComponent> UIComponents { get; set; } = [];
@@ -192,7 +198,34 @@ public class _4ChessGame : BIERGame
     }
     public override void GameUpdate()
     {
+        DateTime now = DateTime.Now;
+        double deltaTime = (now - lastUpdateTime).TotalSeconds;
+        lastUpdateTime = now;
+
+        frameCount++;
+        timeAccumulator += deltaTime;
+
+        if (timeAccumulator >= 1.0)
+        {
+            currentFps = frameCount;
+            frameCount = 0;
+            timeAccumulator -= 1.0;
+        }
+
+        if (MultiplayerManager.IsHostingLive)
+            UIComponents.Add(new BIERButton($"Hosting...         ", 30, 90, 400, 70, BEIGE, GREEN, _romulusFont, 3, false));
+
+        if (MultiplayerManager.IsHostingLiveERROR)
+            UIComponents.Add(new BIERButton($"ERROR Hosting!     ", 30, 90, 400, 70, BEIGE, RED, _romulusFont, 3, false));
+
+        if (MultiplayerManager.IsPlayerContected)
+            UIComponents.Add(new BIERButton($"Successfully joined", 30, 150, 400, 70, BEIGE, GREEN, _romulusFont, 3, false));
+
+        if (MultiplayerManager.IsPlayerContectedERROR)
+            UIComponents.Add(new BIERButton($"ERROR Joining!     ", 30, 30, 400, 70, BEIGE, RED, _romulusFont, 3, false));
+
         Gamesettings();
+
         if (MultiplayerMode)
         {
             string msg;
@@ -200,14 +233,12 @@ public class _4ChessGame : BIERGame
             {
                 ProcessIncomingMove(msg);
             }
-            // Nur erlauben, dass der lokale Spieler input verarbeitet, wenn er am Zug ist
             if (!IsLocalTurn)
                 return;
         }
 
-        //var moveCounter = new MoveCounter();
-        //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
-        
+        string localIP = MultiplayerManager.GetLocalIPAddress();
+        UIComponents.Add(new BIERButton($"Deine IP: {localIP} FPS: {currentFps}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
 
         if (GetActivePieces().All(p => p != null))
             _4ChessMove.MouseUpdate(GetActivePieces(), this);

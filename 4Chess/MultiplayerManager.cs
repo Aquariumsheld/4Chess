@@ -4,6 +4,11 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using BIERKELLER.BIERUI;
+using System.ComponentModel;
+using static Raylib_CsLo.Raylib;
+using static System.Net.Mime.MediaTypeNames;
+using Raylib_CsLo;
 
 namespace _4Chess.Game.Multiplayer
 {
@@ -11,8 +16,16 @@ namespace _4Chess.Game.Multiplayer
     {
         public static bool IsMultiplayer = false;
         public static bool IsHost = true;
+        public static bool IsHostingLive = false;
+        public static bool IsHostingLiveERROR = false;
+        public static bool IsPlayerContected = false;
+        public static bool IsPlayerContectedERROR = false;
+
         public static int Port = 5000;
         public static string HostIp = "";
+
+        private static Raylib_CsLo.Font _romulusFont;
+        public static List<BIERUIComponent> UIComponents { get; set; } = [];
 
         private static HttpListener? _listener;
         public static WebSocket? HostSocket;
@@ -33,6 +46,7 @@ namespace _4Chess.Game.Multiplayer
                 _listener.Prefixes.Add("http://" + HostIp + ":" + Port + "/");
                 _listener.Start();
                 Console.WriteLine("Hosting on: " + HostIp + ":" + Port);
+                IsHostingLive = true;
                 HttpListenerContext context = await _listener.GetContextAsync();
                 if (context.Request.IsWebSocketRequest)
                 {
@@ -40,6 +54,7 @@ namespace _4Chess.Game.Multiplayer
                     HostSocket = wsContext.WebSocket;
                     Connected = true;
                     Console.WriteLine("Client connected.");
+                    IsPlayerContected = true;
                     await ReceiveLoop(HostSocket);
                 }
                 else
@@ -51,6 +66,7 @@ namespace _4Chess.Game.Multiplayer
             catch (Exception ex)
             {
                 Console.WriteLine("Error while hosting: " + ex.Message);
+                IsHostingLiveERROR = true;
             }
         }
 
@@ -72,10 +88,14 @@ namespace _4Chess.Game.Multiplayer
                 Connected = true;
                 Console.WriteLine("Connected to host.");
                 await ReceiveLoop(ClientSocket);
+
+                IsPlayerContected = true;
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error joining game: " + ex.Message);
+                IsPlayerContectedERROR = true;
             }
         }
 
