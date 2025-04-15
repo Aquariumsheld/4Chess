@@ -178,6 +178,23 @@ public class _4ChessGame : BIERGame
     }
     public override void GameUpdate()
     {
+        bool IsHostingLiveShow = false;
+        bool IsHostingLiveERRORShow = false;
+        bool IsPlayerContectedShow = false;
+        bool IsPlayerContectedERRORShow = false;
+
+        if (MultiplayerManager.IsHostingLive && !IsHostingLiveShow)
+            UIComponents.Add(new BIERButton($"Hosting", 30, 90, 400, 70, BEIGE, GREEN, _romulusFont, 3, false)); IsHostingLiveShow = true;
+
+        if (MultiplayerManager.IsHostingLiveERROR && !IsHostingLiveERRORShow)
+            UIComponents.Add(new BIERButton($"ERROR Hosting!", 30, 90, 400, 70, BEIGE, RED, _romulusFont, 3, false)); IsHostingLiveERRORShow = true;
+
+        if (MultiplayerManager.IsPlayerContected && !IsPlayerContectedShow)
+            UIComponents.Add(new BIERButton($"Player Conected", 30, 130, 400, 70, BEIGE, GREEN, _romulusFont, 3, false)); IsPlayerContectedShow = true;
+
+        if (MultiplayerManager.IsPlayerContectedERROR && !IsPlayerContectedERRORShow)
+            UIComponents.Add(new BIERButton($"ERROR Joining!", 30, 130, 400, 70, BEIGE, RED, _romulusFont, 3, false)); IsPlayerContectedERRORShow = true;
+
         Gamesettings();
         if (MultiplayerMode)
         {
@@ -190,6 +207,9 @@ public class _4ChessGame : BIERGame
             if (!IsLocalTurn)
                 return;
         }
+
+        
+
 
         string localIP = MultiplayerManager.GetLocalIPAddress();
         UIComponents.Add(new BIERButton($"Deine IP: {localIP}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));

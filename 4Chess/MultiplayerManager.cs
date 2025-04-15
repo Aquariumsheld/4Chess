@@ -16,6 +16,11 @@ namespace _4Chess.Game.Multiplayer
     {
         public static bool IsMultiplayer = false;
         public static bool IsHost = true;
+        public static bool IsHostingLive = false;
+        public static bool IsHostingLiveERROR = false;
+        public static bool IsPlayerContected = false;
+        public static bool IsPlayerContectedERROR = false;
+
         public static int Port = 5000;
         public static string HostIp = "";
 
@@ -41,6 +46,7 @@ namespace _4Chess.Game.Multiplayer
                 _listener.Prefixes.Add("http://" + HostIp + ":" + Port + "/");
                 _listener.Start();
                 Console.WriteLine("Hosting on: " + HostIp + ":" + Port);
+                IsHostingLive = true;
                 HttpListenerContext context = await _listener.GetContextAsync();
                 if (context.Request.IsWebSocketRequest)
                 {
@@ -48,6 +54,7 @@ namespace _4Chess.Game.Multiplayer
                     HostSocket = wsContext.WebSocket;
                     Connected = true;
                     Console.WriteLine("Client connected.");
+                    IsPlayerContected = true;
                     await ReceiveLoop(HostSocket);
                 }
                 else
@@ -59,6 +66,7 @@ namespace _4Chess.Game.Multiplayer
             catch (Exception ex)
             {
                 Console.WriteLine("Error while hosting: " + ex.Message);
+                IsHostingLiveERROR = true;
             }
         }
 
@@ -80,15 +88,15 @@ namespace _4Chess.Game.Multiplayer
                 Connected = true;
                 Console.WriteLine("Connected to host.");
                 await ReceiveLoop(ClientSocket);
-                UIComponents.Add(new BIERButton($"Erfolgreich Beigetreten", 30, 90, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
+
+                IsPlayerContected = true;
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error joining game: " + ex.Message);
-                UIComponents.Add(new BIERButton($"Fehler beim beitreten", 30, 90, 400, 70, RED, WHITE, _romulusFont, 3, false));
+                IsPlayerContectedERROR = true;
             }
-            RenderUIComponents();
         }
 
 
@@ -160,11 +168,6 @@ namespace _4Chess.Game.Multiplayer
                 }
             }
             return localIP;
-        }
-
-        private static void RenderUIComponents()
-        {
-            UIComponents.Where(c => c.IsVisible).SelectMany(c => c.ComponentRenderObjects).ToList().ForEach(o => o.Render());
         }
     }
 }
