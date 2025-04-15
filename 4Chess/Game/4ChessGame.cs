@@ -15,6 +15,7 @@ namespace _4Chess.Game;
 
 public class _4ChessGame : BIERGame
 {
+    //Render Werte
     public const int WINDOW_WIDTH = 1920;
     public const int WINDOW_HEIGHT = 1200;
     public const int BOARD_DIMENSIONS = 8;
@@ -27,6 +28,7 @@ public class _4ChessGame : BIERGame
     public static bool continueGame = true;
     public BIERInput IpInput = default!;
 
+    //FPS Werte
     private int frameCount = 0;        
     private int currentFps = 0;        
     private double timeAccumulator = 0; 
