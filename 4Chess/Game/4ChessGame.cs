@@ -222,7 +222,10 @@ public class _4ChessGame : BIERGame
         else UIComponents["HostingText"].Hide();
 
         if (MultiplayerManager.IsHostingLiveERROR)
+        {
             UIComponents["ErrorHostingText"].Show();
+            MultiplayerManager.IsPlayerContected = false;
+        }
         else UIComponents["ErrorHostingText"].Hide();
 
         if (MultiplayerManager.IsPlayerContected)
