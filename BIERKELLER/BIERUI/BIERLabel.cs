@@ -6,11 +6,11 @@ namespace BIERKELLER.BIERUI;
 
 public class BIERLabel : BIERUIComponent
 {
-    public override ClickEventHandler ClickEvent { get; set; }
+    public override ClickEventHandler ClickEvent { get; set; } = () => { };
 
     public BIERLabel(List<BIERRenderObject> componentRenderObjects, List<Raylib_CsLo.Rectangle> compnentHitboxes, bool isClickable = false, bool isVisible = true) : base(componentRenderObjects, compnentHitboxes, isClickable, isVisible)
     {
-        ClickEvent += () => { };
+
     }
 
     public BIERLabel(string txt, float x, float y, int fontSize, Raylib_CsLo.Color color, Raylib_CsLo.Font? customFont = null, float? spacing = 3)
@@ -24,7 +24,7 @@ public class BIERLabel : BIERUIComponent
               ],
                false)      
     {
-        ClickEvent += () => { };
+
     }
 
     public BIERLabel(string txt, int windowW, int windowH, int fontSize, Raylib_CsLo.Color color, Raylib_CsLo.Font? customFont = null, float? spacing = 3):
