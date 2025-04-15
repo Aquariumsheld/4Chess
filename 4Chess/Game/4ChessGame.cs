@@ -432,7 +432,4 @@ public class _4ChessGame : BIERGame
             Console.WriteLine("Fehler beim Verarbeiten der Move-Nachricht: " + ex.Message);
         }
     }
-
-    
-
 }
