@@ -4,6 +4,11 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using BIERKELLER.BIERUI;
+using System.ComponentModel;
+using static Raylib_CsLo.Raylib;
+using static System.Net.Mime.MediaTypeNames;
+using Raylib_CsLo;
 
 namespace _4Chess.Game.Multiplayer
 {
@@ -13,6 +18,9 @@ namespace _4Chess.Game.Multiplayer
         public static bool IsHost = true;
         public static int Port = 5000;
         public static string HostIp = "";
+
+        private static Raylib_CsLo.Font _romulusFont;
+        public static List<BIERUIComponent> UIComponents { get; set; } = [];
 
         private static HttpListener? _listener;
         public static WebSocket? HostSocket;
@@ -72,11 +80,15 @@ namespace _4Chess.Game.Multiplayer
                 Connected = true;
                 Console.WriteLine("Connected to host.");
                 await ReceiveLoop(ClientSocket);
+                UIComponents.Add(new BIERButton($"Erfolgreich Beigetreten", 30, 90, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error joining game: " + ex.Message);
+                UIComponents.Add(new BIERButton($"Fehler beim beitreten", 30, 90, 400, 70, RED, WHITE, _romulusFont, 3, false));
             }
+            RenderUIComponents();
         }
 
 
@@ -148,6 +160,11 @@ namespace _4Chess.Game.Multiplayer
                 }
             }
             return localIP;
+        }
+
+        private static void RenderUIComponents()
+        {
+            UIComponents.Where(c => c.IsVisible).SelectMany(c => c.ComponentRenderObjects).ToList().ForEach(o => o.Render());
         }
     }
 }

@@ -191,9 +191,12 @@ public class _4ChessGame : BIERGame
                 return;
         }
 
+        string localIP = MultiplayerManager.GetLocalIPAddress();
+        UIComponents.Add(new BIERButton($"Deine IP: {localIP}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
+
         //var moveCounter = new MoveCounter();
         //var (totalMoves, uniquePositions) = moveCounter.CountFullMovesAndPositions(this);
-        
+
 
         if (GetActivePieces().All(p => p != null))
             _4ChessMove.MouseUpdate(GetActivePieces(), this);
