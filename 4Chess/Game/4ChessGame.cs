@@ -172,7 +172,7 @@ public class _4ChessGame : BIERGame
                 continueGame = true;
                 gameEnds = false;
                 debugMoveMode = false;
-                UIComponents.RemoveAll(c => c is BIERButton);
+                UIComponents.RemoveAll(c => c is BIERButton || c is BIERInput);
                 CloseWindow();
                 GameDispose();
                 GameInit();
