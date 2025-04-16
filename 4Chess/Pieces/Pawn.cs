@@ -15,13 +15,14 @@ namespace _4Chess.Pieces
         /// </summary>
         public bool IsEnPassant { get; set; } = false;
 
-        public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game)
+        public Pawn(int yPosition, int xPosition, Color alignment, _4ChessGame game, bool isEnPassent = false)
         {
             Y = yPosition;
             X = xPosition;
             Alignment = alignment;
             FilePath = alignment == Color.White ? "WhitePawn.png" : "BlackPawn.png";
             Game = game;
+            IsEnPassant = isEnPassent;
         }
 
         /// <summary>
@@ -30,9 +31,9 @@ namespace _4Chess.Pieces
         /// <param name="validate">Legt fest, ob die Methode im Rahmen der Methode ValidateMoves() aufgerufen wird. Sollte dies der Fall sein, so wird durch
         /// diesen Wert eine Rekursion vermieden.</param>
         /// <returns>Eine Liste mit allen für die Figur mögliche Züge</returns>
-        public override List<Vector2> GetMoves(bool validate = true)
+        public override List<Vector2> GetMoves(bool validate = true, bool rocharde = true)
         {
-            List<Vector2> moves = new List<Vector2>();
+            List<Vector2> moves = new();
 
             int yDiff = Alignment switch
             {
@@ -80,11 +81,62 @@ namespace _4Chess.Pieces
                 }
             }
 
+            moves.AddRange(GetEnPassantMoves());
+
             if (validate)
                 return ValidateMoves(moves);
 
             else
                 return moves;
+        }
+
+        public List<Vector2> GetEnPassantMoves()
+        {
+            List<Vector2> enPassantMoves = new List<Vector2>();
+            int yDiff = (Alignment == Color.White) ? -1 : 1;
+
+            // Linker Nachbar
+            if (X - 1 >= 0)
+            {
+                var leftPiece = Game?.Board[Y][X - 1];
+                if (leftPiece is Pawn enemyPawn && enemyPawn.Alignment != this.Alignment && enemyPawn.IsEnPassant)
+                {
+                    // Das Zielfeld befindet sich diagonal vorne
+                    enPassantMoves.Add(new Vector2(X - 1, Y + yDiff));
+                }
+            }
+            // Rechter Nachbar
+            if (X + 1 < _4ChessGame.BOARD_DIMENSIONS)
+            {
+                var rightPiece = Game?.Board[Y][X + 1];
+                if (rightPiece is Pawn enemyPawn && enemyPawn.Alignment != this.Alignment && enemyPawn.IsEnPassant)
+                {
+                    enPassantMoves.Add(new Vector2(X + 1, Y + yDiff));
+                }
+            }
+            return enPassantMoves;
+        }
+
+        public bool IsAtEnd()
+        {
+            bool result = false;
+
+            switch (Alignment)
+            {
+                case Color.White:
+                    if (Y == 0) result = true;
+                    else result = false;
+                    break;
+                case Color.Black:
+                    if (Y == 7) result = true;
+                    else result = false;
+                    break;
+                default:
+                    result = true;
+                    break;
+            }
+
+            return result;
         }
     }
 }
