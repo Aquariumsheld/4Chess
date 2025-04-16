@@ -27,6 +27,8 @@ public class _4ChessGame : BIERGame
     private static readonly KeyboardKey[] restartKeys = [KeyboardKey.KEY_ENTER, KeyboardKey.KEY_SPACE, KeyboardKey.KEY_R];
     public static bool continueGame = true;
     public BIERInput IpInput = default!;
+    private bool schachmatt = false;
+
 
     private Raylib_CsLo.Font _romulusFont;
     public List<BIERRenderObject> RenderObjects { get; set; } = [];
@@ -183,13 +185,14 @@ public class _4ChessGame : BIERGame
     {
         List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves())];
         List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves())];
-        if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
+        if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)) && !UIComponents.ContainsKey("SchachmattBtn"))
         {
             UIComponents.Add("SchachmattBtn", new BIERButton(" Schachmatt ", 0, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;
             continueGame = false;
+            schachmatt = true;
         }
-        else if (WhiteMoves.Count == 0 || BlackMoves.Count == 0)
+        else if ((WhiteMoves.Count == 0 || BlackMoves.Count == 0) && !UIComponents.ContainsKey("PattBtn") && !schachmatt)
         {
             UIComponents.Add("PattBtn", new BIERButton("   P a t t   ", WINDOW_WIDTH / 2 - WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;              //" Schachmatt "
