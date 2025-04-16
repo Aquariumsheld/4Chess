@@ -253,7 +253,7 @@ public static class _4ChessMove
                 if (pawnPassant.X - (int)OriginalPosition.X == 1 || pawnPassant.X - (int)OriginalPosition.X == -1)
                 {
                     int diffy = pawnPassant.Y - 1;
-                    if (diffy >= 0)
+                    if (diffy >= 0 && pawnPassant.Y - 1 >= 0 && pawnPassant.Y + 1 <= 7)
                     {
                         if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant)
                             game.Board[pawnPassant.Y - 1][pawnPassant.X] = null;
