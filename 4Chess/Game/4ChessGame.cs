@@ -28,13 +28,6 @@ public class _4ChessGame : BIERGame
     public static bool continueGame = true;
     public BIERInput IpInput = default!;
 
-    //FPS Werte
-    private int frameCount = 0;        
-    private int currentFps = 0;        
-    private double timeAccumulator = 0; 
-    private DateTime lastUpdateTime = DateTime.Now; 
-
-
     private Raylib_CsLo.Font _romulusFont;
     public List<BIERRenderObject> RenderObjects { get; set; } = [];
     public Dictionary<string, BIERUIComponent> UIComponents { get; set; } = [];
@@ -67,7 +60,7 @@ public class _4ChessGame : BIERGame
 
     public unsafe override void GameInit()
     {
-        BIERRenderer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, "4Chess");
+        BIERRenderer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, "4Chess", vsync: true);
 
         // BIERRender-Objekte erst nach BIERRenderer.Init initialisieren, da sie den GL-Context brauchen!
 
@@ -205,20 +198,6 @@ public class _4ChessGame : BIERGame
     }
     public override void GameUpdate()
     {
-        DateTime now = DateTime.Now;
-        double deltaTime = (now - lastUpdateTime).TotalSeconds;
-        lastUpdateTime = now;
-
-        frameCount++;
-        timeAccumulator += deltaTime;
-
-        if (timeAccumulator >= 1.0)
-        {
-            currentFps = frameCount;
-            frameCount = 0;
-            timeAccumulator -= 1.0;
-        }
-
         if (MultiplayerManager.IsHostingLive)
             UIComponents["HostingText"].Show();
         else UIComponents["HostingText"].Hide();
@@ -254,7 +233,7 @@ public class _4ChessGame : BIERGame
 
         string localIP = MultiplayerManager.GetLocalIPAddress();
         UIComponents.Remove("YourIpText");
-        UIComponents.Add("YourIpText", new BIERButton($"Deine IP: {localIP} FPS: {currentFps}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
+        UIComponents.Add("YourIpText", new BIERButton($"Deine IP: {localIP} FPS: {GetFPS()}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
 
         if (GetActivePieces().All(p => p != null))
             _4ChessMove.MouseUpdate(GetActivePieces(), this);

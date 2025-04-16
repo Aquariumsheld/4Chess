@@ -6,10 +6,10 @@ namespace BIERKELLER.BIERRender;
 public static class BIERRenderer
 {
 
-    public static void Init(int w = 800, int h = 600, string title = "Mein BIERFrame", int fps = 60)
+    public static void Init(int w = 800, int h = 600, string title = "Mein BIERFrame", int fps = 60, bool vsync = false)
     {
         InitWindow(w, h, title);
-        SetTargetFPS(fps);
+        SetTargetFPS(vsync ? GetMonitorRefreshRate(GetCurrentMonitor()) : fps);
         MaximizeWindow();
     }
 
