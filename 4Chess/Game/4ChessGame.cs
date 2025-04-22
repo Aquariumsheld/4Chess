@@ -261,7 +261,7 @@ public class _4ChessGame : BIERGame
             key = GetCharPressed();
         }
 
-        if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE))
+        if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE) && bierInput.TextValue.Length > 0)
         {
             bierInput.TextValue = bierInput.TextValue[..^1];
         }
