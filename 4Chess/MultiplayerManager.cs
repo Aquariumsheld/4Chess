@@ -162,7 +162,7 @@ namespace _4Chess.Game.Multiplayer
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
             {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && ip.ToString().Contains('.') && ip.ToString().Split(".")[0] != "127")
                 {
                     localIP = ip.ToString();
                     break;
