@@ -305,7 +305,7 @@ public class _4ChessGame : BIERGame
     private void RenderUIComponents()
     {
         if (_debugUiHitboxes)
-            UIComponents.SelectMany(c => c.Value.CompnentHitboxes).ToList().ForEach(h =>
+            UIComponents.SelectMany(c => c.Value.ComponentHitboxes).ToList().ForEach(h =>
             {
                 Raylib.DrawRectangle((int)h.x, (int)h.y, (int)h.width, (int)h.height, ColorFromHSV(186, 1f, 0.4f));
             });

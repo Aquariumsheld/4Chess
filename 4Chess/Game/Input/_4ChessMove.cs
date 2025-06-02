@@ -105,7 +105,7 @@ public static class _4ChessMove
         // Behandle UI-Komponenten-Klicks
         game.UIComponents.Values.ToList().ForEach(c =>
         {
-            if (c.CompnentHitboxes.Any(h => CheckCollisionRecs(MouseRect, h)))
+            if (c.ComponentHitboxes.Any(h => CheckCollisionRecs(MouseRect, h)))
             {
                 if (c.IsVisible && c.IsClickable)
                     c.ClickEvent.Invoke();
@@ -159,31 +159,29 @@ public static class _4ChessMove
     {
         //TODO Sehr unwarscheinlicher bug wenn man 2 Bauern hinten hat
         var piece = game.Board[y][x];
-        if (DraggedPiece != null && piece != null)
+        if (piece != null)
         {
             int z = 0;
             foreach (var e in new List<string>() { "SelectBishopBtn", "SelectRookBtn", "SelectQueenBtn", "SelectKnightBtn" })
             {
                 if (game.UIComponents.TryGetValue(e, out BIERUIComponent? value))
                 {
-                    value.Show();
+                    game.UIComponents.Remove(e);
                 }
-                else
+                game.UIComponents.Add(e, new BIERButton($" {e.Replace("Select", "").Replace("Btn", "")}  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 * 2 + 30 + z, 350, 120, BLACK, GOLD, spacing: 3));
+                game.UIComponents[e].ClickEvent += () =>
                 {
-                    game.UIComponents.Add(e, new BIERButton($" {e.Replace("Select", "").Replace("Btn", "")}  ", 0, _4ChessGame.WINDOW_HEIGHT / 2 - 120 * 2 + 30 + z, 350, 120, BLACK, GOLD, spacing: 3));
-                    game.UIComponents[e].ClickEvent += () =>
+                    game.Board[y][x] = e.Replace("Select", "").Replace("Btn", "") switch
                     {
-                        game.Board[y][x] = e.Replace("Select", "").Replace("Btn", "") switch
-                        {
-                            "Bishop" => new Bishop(y, x, piece.Alignment, game),
-                            "Rook" => new Rook(y, x, piece.Alignment, game),
-                            "Queen" => new Queen(y, x, piece.Alignment, game),
-                            "Knight" => new Knight(y, x, piece.Alignment, game),
-                            _ => new Queen(y, x, piece.Alignment, game),
-                        };
-                        HideAllSelectBtns(game);
+                        "Bishop" => new Bishop(y, x, piece.Alignment, game),
+                        "Rook" => new Rook(y, x, piece.Alignment, game),
+                        "Queen" => new Queen(y, x, piece.Alignment, game),
+                        "Knight" => new Knight(y, x, piece.Alignment, game),
+                        _ => new Queen(y, x, piece.Alignment, game),
                     };
-                }
+                    HideAllSelectBtns(game);
+                };
+
                 z += 150;
             }
         }
@@ -204,20 +202,6 @@ public static class _4ChessMove
         newX = Math.Clamp(newX, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
         newY = Math.Clamp(newY, 0, _4ChessGame.BOARD_DIMENSIONS - 1);
 
-        // Abbruch, wenn Castling-Ziel getroffen wird
-        if (
-            newX == (int)CastlingRookTarget.X &&
-            newY == (int)CastlingRookTarget.Y &&
-            DraggedPiece != null
-        )
-        {
-            DraggedPiece.X = (int)OriginalPosition.X;
-            DraggedPiece.Y = (int)OriginalPosition.Y;
-            DraggedPiece = null;
-            PossibleMoveRenderTiles.Clear();
-            return;
-        }
-
         Vector2 newPos = new(newX, newY);
         bool isValidMove = (DraggedPiece?.GetMoves().Any(move => (int)move.X == newX && (int)move.Y == newY) ?? false);
         if (isValidMove && DraggedPiece != null)
@@ -237,11 +221,7 @@ public static class _4ChessMove
                 if (DraggedPiece is Pawn pawn)
                 {
                     int diff = DraggedPiece.Y - (int)OriginalPosition.Y;
-                    if (diff == 2 || diff == -2)
-                        pawn.IsEnPassant = true;
-                    else
-                        pawn.IsEnPassant = false;
-
+                    pawn.IsEnPassant = diff == 2 || diff == -2;
                     pawn.IsUnmoved = false;
                 }
                 if (DraggedPiece is King king) king.IsUnmoved = false;
@@ -255,10 +235,10 @@ public static class _4ChessMove
                     int diffy = pawnPassant.Y - 1;
                     if (diffy >= 0 && pawnPassant.Y - 1 >= 0 && pawnPassant.Y + 1 <= 7)
                     {
-                        if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant)
+                        if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant && pawn5.Alignment != pawnPassant.Alignment)
                             game.Board[pawnPassant.Y - 1][pawnPassant.X] = null;
 
-                        else if (game.Board[pawnPassant.Y + 1][pawnPassant.X] is Pawn pawn6 && pawn6.IsEnPassant)
+                        else if (game.Board[pawnPassant.Y + 1][pawnPassant.X] is Pawn pawn6 && pawn6.IsEnPassant && pawn6.Alignment != pawnPassant.Alignment)
                             game.Board[pawnPassant.Y + 1][pawnPassant.X] = null;
                     }
                 }
