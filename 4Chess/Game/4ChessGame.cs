@@ -261,7 +261,7 @@ public class _4ChessGame : BIERGame
             key = GetCharPressed();
         }
 
-        if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE))
+        if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE) && bierInput.TextValue.Length > 0)
         {
             bierInput.TextValue = bierInput.TextValue[..^1];
         }
@@ -305,7 +305,7 @@ public class _4ChessGame : BIERGame
     private void RenderUIComponents()
     {
         if (_debugUiHitboxes)
-            UIComponents.SelectMany(c => c.Value.CompnentHitboxes).ToList().ForEach(h =>
+            UIComponents.SelectMany(c => c.Value.ComponentHitboxes).ToList().ForEach(h =>
             {
                 Raylib.DrawRectangle((int)h.x, (int)h.y, (int)h.width, (int)h.height, ColorFromHSV(186, 1f, 0.4f));
             });
