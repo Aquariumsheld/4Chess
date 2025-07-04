@@ -10,8 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "4Chess", "4Chess\4Chess.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIERKELLER", "BIERKELLER\BIERKELLER.csproj", "{67178D55-329F-4812-BEBA-E038AFB1CA9E}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "4ChessSetup", "4ChessSetup\4ChessSetup.vdproj", "{9BA86297-7197-80CB-7EEA-52FA2406CDDB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,8 +24,6 @@ Global
 		{67178D55-329F-4812-BEBA-E038AFB1CA9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67178D55-329F-4812-BEBA-E038AFB1CA9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67178D55-329F-4812-BEBA-E038AFB1CA9E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9BA86297-7197-80CB-7EEA-52FA2406CDDB}.Debug|Any CPU.ActiveCfg = Debug
-		{9BA86297-7197-80CB-7EEA-52FA2406CDDB}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

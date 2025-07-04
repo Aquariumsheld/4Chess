@@ -5,6 +5,7 @@ using BIERKELLER.BIERGaming;
 using BIERKELLER.BIERRender;
 using BIERKELLER.BIERUI;
 using Raylib_CsLo;
+using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Text;
@@ -68,18 +69,18 @@ public class _4ChessGame : BIERGame
 
         _pieceTextureDict = new Dictionary<string, Texture>()
         {
-             { "WhiteBishop.png", LoadTexture("res/WhiteBishop.png") },
-             { "BlackBishop.png", LoadTexture("res/BlackBishop.png") },
-             { "WhiteKing.png", LoadTexture("res/WhiteKing.png") },
-             { "BlackKing.png", LoadTexture("res/BlackKing.png") },
-             { "WhiteKnight.png", LoadTexture("res/WhiteKnight.png") },
-             { "BlackKnight.png", LoadTexture("res/BlackKnight.png") },
-             { "WhitePawn.png", LoadTexture("res/WhitePawn.png") },
-             { "BlackPawn.png", LoadTexture("res/BlackPawn.png") },
-             { "WhiteQueen.png", LoadTexture("res/WhiteQueen.png") },
-             { "BlackQueen.png", LoadTexture("res/BlackQueen.png") },
-             { "WhiteRook.png", LoadTexture("res/WhiteRook.png") },
-             { "BlackRook.png", LoadTexture("res/BlackRook.png") }
+             { "WhiteBishop.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/WhiteBishop.png"), TILE_SIZE, TILE_SIZE) },
+             { "BlackBishop.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/BlackBishop.png"), TILE_SIZE, TILE_SIZE) },
+             { "WhiteKing.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/WhiteKing.png"), TILE_SIZE, TILE_SIZE) },
+             { "BlackKing.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/BlackKing.png"), TILE_SIZE, TILE_SIZE) },
+             { "WhiteKnight.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/WhiteKnight.png"), TILE_SIZE, TILE_SIZE) },
+             { "BlackKnight.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/BlackKnight.png"), TILE_SIZE, TILE_SIZE) },
+             { "WhitePawn.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/WhitePawn.png"), TILE_SIZE, TILE_SIZE) },
+             { "BlackPawn.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/BlackPawn.png"), TILE_SIZE, TILE_SIZE) },
+             { "WhiteQueen.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/WhiteQueen.png"), TILE_SIZE, TILE_SIZE) },
+             { "BlackQueen.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/BlackQueen.png"), TILE_SIZE, TILE_SIZE) },
+             { "WhiteRook.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/WhiteRook.png"), TILE_SIZE, TILE_SIZE) },
+             { "BlackRook.png", BIERRenderTexture.ResizeTexture(LoadTexture("res/BlackRook.png"), TILE_SIZE, TILE_SIZE) }
         };
 
         _pieceTextureDict.Where(d => d.Key.Contains("Black")).ToList().ForEach(d =>
@@ -92,7 +93,7 @@ public class _4ChessGame : BIERGame
                 {
                     if (GetImageColor(img, x, y).a > 0)
                     {
-                        ImageDrawPixel(&img, x, y, SELECT_COLOR);
+                        ImageDrawPixel(&img, x, y, WHITE);
                     }
                 }
             }
@@ -143,28 +144,31 @@ public class _4ChessGame : BIERGame
 
     public void Gamesettings()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_F1))
+        if (Debugger.IsAttached)
         {
-            _debugUiHitboxes = !_debugUiHitboxes;
-        }
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_F2))
-        {
-            debugMoveMode = !debugMoveMode;
-        }
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_F3))
-        {
-            Board =
-            [
-                [new Rook(0, 0, Piece.Color.White, this), null, null, null, new King(0, 4, Piece.Color.Black, this), null, null, null,],
-                [null,null,null,null,null,null,null,null],
-                [null,null,null,null,null,null,null,null],
-                [null,null,null,null,null,null,null,null],
-                [null,null,null,null,null,null,null,null],
-                [null,null,null,null,null,null,null,null],
-                [null,null,null,null,null,null,null,null],
-                [new Rook(7, 0, Piece.Color.White, this), new Knight(7, 1, Piece.Color.White, this), new Bishop(7, 2, Piece.Color.White, this), new Queen(7, 3, Piece.Color.White, this), new King(7, 4, Piece.Color.White, this), new Bishop(7, 5, Piece.Color.White, this), new Knight(7, 6, Piece.Color.White, this), new Rook(7, 7, Piece.Color.White, this)]
-            ];
-            debugMoveMode = true;
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_F1))
+            {
+                _debugUiHitboxes = !_debugUiHitboxes;
+            }
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_F2))
+            {
+                debugMoveMode = !debugMoveMode;
+            }
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_F3))
+            {
+                Board =
+                [
+                    [new Rook(0, 0, Piece.Color.White, this), null, null, null, new King(0, 4, Piece.Color.Black, this), null, null, null,],
+                    [null,null,null,null,null,null,null,null],
+                    [null,null,null,null,null,null,null,null],
+                    [null,null,null,null,null,null,null,null],
+                    [null,null,null,null,null,null,null,null],
+                    [null,null,null,null,null,null,null,null],
+                    [null,null,null,null,null,null,null,null],
+                    [new Rook(7, 0, Piece.Color.White, this), new Knight(7, 1, Piece.Color.White, this), new Bishop(7, 2, Piece.Color.White, this), new Queen(7, 3, Piece.Color.White, this), new King(7, 4, Piece.Color.White, this), new Bishop(7, 5, Piece.Color.White, this), new Knight(7, 6, Piece.Color.White, this), new Rook(7, 7, Piece.Color.White, this)]
+                ];
+                debugMoveMode = true;
+            }
         }
 
         if (gameEnds)
@@ -330,7 +334,7 @@ public class _4ChessGame : BIERGame
             if (draggedPiece.Alignment == Piece.Color.White)
                 Raylib.DrawTextureEx(_pieceTextureDict[draggedPiece.FilePath], new Vector2(renderX, renderY), 0f, 1f, SELECT_COLOR);
             else
-                Raylib.DrawTextureEx(_pieceTextureDict[$"SELECTED{draggedPiece.FilePath}"], new Vector2(renderX, renderY), 0f, 1f, WHITE);
+                Raylib.DrawTextureEx(_pieceTextureDict[$"SELECTED{draggedPiece.FilePath}"], new Vector2(renderX, renderY), 0f, 1f, SELECT_COLOR);
         }     
     }
 
