@@ -61,9 +61,9 @@ public class _4ChessGame : BIERGame
         CustomPostRenderFuncs.Add(RenderIpInput);
     }
 
-    public unsafe override void GameInit()
+    public override unsafe void GameInit()
     {
-        BIERRenderer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, "4Chess", vsync: true);
+        BIERRenderer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, "4Chess", vsync: true, iconPath: "res/rayicon.png");
 
         // BIERRender-Objekte erst nach BIERRenderer.Init initialisieren, da sie den GL-Context brauchen!
 

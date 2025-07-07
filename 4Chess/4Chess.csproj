@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<PublishAot>true</PublishAot>
+	<ApplicationIcon>Res\img\icon\appicon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
