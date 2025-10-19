@@ -16,8 +16,8 @@ public static class _4ChessMove
     public static Piece? DraggedPiece = null;
     public static Vector2 OriginalPosition = Vector2.Zero;
 
-    private static int moveCounter = 1;
-    private static bool isWhiteTurn = true;
+    public static int MoveCounter { get; set; } = 1;
+    public static bool IsWhiteTurn { get; set; } = true;
 
     public static List<BIERRenderRect> PossibleMoveRenderTiles { get; set; } = new List<BIERRenderRect>();
 
@@ -32,16 +32,26 @@ public static class _4ChessMove
     /// </summary>
     public static void TurnChange()
     {
-        isWhiteTurn = !isWhiteTurn;
+        IsWhiteTurn = !IsWhiteTurn;
+        _4Chess.Logger.LogInfo($"TurnChange: IsWhiteTurn is now {IsWhiteTurn}");
     }
 
     public static void MouseUpdate(List<Piece> pieces, _4ChessGame game)
     {
-        if (!_4ChessGame.IsLocalTurn)
+        _4Chess.Logger.Log($"MouseUpdate called - MultiplayerMode={_4ChessGame.MultiplayerMode}, AiMode={_4ChessGame.AiMode}, IsLocalTurn={_4ChessGame.IsLocalTurn}, IsWhiteTurn={IsWhiteTurn}");
+
+        // Block input in multiplayer mode when it's not local player's turn
+        if (_4ChessGame.MultiplayerMode && !_4ChessGame.AiMode && !_4ChessGame.IsLocalTurn)
+        {
+            _4Chess.Logger.Log($"MouseUpdate blocked (Multiplayer): MultiplayerMode={_4ChessGame.MultiplayerMode}, IsLocalTurn={_4ChessGame.IsLocalTurn}");
             return;
+        }
 
         if (!_4ChessGame.continueGame)
+        {
+            _4Chess.Logger.Log("MouseUpdate blocked: Game not continuing");
             return;
+        }
 
         // Aktualisiere die Mausposition
         MouseRect.x = GetMousePosition().X;
@@ -63,14 +73,32 @@ public static class _4ChessMove
     /// </summary>
     private static void HandleMousePressed(List<Piece> pieces, _4ChessGame game)
     {
+        _4Chess.Logger.Log($"HandleMousePressed - Checking {pieces.Count} pieces, AiMode={_4ChessGame.AiMode}, IsWhiteTurn={IsWhiteTurn}");
+
         // Überprüfe, ob eine Figur ausgewählt wurde
         foreach (var piece in pieces)
         {
-            if (!_4ChessGame.debugMoveMode && piece.Alignment != (isWhiteTurn ? Piece.Color.White : Piece.Color.Black))
+            // In AI mode: Only allow white pieces when it's white's turn
+            if (_4ChessGame.AiMode && !_4ChessGame.debugMoveMode)
+            {
+                if (piece.Alignment != Piece.Color.White)
+                {
+                    _4Chess.Logger.Log($"Skipping black piece in AI mode: {piece.GetType().Name} at ({piece.X},{piece.Y})");
+                    continue; // Skip black pieces in AI mode
+                }
+            }
+            // In normal/multiplayer mode: Check turn color
+            else if (!_4ChessGame.debugMoveMode && piece.Alignment != (IsWhiteTurn ? Piece.Color.White : Piece.Color.Black))
+            {
+                _4Chess.Logger.Log($"Skipping piece (wrong turn): {piece.GetType().Name} at ({piece.X},{piece.Y}), Alignment={piece.Alignment}");
                 continue;
+            }
 
-            if (!_4ChessGame.debugMoveMode && _4ChessGame.MultiplayerMode && !_4ChessGame.IsLocalTurn)
+            if (!_4ChessGame.debugMoveMode && _4ChessGame.MultiplayerMode && !_4ChessGame.AiMode && !_4ChessGame.IsLocalTurn)
+            {
+                _4Chess.Logger.Log($"Skipping piece (not local turn): {piece.GetType().Name}");
                 continue;
+            }
 
             Rectangle hitbox = new(
                 piece.X * _4ChessGame.TILE_SIZE + _4ChessGame.BOARDXPos,
@@ -248,17 +276,19 @@ public static class _4ChessMove
             {
                 SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
             }
-            if (_4ChessGame.MultiplayerMode)
+            if (_4ChessGame.MultiplayerMode && !_4ChessGame.AiMode)
             {
-                string msg = $"{MoveCounter.SerializeBoard(game.Board)}";
+                string msg = $"{_4Chess.MoveCounter.SerializeBoard(game.Board)}";
                 //string msg = $"MOVE {(int)OriginalPosition.X} {(int)OriginalPosition.Y} {newX} {newY}";
                 Task.Run(async () =>
                 {
                     await MultiplayerManager.SendMessageAsync(msg);
                 });
                 _4ChessGame.IsLocalTurn = false;
+                _4Chess.Logger.LogInfo($"Multiplayer move sent, IsLocalTurn set to false");
             }
-            moveCounter++;
+            MoveCounter++;
+            _4Chess.Logger.LogInfo($"Player moved - Before TurnChange: IsWhiteTurn={IsWhiteTurn}, MoveCounter={MoveCounter}");
             TurnChange();
         }
         else if (DraggedPiece != null)

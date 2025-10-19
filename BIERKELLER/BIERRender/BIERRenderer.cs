@@ -16,7 +16,7 @@ public static class BIERRenderer
             SetWindowIcon(icon);
             UnloadImage(icon);
         }
-        MaximizeWindow();
+        Raylib.ToggleFullscreen();
     }
 
     public static void Render(List<BIERRenderObject> renderObjects, Color? bgColor = null, List<Action>? cPreFuncs = null, List<Action>? cPostFuncs = null)

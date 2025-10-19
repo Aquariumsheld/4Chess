@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build 4Chess.sln)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

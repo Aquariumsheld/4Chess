@@ -1,4 +1,5 @@
-﻿using _4Chess.Game.Input;
+﻿using _4Chess.ChessAi;
+using _4Chess.Game.Input;
 using _4Chess.Game.Multiplayer;
 using _4Chess.Pieces;
 using BIERKELLER.BIERGaming;
@@ -18,7 +19,7 @@ public class _4ChessGame : BIERGame
 {
     //Render Werte
     public const int WINDOW_WIDTH = 1920;
-    public const int WINDOW_HEIGHT = 1200;
+    public const int WINDOW_HEIGHT = 1080;
     public const int BOARD_DIMENSIONS = 8;
     public static readonly int BOARDXPos = WINDOW_WIDTH / 4;
     public static readonly int BOARDYPos = WINDOW_HEIGHT / 8;
@@ -36,12 +37,18 @@ public class _4ChessGame : BIERGame
     public Dictionary<string, BIERUIComponent> UIComponents { get; set; } = [];
     public List<List<Piece?>> Board { get; set; } = [];
 
+    public static ChessAi.ChessAi ChessAi { get; set; } = null!;
+    public static StockfishAi StockfishAi { get; set; } = null!;
+    public static CustomAi CustomAi { get; set; } = null!;
+
+
     private Dictionary<string, Texture> _pieceTextureDict = [];
 
     public static bool MultiplayerMode = false;
     public static Piece.Color LocalPlayerColor = Piece.Color.White;
     public static bool IsLocalTurn { get; set; } = true;
-    private bool multiplayerMenuActive = true;
+    public static bool AiMode { get; set; } = false;
+    private static bool isAiThinking = false;
 
 
     //=========DEBUG-VARS===============
@@ -59,6 +66,7 @@ public class _4ChessGame : BIERGame
         CustomPostRenderFuncs.Add(RenderDraggedPiece);
         CustomPostRenderFuncs.Add(RenderUIComponents);
         CustomPostRenderFuncs.Add(RenderIpInput);
+        CustomPostRenderFuncs.Add(RenderStockfishThinking);
     }
 
     public override unsafe void GameInit()
@@ -227,6 +235,43 @@ public class _4ChessGame : BIERGame
 
         Gamesettings();
 
+        // AI Logic
+        if (AiMode && !isAiThinking && continueGame)
+        {
+            // Check if it's AI's turn (Black)
+            if (!_4ChessMove.IsWhiteTurn)
+            {
+                isAiThinking = true;
+                // Capture current state for async task
+                bool currentTurn = _4ChessMove.IsWhiteTurn;
+                int currentMoveCount = _4ChessMove.MoveCounter;
+
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (StockfishAi != null)
+                        {
+                            await StockfishAi.MakeMoveAsync(this, currentTurn, currentMoveCount);
+                        }
+                        else if (CustomAi != null)
+                        {
+                            // CustomAi logic here
+                            _4Chess.Logger.LogWarning("CustomAi not yet fully implemented");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _4Chess.Logger.LogError("AI Error", ex);
+                    }
+                    finally
+                    {
+                        isAiThinking = false;
+                    }
+                });
+            }
+        }
+
         if (MultiplayerMode)
         {
             string msg;
@@ -343,6 +388,12 @@ public class _4ChessGame : BIERGame
         RenderObjects.ForEach(o => o.Dispose());
         _pieceTextureDict.Values.ToList().ForEach(t => UnloadTexture(t));
         UnloadFont(_romulusFont);
+
+        // Dispose AI resources
+        if (StockfishAi != null)
+        {
+            StockfishAi.Dispose();
+        }
     }
 
     private void RenderPossibleMoveRenderTiles()
@@ -352,7 +403,103 @@ public class _4ChessGame : BIERGame
 
     private void ShowMultiplayerMenu()
     {
-        UIComponents.Add("HostGameBtn", new BIERButton(" Host Game  ", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add("PlayAiBtn", new BIERButton(" Play against Ai ", x: WINDOW_WIDTH / 2 - 450, y: WINDOW_HEIGHT / 2 - 50, w: 200, h: 100, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        {
+            ClickEvent = () =>
+            {
+                MultiplayerMode = true;
+                LocalPlayerColor = Piece.Color.White;
+                IsLocalTurn = true;
+                IpInput.Hide();
+                UIComponents["PlayAiBtn"].Hide();
+                UIComponents["JoinGameBtn"].Hide();
+                UIComponents["HostGameBtn"].Hide();
+
+                //StockFish Button
+                UIComponents.Add("PlayStockfishBtn", new BIERButton(" Play against Stockfish ", x: WINDOW_WIDTH / 2 - 450, y: WINDOW_HEIGHT / 2 - 50, w: 200, h: 100, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+                {
+                    ClickEvent = () =>
+                    {
+                        UIComponents["PlayStockfishBtn"].Hide();
+                        UIComponents["PlayCustomBtn"].Hide();
+
+                        // Difficulty selection buttons - Row 1
+                        UIComponents.Add("DifficultyLowBtn", new BIERButton(" Easy ", WINDOW_WIDTH / 2 - 350, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, GREEN, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 0); // Stockfish Low
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+
+                        UIComponents.Add("DifficultyMediumBtn", new BIERButton(" Medium ", WINDOW_WIDTH / 2 - 110, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, YELLOW, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 1); // Stockfish Medium
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+
+                        UIComponents.Add("DifficultyHighBtn", new BIERButton(" Hard ", WINDOW_WIDTH / 2 + 130, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, ORANGE, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 2); // Stockfish High
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+
+                        // Difficulty selection buttons - Row 2 (Ultrathink modes)
+                        UIComponents.Add("DifficultyUltraBtn", new BIERButton(" Ultra ", WINDOW_WIDTH / 2 - 350, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, RED, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 3); // Stockfish Ultra (15s, depth 20, MultiPV 3)
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+
+                        UIComponents.Add("DifficultyUltraPlusBtn", new BIERButton(" Ultra+ ", WINDOW_WIDTH / 2 - 110, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, DARKPURPLE, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 4); // Stockfish UltraPlus (22s, depth 25, MultiPV 5)
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+
+                        UIComponents.Add("DifficultyOverthinkerBtn", new BIERButton(" Overthinker ", WINDOW_WIDTH / 2 + 130, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, MAGENTA, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 5); // Stockfish Overthinker (30s, depth 60, MultiPV 10)
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+                    }
+                });
+                //CustomAi Button
+                UIComponents.Add("PlayCustomBtn", new BIERButton(" Play against CustomAi  ", x: WINDOW_WIDTH / 2 + 250, y: WINDOW_HEIGHT / 2 - 50, w: 200, h: 100, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+                {
+                    ClickEvent = () =>
+                    {
+                        UIComponents["PlayStockfishBtn"].Hide();
+                        UIComponents["PlayCustomBtn"].Hide();
+                        ChessAi = new ChessAi.ChessAi(2); // 2 = CustomAi
+                        AiMode = true;
+                    }
+                });
+            }
+        });
+        UIComponents.Add("HostGameBtn", new BIERButton(" Host Game  ", x: WINDOW_WIDTH / 2 - 100, y: WINDOW_HEIGHT / 2 - 50, w: 200, h: 100, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
@@ -360,6 +507,7 @@ public class _4ChessGame : BIERGame
                 LocalPlayerColor = Piece.Color.White; 
                 IsLocalTurn = true;
                 IpInput.Hide();
+                UIComponents["PlayAiBtn"].Hide();
                 UIComponents["JoinGameBtn"].Hide();
                 UIComponents["HostGameBtn"].Hide();
                 MultiplayerManager.IsHost = true;
@@ -369,7 +517,7 @@ public class _4ChessGame : BIERGame
                 });
             }
         });
-        UIComponents.Add("JoinGameBtn", new BIERButton(" Join Game  ", WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2 - 50, 150, 50, Raylib.WHITE, Raylib.BLACK, null, 2, true)
+        UIComponents.Add("JoinGameBtn", new BIERButton(" Join Game  ", x: WINDOW_WIDTH / 2 + 250, y: WINDOW_HEIGHT / 2 - 50, w: 200, h: 100, Raylib.WHITE, Raylib.BLACK, null, 2, true)
         {
             ClickEvent = () =>
             {
@@ -377,6 +525,7 @@ public class _4ChessGame : BIERGame
                 LocalPlayerColor = Piece.Color.Black; 
                 IsLocalTurn = false;
                 IpInput.Hide();
+                UIComponents["PlayAiBtn"].Hide();
                 UIComponents["JoinGameBtn"].Hide();
                 UIComponents["HostGameBtn"].Hide();
                 string serverIp = IpInput.TextValue.Replace(" ", "").Replace("\n", "");
@@ -388,8 +537,6 @@ public class _4ChessGame : BIERGame
             }
         });
     }
-
-
 
     private void RenderBoard()
     {
@@ -438,5 +585,89 @@ public class _4ChessGame : BIERGame
         {
             Console.WriteLine("Fehler beim Verarbeiten der Move-Nachricht: " + ex.Message);
         }
+    }
+
+    private void HideDifficultyButtons()
+    {
+        if (UIComponents.ContainsKey("DifficultyLowBtn")) UIComponents["DifficultyLowBtn"].Hide();
+        if (UIComponents.ContainsKey("DifficultyMediumBtn")) UIComponents["DifficultyMediumBtn"].Hide();
+        if (UIComponents.ContainsKey("DifficultyHighBtn")) UIComponents["DifficultyHighBtn"].Hide();
+        if (UIComponents.ContainsKey("DifficultyUltraBtn")) UIComponents["DifficultyUltraBtn"].Hide();
+        if (UIComponents.ContainsKey("DifficultyUltraPlusBtn")) UIComponents["DifficultyUltraPlusBtn"].Hide();
+        if (UIComponents.ContainsKey("DifficultyOverthinkerBtn")) UIComponents["DifficultyOverthinkerBtn"].Hide();
+    }
+
+    private void RenderStockfishThinking()
+    {
+        if (StockfishAi == null || !StockfishAi.ShowThinking)
+            return;
+
+        // Erstelle eine Thread-sichere Kopie der ThinkingLines
+        List<ChessAi.StockfishThinkingLine> thinkingLinesCopy;
+        lock (StockfishAi.ThinkingLines)
+        {
+            if (StockfishAi.ThinkingLines.Count == 0)
+                return;
+
+            thinkingLinesCopy = new List<ChessAi.StockfishThinkingLine>(StockfishAi.ThinkingLines);
+        }
+
+        int startX = BOARDXPos + (BOARD_DIMENSIONS * TILE_SIZE) + 50;
+        int startY = BOARDYPos;
+        int lineHeight = 40;
+        int boxWidth = 600;
+        int headerHeight = 130; // Erhöht für Depth-Anzeige und Timer
+
+        // Hintergrund
+        DrawRectangle(startX - 10, startY - 10, boxWidth, headerHeight + (thinkingLinesCopy.Count * lineHeight), ColorAlpha(BLACK, 0.8f));
+
+        // Titel
+        DrawTextEx(_romulusFont, "Stockfish Thinking:", new Vector2(startX, startY), 30, 2, GOLD);
+
+        // Depth-Anzeige
+        string depthText = $"Depth: {StockfishAi.CurrentDepth}/{StockfishAi.TargetDepth}";
+        Color depthColor = StockfishAi.CurrentDepth >= StockfishAi.TargetDepth ? GREEN : SKYBLUE;
+        DrawTextEx(_romulusFont, depthText, new Vector2(startX, startY + 35), 25, 2, depthColor);
+
+        // Timer-Anzeige
+        if (StockfishAi.IsThinking)
+        {
+            var elapsed = DateTime.Now - StockfishAi.ThinkingStartTime;
+            var remaining = StockfishAi.CurrentMoveTimeMs - (int)elapsed.TotalMilliseconds;
+            remaining = Math.Max(0, remaining); // Verhindere negative Werte
+
+            string timerText = $"Time: {elapsed.TotalSeconds:F1}s / {(StockfishAi.CurrentMoveTimeMs / 1000.0):F1}s (Remaining: {(remaining / 1000.0):F1}s)";
+            Color timerColor = remaining < 3000 ? RED : (remaining < 5000 ? ORANGE : WHITE);
+            DrawTextEx(_romulusFont, timerText, new Vector2(startX, startY + 65), 20, 1, timerColor);
+        }
+        else
+        {
+            string timerText = "Time: Finished";
+            DrawTextEx(_romulusFont, timerText, new Vector2(startX, startY + 65), 20, 1, GREEN);
+        }
+
+        int currentY = startY + headerHeight;
+
+        // Zeige alle Thinking Lines
+        foreach (var line in thinkingLinesCopy)
+        {
+            string lineText = $"#{line.MultiPVIndex} [{line.Depth}] {line.GetScoreDisplay()}: {line.GetMovesDisplay(5)}";
+
+            // Färbe die beste Line grün, schlechtere rot
+            Color lineColor = line.MultiPVIndex switch
+            {
+                1 => GREEN,
+                2 => YELLOW,
+                3 => ORANGE,
+                _ => RED
+            };
+
+            DrawTextEx(_romulusFont, lineText, new Vector2(startX, currentY), 20, 1, lineColor);
+            currentY += lineHeight;
+        }
+
+        // Status-Text
+        string status = isAiThinking ? "AI is thinking..." : "AI ready";
+        DrawTextEx(_romulusFont, status, new Vector2(startX, currentY + 20), 24, 1, isAiThinking ? YELLOW : GREEN);
     }
 }
