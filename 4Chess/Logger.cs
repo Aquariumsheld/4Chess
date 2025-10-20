@@ -14,6 +14,20 @@ namespace _4Chess
             try
             {
                 string logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+                if (!Directory.Exists(logDirectory))
+                {
+                    long totalSize = 0;
+                    foreach (string filePath in Directory.GetFiles(logDirectory))
+                    {
+                        FileInfo fileInfo = new FileInfo(filePath);
+                        totalSize += fileInfo.Length;
+                    }
+
+                    if (totalSize > 25 * 1024 * 1024) // 25 MB
+                    {
+                        Directory.Delete(logDirectory, true);
+                    }
+                }
                 Directory.CreateDirectory(logDirectory);
 
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");

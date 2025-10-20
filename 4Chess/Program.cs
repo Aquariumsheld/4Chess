@@ -12,10 +12,8 @@ internal class Program
 
     private static void Main()
     {
-        // Konsole für Debug-Ausgaben aktivieren
         AllocConsole();
 
-        // Logger initialisieren
         Logger.Initialize();
         Logger.LogInfo("4Chess gestartet");
 

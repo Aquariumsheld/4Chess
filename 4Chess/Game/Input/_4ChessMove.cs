@@ -241,59 +241,63 @@ public static class _4ChessMove
         bool isValidMove = (DraggedPiece?.GetMoves().Any(move => (int)move.X == newX && (int)move.Y == newY) ?? false);
         if (isValidMove && DraggedPiece != null)
         {
-            // Reset all EnPassant flags before making the move
-            foreach (var row in game.Board)
+            // Alle Board-Modifikationen in einem Lock-Block
+            lock (_4ChessGame.BoardLock)
             {
-                foreach (var p in row)
+                // Reset all EnPassant flags before making the move
+                foreach (var row in game.Board)
                 {
-                    if (p is Pawn pawn)
+                    foreach (var p in row)
                     {
-                        pawn.IsEnPassant = false;
+                        if (p is Pawn pawn)
+                        {
+                            pawn.IsEnPassant = false;
+                        }
                     }
                 }
-            }
 
-            DraggedPiece.X = newX;
-            DraggedPiece.Y = newY;
+                DraggedPiece.X = newX;
+                DraggedPiece.Y = newY;
 
-            game.Board[(int)OriginalPosition.Y][(int)OriginalPosition.X] = null;
-            game.Board[newY][newX] = DraggedPiece;
+                game.Board[(int)OriginalPosition.Y][(int)OriginalPosition.X] = null;
+                game.Board[newY][newX] = DraggedPiece;
 
-            // Prüfe auf King-Bewegungen für Castling
-            KingCasteling(game, newX, newY);
+                // Prüfe auf King-Bewegungen für Castling
+                KingCasteling(game, newX, newY);
 
-            // Aktualisiere den IsUnmoved-Status, falls die Figur sich bewegt hat
-            if (DraggedPiece.X != (int)OriginalPosition.X || DraggedPiece.Y != (int)OriginalPosition.Y)
-            {
-                if (DraggedPiece is Pawn pawn)
+                // Aktualisiere den IsUnmoved-Status, falls die Figur sich bewegt hat
+                if (DraggedPiece.X != (int)OriginalPosition.X || DraggedPiece.Y != (int)OriginalPosition.Y)
                 {
-                    int diff = DraggedPiece.Y - (int)OriginalPosition.Y;
-                    pawn.IsEnPassant = diff == 2 || diff == -2;
-                    pawn.IsUnmoved = false;
-                }
-                if (DraggedPiece is King king) king.IsUnmoved = false;
-                if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
-            }
-
-            if (DraggedPiece is Pawn pawnPassant)
-            {
-                if (pawnPassant.X - (int)OriginalPosition.X == 1 || pawnPassant.X - (int)OriginalPosition.X == -1)
-                {
-                    int diffy = pawnPassant.Y - 1;
-                    if (diffy >= 0 && pawnPassant.Y - 1 >= 0 && pawnPassant.Y + 1 <= 7)
+                    if (DraggedPiece is Pawn pawn)
                     {
-                        if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant && pawn5.Alignment != pawnPassant.Alignment)
-                            game.Board[pawnPassant.Y - 1][pawnPassant.X] = null;
+                        int diff = DraggedPiece.Y - (int)OriginalPosition.Y;
+                        pawn.IsEnPassant = diff == 2 || diff == -2;
+                        pawn.IsUnmoved = false;
+                    }
+                    if (DraggedPiece is King king) king.IsUnmoved = false;
+                    if (DraggedPiece is Rook rook) rook.IsUnmoved = false;
+                }
 
-                        else if (game.Board[pawnPassant.Y + 1][pawnPassant.X] is Pawn pawn6 && pawn6.IsEnPassant && pawn6.Alignment != pawnPassant.Alignment)
-                            game.Board[pawnPassant.Y + 1][pawnPassant.X] = null;
+                if (DraggedPiece is Pawn pawnPassant)
+                {
+                    if (pawnPassant.X - (int)OriginalPosition.X == 1 || pawnPassant.X - (int)OriginalPosition.X == -1)
+                    {
+                        int diffy = pawnPassant.Y - 1;
+                        if (diffy >= 0 && pawnPassant.Y - 1 >= 0 && pawnPassant.Y + 1 <= 7)
+                        {
+                            if (game.Board[pawnPassant.Y - 1][pawnPassant.X] is Pawn pawn5 && pawn5.IsEnPassant && pawn5.Alignment != pawnPassant.Alignment)
+                                game.Board[pawnPassant.Y - 1][pawnPassant.X] = null;
+
+                            else if (game.Board[pawnPassant.Y + 1][pawnPassant.X] is Pawn pawn6 && pawn6.IsEnPassant && pawn6.Alignment != pawnPassant.Alignment)
+                                game.Board[pawnPassant.Y + 1][pawnPassant.X] = null;
+                        }
                     }
                 }
-            }
 
-            if (DraggedPiece is Pawn pawn2 && pawn2.IsAtEnd())
-            {
-                SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
+                if (DraggedPiece is Pawn pawn2 && pawn2.IsAtEnd())
+                {
+                    SwitchPiece(game, DraggedPiece.Y, DraggedPiece.X);
+                }
             }
             if (_4ChessGame.MultiplayerMode && !_4ChessGame.AiMode)
             {

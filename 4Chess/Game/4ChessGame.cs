@@ -36,6 +36,7 @@ public class _4ChessGame : BIERGame
     public List<BIERRenderObject> RenderObjects { get; set; } = [];
     public Dictionary<string, BIERUIComponent> UIComponents { get; set; } = [];
     public List<List<Piece?>> Board { get; set; } = [];
+    public static readonly object BoardLock = new object(); // Thread-Synchronisation für Board-Zugriff
 
     public static ChessAi.ChessAi ChessAi { get; set; } = null!;
     public static StockfishAi StockfishAi { get; set; } = null!;
@@ -204,8 +205,15 @@ public class _4ChessGame : BIERGame
     }
     public void IsGameDone(List<Piece> pieces)
     {
-        List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves())];
-        List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves())];
+        List<Vector2> WhiteMoves;
+        List<Vector2> BlackMoves;
+
+        // Lock Board während wir alle Moves berechnen
+        lock (BoardLock)
+        {
+            WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves())];
+            BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves())];
+        }
         // Schachmatt: Entweder Weiß hat keine Züge und steht im Schach ODER Schwarz hat keine Züge und steht im Schach.
         // Button nur hinzufügen, wenn er noch nicht existiert.
         if (((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition))
@@ -305,13 +313,17 @@ public class _4ChessGame : BIERGame
         UIComponents.Remove("YourIpText");
         UIComponents.Add("YourIpText", new BIERButton($"Deine IP: {localIP} FPS: {GetFPS()}", 30, 30, 400, 70, BEIGE, WHITE, _romulusFont, 3, false));
 
-        if (GetActivePieces().All(p => p != null))
-            _4ChessMove.MouseUpdate(GetActivePieces(), this);
-
         if (IpInput.IsVisible)
             HandleKeyTextInput(IpInput);
 
-        IsGameDone(GetActivePieces());
+        // Skip all board-related updates while AI is thinking to avoid race conditions
+        if (!isAiThinking)
+        {
+            if (GetActivePieces().All(p => p != null))
+                _4ChessMove.MouseUpdate(GetActivePieces(), this);
+
+            IsGameDone(GetActivePieces());
+        }
     }
 
     private void HandleKeyTextInput(BIERInput bierInput)
@@ -338,9 +350,12 @@ public class _4ChessGame : BIERGame
 
     private List<Piece> GetActivePieces()
     {
-        return [.. Board.SelectMany(row => row)
-                                  .Where(piece => piece != null)
-                                  .Cast<Piece>()];
+        lock (BoardLock)
+        {
+            return [.. Board.SelectMany(row => row)
+                                      .Where(piece => piece != null)
+                                      .Cast<Piece>()];
+        }
     }
 
     public override void GameRender()
@@ -349,7 +364,15 @@ public class _4ChessGame : BIERGame
         int renderY = 0;
         RenderObjects.Clear();
 
-        foreach (var p in Board.SelectMany(row => row))
+        // Lock board access during rendering to prevent race conditions with AI thread
+        // Materialize the collection inside the lock to avoid deferred execution issues
+        List<Piece?> pieces;
+        lock (BoardLock)
+        {
+            pieces = Board.SelectMany(row => row).ToList();
+        }
+
+        foreach (var p in pieces)
         {
             if (p != null && p.FilePath != null)
             {
@@ -388,17 +411,25 @@ public class _4ChessGame : BIERGame
 
     private void RenderDraggedPiece()
     {
-        var draggedPiece = Board.SelectMany(p => p).Where(p => p == _4ChessMove.DraggedPiece).First();
-        Vector2 mousePos = Raylib.GetMousePosition();
-        int renderX = (int)mousePos.X - TILE_SIZE / 2;
-        int renderY = (int)mousePos.Y - TILE_SIZE / 2;
+        // Materialize the collection inside the lock to avoid deferred execution issues
+        Piece? draggedPiece;
+        lock (BoardLock)
+        {
+            // First materialize with ToList(), then search
+            draggedPiece = Board.SelectMany(p => p).ToList().Where(p => p == _4ChessMove.DraggedPiece).FirstOrDefault();
+        }
+
         if (draggedPiece != null && draggedPiece.FilePath != null)
         {
+            Vector2 mousePos = Raylib.GetMousePosition();
+            int renderX = (int)mousePos.X - TILE_SIZE / 2;
+            int renderY = (int)mousePos.Y - TILE_SIZE / 2;
+
             if (draggedPiece.Alignment == Piece.Color.White)
                 Raylib.DrawTextureEx(_pieceTextureDict[draggedPiece.FilePath], new Vector2(renderX, renderY), 0f, 1f, SELECT_COLOR);
             else
                 Raylib.DrawTextureEx(_pieceTextureDict[$"SELECTED{draggedPiece.FilePath}"], new Vector2(renderX, renderY), 0f, 1f, SELECT_COLOR);
-        }     
+        }
     }
 
     public override void GameDispose()
@@ -514,7 +545,7 @@ public class _4ChessGame : BIERGame
                             }
                         });
 
-                        UIComponents.Add("DifficultyOverthinkerBtn", new BIERButton(" Overthinker ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, MAGENTA, null, 2, true)
+                        UIComponents.Add("DifficultyOverthinkerBtn", new BIERButton(" You will Lose ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, MAGENTA, null, 2, true)
                         {
                             ClickEvent = () =>
                             {
@@ -838,10 +869,21 @@ public class _4ChessGame : BIERGame
 
         _4Chess.Logger.LogInfo($"Starting tournament: {_tournamentWhiteAi} vs {_tournamentBlackAi}, {_tournamentGameCount} games");
 
+        // Set AI thinking flag for the entire tournament duration
+        isAiThinking = true;
+
         // Start tournament in background
         Task.Run(async () =>
         {
-            await CurrentTournament.RunTournamentAsync(this);
+            try
+            {
+                await CurrentTournament.RunTournamentAsync(this);
+            }
+            finally
+            {
+                // Reset AI thinking flag when tournament is done
+                isAiThinking = false;
+            }
         });
     }
 

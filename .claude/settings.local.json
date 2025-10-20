@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build 4Chess.sln)"
+      "Bash(dotnet build 4Chess.sln)",
+      "Bash(taskkill /F /IM stockfish-windows-x86-64-avx2.exe)",
+      "Bash(taskkill //F //IM stockfish-windows-x86-64-avx2.exe)"
     ],
     "deny": [],
     "ask": []

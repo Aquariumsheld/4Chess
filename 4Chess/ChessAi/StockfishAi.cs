@@ -30,6 +30,7 @@ namespace _4Chess.ChessAi
         private int _multiPV; // Anzahl der Varianten für ultrathink
         private int _moveTimeMs; // Zeit in Millisekunden pro Zug (0 = unbegrenzt)
         private int _threadCount; // Anzahl der Threads für Stockfish
+        private int _hashSizeMB; // Hash-Größe in MB für Transposition Table
 
         // Spielzug-Historie
         private List<string> _moveHistory = new List<string>();
@@ -56,74 +57,96 @@ namespace _4Chess.ChessAi
             int defaultThreads = Math.Max(1, Environment.ProcessorCount / 2);
             int overthinkerThreads = Math.Max(1, (int)(Environment.ProcessorCount * 0.75));
 
+            // Calculate total system RAM
+            long totalRamBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+            long totalRamMB = totalRamBytes / (1024 * 1024);
+
             switch (ChessAiDifficulty)
             {
-                case ChessAiDifficulty.Low:
-                    _depth = 5;
+                case ChessAiDifficulty.Low: // ~800–1000 Elo | Spielt wie ein Anfänger: viele Zufallszüge, kaum Positionsverständnis
+                    _depth = 3;
                     _skillLevel = 0;
                     _multiPV = 1;
                     _moveTimeMs = 5000;
                     _threadCount = defaultThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.03), 33554432)); // 3% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
-                case ChessAiDifficulty.Medium:
-                    _depth = 10;
+
+                case ChessAiDifficulty.Medium: // ~1200–1400 Elo | Spielt wie ein schwacher Vereinsspieler: einfache Taktiken, viele Einsteller
+                    _depth = 7;
                     _skillLevel = 3;
                     _multiPV = 1;
                     _moveTimeMs = 10000;
                     _threadCount = defaultThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.06), 33554432)); // 6% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
-                case ChessAiDifficulty.High:
-                    _depth = 15;
+
+                case ChessAiDifficulty.High: // ~1600–1800 Elo | Solide Amateurstufe: erkennt Drohungen, plant 1–2 Züge voraus, macht selten grobe Fehler
+                    _depth = 13;
                     _skillLevel = 5;
                     _multiPV = 1;
                     _moveTimeMs = 15000;
                     _threadCount = defaultThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.10), 33554432)); // 10% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
-                case ChessAiDifficulty.Expert:
-                    _depth = 18;
+
+                case ChessAiDifficulty.Expert: // ~2000–2200 Elo | Starker Vereinsspieler / schwacher FM: gute Positionsbewertung, taktisch sehr präzise
+                    _depth = 15;
                     _skillLevel = 8;
                     _multiPV = 1;
                     _moveTimeMs = 18000;
                     _threadCount = defaultThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.15), 33554432)); // 15% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
-                case ChessAiDifficulty.Ultra:
+
+                case ChessAiDifficulty.Ultra: // ~2400–2500 Elo | Meister-Niveau: spielt sehr präzise, kaum taktische Fehler, gute langfristige Planung
                     _depth = 20;
                     _skillLevel = 10;
                     _multiPV = 1;
                     _moveTimeMs = 15000;
                     _threadCount = defaultThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.20), 33554432)); // 20% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
-                case ChessAiDifficulty.UltraPlus:
+
+                case ChessAiDifficulty.UltraPlus: // ~2600–2700 Elo | Großmeisterstärke: spielt strategisch tief, kaum verwundbar, nutzt kleine Vorteile konsequent
                     _depth = 25;
                     _skillLevel = 12;
                     _multiPV = 1;
                     _moveTimeMs = 22000;
                     _threadCount = defaultThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.25), 33554432)); // 25% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
-                case ChessAiDifficulty.Godlike:
-                    _depth = 30;
+
+                case ChessAiDifficulty.Godlike: // ~2900+ Elo | Weltmeister-Niveau: spielt praktisch fehlerfrei, nur durch perfekte Eröffnungsvorbereitung schlagbar
+                    _depth = 25;
                     _skillLevel = 15;
                     _multiPV = 1;
                     _moveTimeMs = 25000;
                     _threadCount = defaultThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.30), 33554432)); // 30% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
-                case ChessAiDifficulty.Overthinker:
+
+                case ChessAiDifficulty.Overthinker: // ~3500+ Elo | Voller Stockfish-Modus: sucht ultratief (bis 30 ply), bewertet Millionen Stellungen pro Sekunde – praktisch unbesiegbar
                     _depth = 30;
                     _skillLevel = 20;
                     _multiPV = 1;
                     _moveTimeMs = 30000;
-                    _threadCount = overthinkerThreads; // 75% der Threads!
+                    _threadCount = overthinkerThreads;
+                    _hashSizeMB = Math.Max(16, Math.Min((int)(totalRamMB * 0.33), 33554432)); // 33% vom Gesamt-RAM
                     ShowThinking = true;
                     break;
             }
         }
+
+        
+
 
 //| Skill Level | Geschätzte Elo | Beschreibung                                           |
 //| ----------- | -------------- | ------------------------------------------------------ |
@@ -136,7 +159,7 @@ namespace _4Chess.ChessAi
 //| 6           | ~1950          | Gute taktische Verteidigung                            |
 //| 7           | ~2050          | Ambitionierter Amateur                                 |
 //| 8           | ~2150          | Spielt schon sehr solide                               |
-//| 9           | ~2250          | FM-Niveau(unteres Ende)                               |
+//| 9           | ~2250          | FM-Niveau(unteres Ende)                                |
 //| 10          | ~2350          | Starke Vereinsspieler oder schwache Titelträger        |
 //| 11          | ~2450          | IM-Niveau                                              |
 //| 12          | ~2550          | FM/IM-Bereich, kaum taktische Fehler                   |
@@ -147,13 +170,12 @@ namespace _4Chess.ChessAi
 //| 17          | ~3050          | Top-5-Engine-Niveau                                    |
 //| 18          | ~3150          | Nahe an Super-GM                                       |
 //| 19          | ~3250          | Fast maximale Stärke                                   |
-//| 20          | ~3400–3600     | Volle Engine-Power(entspricht Stockfish „unbegrenzt“) |
+//| 20          | ~3400–3600     | Volle Engine-Power(entspricht Stockfish „unbegrenzt“)  |
 
         private void InitializeStockfish()
         {
             try
             {
-                // Versuche Stockfish zu finden
                 string stockfishPath = FindStockfishPath();
 
                 if (string.IsNullOrEmpty(stockfishPath))
@@ -180,11 +202,10 @@ namespace _4Chess.ChessAi
                 _stockfishInput = _stockfishProcess.StandardInput;
                 _stockfishOutput = _stockfishProcess.StandardOutput;
 
-                // UCI initialisieren
                 SendCommand("uci");
                 WaitForResponse("uciok");
 
-                // Optionen setzen
+                SendCommand($"setoption name Hash value {_hashSizeMB}");
                 SendCommand($"setoption name Threads value {_threadCount}");
                 SendCommand($"setoption name Skill Level value {_skillLevel}");
                 SendCommand($"setoption name MultiPV value {_multiPV}");
@@ -192,7 +213,7 @@ namespace _4Chess.ChessAi
                 WaitForResponse("readyok");
 
                 _isInitialized = true;
-                _4Chess.Logger.LogInfo($"Stockfish initialized! Difficulty: {ChessAiDifficulty}, Depth: {_depth}, Skill: {_skillLevel}, MultiPV: {_multiPV}, TimeLimit: {_moveTimeMs}ms, Threads: {_threadCount}/{Environment.ProcessorCount}");
+                _4Chess.Logger.LogInfo($"Stockfish initialized! Difficulty: {ChessAiDifficulty}, Depth: {_depth}, Skill: {_skillLevel}, MultiPV: {_multiPV}, TimeLimit: {_moveTimeMs}ms, Hash: {_hashSizeMB}MB, Threads: {_threadCount}/{Environment.ProcessorCount}");
             }
             catch (Exception ex)
             {
@@ -201,7 +222,6 @@ namespace _4Chess.ChessAi
         }
         private string FindStockfishPath()
         {
-            // Mögliche Pfade für Stockfish
             string[] possiblePaths = new[]
             {
                 "stockfish.exe",
@@ -225,7 +245,6 @@ namespace _4Chess.ChessAi
                 }
             }
 
-            // Versuche über PATH zu finden
             try
             {
                 var process = new Process
@@ -539,36 +558,40 @@ namespace _4Chess.ChessAi
             // Parse UCI move
             var (from, to, promotion) = ChessAiHelper.ParseUCIMove(bestMove);
 
-            // Finde die Figur auf dem Board
-            var piece = game.Board[from.y][from.x];
-            if (piece == null)
+            // Alle Board-Modifikationen in einem Lock-Block
+            lock (_4ChessGame.BoardLock)
             {
-                _4Chess.Logger.LogError($"No piece at ({from.x},{from.y})");
-                return;
-            }
-
-            _4Chess.Logger.LogInfo($"Moving piece from ({from.x},{from.y}) to ({to.x},{to.y})");
-
-            // Reset all EnPassant flags before making the move
-            foreach (var row in game.Board)
-            {
-                foreach (var p in row)
+                // Finde die Figur auf dem Board
+                var piece = game.Board[from.y][from.x];
+                if (piece == null)
                 {
-                    if (p is Pawn pawn)
+                    _4Chess.Logger.LogError($"No piece at ({from.x},{from.y})");
+                    return;
+                }
+
+                _4Chess.Logger.LogInfo($"Moving piece from ({from.x},{from.y}) to ({to.x},{to.y})");
+
+                // Reset all EnPassant flags before making the move
+                foreach (var row in game.Board)
+                {
+                    foreach (var p in row)
                     {
-                        pawn.IsEnPassant = false;
+                        if (p is Pawn pawn)
+                        {
+                            pawn.IsEnPassant = false;
+                        }
                     }
                 }
+
+                // Führe den Zug aus
+                game.Board[from.y][from.x] = null;
+                game.Board[to.y][to.x] = piece;
+                piece.X = to.x;
+                piece.Y = to.y;
+
+                // Handle special moves
+                HandleSpecialMoves(game, piece, from, to, promotion);
             }
-
-            // Führe den Zug aus
-            game.Board[from.y][from.x] = null;
-            game.Board[to.y][to.x] = piece;
-            piece.X = to.x;
-            piece.Y = to.y;
-
-            // Handle special moves
-            HandleSpecialMoves(game, piece, from, to, promotion);
 
             // Speichere Zug in Historie
             _moveHistory.Add(bestMove);
