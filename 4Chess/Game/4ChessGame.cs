@@ -49,6 +49,14 @@ public class _4ChessGame : BIERGame
     public static bool IsLocalTurn { get; set; } = true;
     public static bool AiMode { get; set; } = false;
     private static bool isAiThinking = false;
+    public bool IsAiThinking => isAiThinking;
+
+    // AI Tournament
+    public AiTournament? CurrentTournament { get; set; } = null;
+    public bool TournamentMode { get; set; } = false;
+    private ChessAiDifficulty _tournamentWhiteAi = ChessAiDifficulty.Medium;
+    private ChessAiDifficulty _tournamentBlackAi = ChessAiDifficulty.High;
+    private int _tournamentGameCount = 10;
 
 
     //=========DEBUG-VARS===============
@@ -67,6 +75,7 @@ public class _4ChessGame : BIERGame
         CustomPostRenderFuncs.Add(RenderUIComponents);
         CustomPostRenderFuncs.Add(RenderIpInput);
         CustomPostRenderFuncs.Add(RenderStockfishThinking);
+        CustomPostRenderFuncs.Add(RenderTournamentResults);
     }
 
     public override unsafe void GameInit()
@@ -197,7 +206,11 @@ public class _4ChessGame : BIERGame
     {
         List<Vector2> WhiteMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.White).SelectMany(p => p.GetMoves())];
         List<Vector2> BlackMoves = [.. pieces.Where(p => p.Alignment == Piece.Color.Black).SelectMany(p => p.GetMoves())];
-        if ((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition)) || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)) && !UIComponents.ContainsKey("SchachmattBtn"))
+        // Schachmatt: Entweder Weiß hat keine Züge und steht im Schach ODER Schwarz hat keine Züge und steht im Schach.
+        // Button nur hinzufügen, wenn er noch nicht existiert.
+        if (((WhiteMoves.Count == 0 && BlackMoves.Contains(WhiteKingPosition))
+             || (BlackMoves.Count == 0 && WhiteMoves.Contains(BlackKingPosition)))
+            && !UIComponents.ContainsKey("SchachmattBtn"))
         {
             UIComponents.Add("SchachmattBtn", new BIERButton(" Schachmatt ", 0, WINDOW_HEIGHT / 2 - WINDOW_HEIGHT / 8f, WINDOW_WIDTH, WINDOW_HEIGHT / 3.5f, BLACK, GOLD, _romulusFont, 3, false));
             gameEnds = true;
@@ -238,9 +251,11 @@ public class _4ChessGame : BIERGame
         // AI Logic
         if (AiMode && !isAiThinking && continueGame)
         {
+            _4Chess.Logger.LogInfo($"AI Check: AiMode={AiMode}, isAiThinking={isAiThinking}, IsWhiteTurn={_4ChessMove.IsWhiteTurn}");
             // Check if it's AI's turn (Black)
             if (!_4ChessMove.IsWhiteTurn)
             {
+                _4Chess.Logger.LogInfo("AI starting move...");
                 isAiThinking = true;
                 // Capture current state for async task
                 bool currentTurn = _4ChessMove.IsWhiteTurn;
@@ -250,6 +265,7 @@ public class _4ChessGame : BIERGame
                 {
                     try
                     {
+                        _4Chess.Logger.LogInfo($"AI Task started - currentTurn={currentTurn}, moveCount={currentMoveCount}");
                         if (StockfishAi != null)
                         {
                             await StockfishAi.MakeMoveAsync(this, currentTurn, currentMoveCount);
@@ -259,6 +275,7 @@ public class _4ChessGame : BIERGame
                             // CustomAi logic here
                             _4Chess.Logger.LogWarning("CustomAi not yet fully implemented");
                         }
+                        _4Chess.Logger.LogInfo("AI Task completed successfully");
                     }
                     catch (Exception ex)
                     {
@@ -266,6 +283,7 @@ public class _4ChessGame : BIERGame
                     }
                     finally
                     {
+                        _4Chess.Logger.LogInfo("AI Task finally block - setting isAiThinking to false");
                         isAiThinking = false;
                     }
                 });
@@ -422,9 +440,10 @@ public class _4ChessGame : BIERGame
                     {
                         UIComponents["PlayStockfishBtn"].Hide();
                         UIComponents["PlayCustomBtn"].Hide();
+                        UIComponents["AiTournamentBtn"].Hide();
 
                         // Difficulty selection buttons - Row 1
-                        UIComponents.Add("DifficultyLowBtn", new BIERButton(" Easy ", WINDOW_WIDTH / 2 - 350, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, GREEN, null, 2, true)
+                        UIComponents.Add("DifficultyLowBtn", new BIERButton(" Easy ", WINDOW_WIDTH / 2 - 470, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, GREEN, null, 2, true)
                         {
                             ClickEvent = () =>
                             {
@@ -434,7 +453,7 @@ public class _4ChessGame : BIERGame
                             }
                         });
 
-                        UIComponents.Add("DifficultyMediumBtn", new BIERButton(" Medium ", WINDOW_WIDTH / 2 - 110, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, YELLOW, null, 2, true)
+                        UIComponents.Add("DifficultyMediumBtn", new BIERButton(" Medium ", WINDOW_WIDTH / 2 - 230, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, YELLOW, null, 2, true)
                         {
                             ClickEvent = () =>
                             {
@@ -444,7 +463,7 @@ public class _4ChessGame : BIERGame
                             }
                         });
 
-                        UIComponents.Add("DifficultyHighBtn", new BIERButton(" Hard ", WINDOW_WIDTH / 2 + 130, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, ORANGE, null, 2, true)
+                        UIComponents.Add("DifficultyHighBtn", new BIERButton(" Hard ", WINDOW_WIDTH / 2 + 10, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, ORANGE, null, 2, true)
                         {
                             ClickEvent = () =>
                             {
@@ -454,32 +473,52 @@ public class _4ChessGame : BIERGame
                             }
                         });
 
-                        // Difficulty selection buttons - Row 2 (Ultrathink modes)
-                        UIComponents.Add("DifficultyUltraBtn", new BIERButton(" Ultra ", WINDOW_WIDTH / 2 - 350, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, RED, null, 2, true)
+                        UIComponents.Add("DifficultyExpertBtn", new BIERButton(" Expert ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 120, 220, 70, WHITE, RED, null, 2, true)
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 3); // Stockfish Ultra (15s, depth 20, MultiPV 3)
+                                ChessAi = new ChessAi.ChessAi(1, 3); // Stockfish Expert
                                 AiMode = true;
                                 HideDifficultyButtons();
                             }
                         });
 
-                        UIComponents.Add("DifficultyUltraPlusBtn", new BIERButton(" Ultra+ ", WINDOW_WIDTH / 2 - 110, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, DARKPURPLE, null, 2, true)
+                        // Difficulty selection buttons - Row 2 (Ultra modes)
+                        UIComponents.Add("DifficultyUltraBtn", new BIERButton(" Ultra ", WINDOW_WIDTH / 2 - 470, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, DARKPURPLE, null, 2, true)
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 4); // Stockfish UltraPlus (22s, depth 25, MultiPV 5)
+                                ChessAi = new ChessAi.ChessAi(1, 4); // Stockfish Ultra
                                 AiMode = true;
                                 HideDifficultyButtons();
                             }
                         });
 
-                        UIComponents.Add("DifficultyOverthinkerBtn", new BIERButton(" Overthinker ", WINDOW_WIDTH / 2 + 130, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, MAGENTA, null, 2, true)
+                        UIComponents.Add("DifficultyUltraPlusBtn", new BIERButton(" Ultra+ ", WINDOW_WIDTH / 2 - 230, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, VIOLET, null, 2, true)
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 5); // Stockfish Overthinker (30s, depth 60, MultiPV 10)
+                                ChessAi = new ChessAi.ChessAi(1, 5); // Stockfish UltraPlus
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+
+                        UIComponents.Add("DifficultyGodlikeBtn", new BIERButton(" Godlike ", WINDOW_WIDTH / 2 + 10, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, PINK, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 6); // Stockfish Godlike
+                                AiMode = true;
+                                HideDifficultyButtons();
+                            }
+                        });
+
+                        UIComponents.Add("DifficultyOverthinkerBtn", new BIERButton(" Overthinker ", WINDOW_WIDTH / 2 + 250, WINDOW_HEIGHT / 2 - 30, 220, 70, WHITE, MAGENTA, null, 2, true)
+                        {
+                            ClickEvent = () =>
+                            {
+                                ChessAi = new ChessAi.ChessAi(1, 7); // Stockfish Overthinker
                                 AiMode = true;
                                 HideDifficultyButtons();
                             }
@@ -493,8 +532,21 @@ public class _4ChessGame : BIERGame
                     {
                         UIComponents["PlayStockfishBtn"].Hide();
                         UIComponents["PlayCustomBtn"].Hide();
+                        UIComponents["AiTournamentBtn"].Hide();
                         ChessAi = new ChessAi.ChessAi(2); // 2 = CustomAi
                         AiMode = true;
+                    }
+                });
+
+                //AI Tournament Button
+                UIComponents.Add("AiTournamentBtn", new BIERButton(" AI Tournament ", x: WINDOW_WIDTH / 2 - 100, y: WINDOW_HEIGHT / 2 + 70, w: 200, h: 100, Raylib.WHITE, Raylib.PURPLE, null, 2, true)
+                {
+                    ClickEvent = () =>
+                    {
+                        UIComponents["PlayStockfishBtn"].Hide();
+                        UIComponents["PlayCustomBtn"].Hide();
+                        UIComponents["AiTournamentBtn"].Hide();
+                        ShowTournamentSetup();
                     }
                 });
             }
@@ -504,12 +556,13 @@ public class _4ChessGame : BIERGame
             ClickEvent = () =>
             {
                 MultiplayerMode = true;
-                LocalPlayerColor = Piece.Color.White; 
+                LocalPlayerColor = Piece.Color.White;
                 IsLocalTurn = true;
                 IpInput.Hide();
                 UIComponents["PlayAiBtn"].Hide();
                 UIComponents["JoinGameBtn"].Hide();
                 UIComponents["HostGameBtn"].Hide();
+                HideAiSelectionButtons();
                 MultiplayerManager.IsHost = true;
                 System.Threading.Tasks.Task.Run(async () =>
                 {
@@ -522,12 +575,13 @@ public class _4ChessGame : BIERGame
             ClickEvent = () =>
             {
                 MultiplayerMode = true;
-                LocalPlayerColor = Piece.Color.Black; 
+                LocalPlayerColor = Piece.Color.Black;
                 IsLocalTurn = false;
                 IpInput.Hide();
                 UIComponents["PlayAiBtn"].Hide();
                 UIComponents["JoinGameBtn"].Hide();
                 UIComponents["HostGameBtn"].Hide();
+                HideAiSelectionButtons();
                 string serverIp = IpInput.TextValue.Replace(" ", "").Replace("\n", "");
                 MultiplayerManager.IsHost = false;
                 System.Threading.Tasks.Task.Run(async () =>
@@ -592,9 +646,18 @@ public class _4ChessGame : BIERGame
         if (UIComponents.ContainsKey("DifficultyLowBtn")) UIComponents["DifficultyLowBtn"].Hide();
         if (UIComponents.ContainsKey("DifficultyMediumBtn")) UIComponents["DifficultyMediumBtn"].Hide();
         if (UIComponents.ContainsKey("DifficultyHighBtn")) UIComponents["DifficultyHighBtn"].Hide();
+        if (UIComponents.ContainsKey("DifficultyExpertBtn")) UIComponents["DifficultyExpertBtn"].Hide();
         if (UIComponents.ContainsKey("DifficultyUltraBtn")) UIComponents["DifficultyUltraBtn"].Hide();
         if (UIComponents.ContainsKey("DifficultyUltraPlusBtn")) UIComponents["DifficultyUltraPlusBtn"].Hide();
+        if (UIComponents.ContainsKey("DifficultyGodlikeBtn")) UIComponents["DifficultyGodlikeBtn"].Hide();
         if (UIComponents.ContainsKey("DifficultyOverthinkerBtn")) UIComponents["DifficultyOverthinkerBtn"].Hide();
+    }
+
+    private void HideAiSelectionButtons()
+    {
+        if (UIComponents.ContainsKey("PlayStockfishBtn")) UIComponents["PlayStockfishBtn"].Hide();
+        if (UIComponents.ContainsKey("PlayCustomBtn")) UIComponents["PlayCustomBtn"].Hide();
+        if (UIComponents.ContainsKey("AiTournamentBtn")) UIComponents["AiTournamentBtn"].Hide();
     }
 
     private void RenderStockfishThinking()
@@ -622,7 +685,7 @@ public class _4ChessGame : BIERGame
         DrawRectangle(startX - 10, startY - 10, boxWidth, headerHeight + (thinkingLinesCopy.Count * lineHeight), ColorAlpha(BLACK, 0.8f));
 
         // Titel
-        DrawTextEx(_romulusFont, "Stockfish Thinking:", new Vector2(startX, startY), 30, 2, GOLD);
+        DrawTextEx(_romulusFont, "Ai Thinking:", new Vector2(startX, startY), 30, 2, GOLD);
 
         // Depth-Anzeige
         string depthText = $"Depth: {StockfishAi.CurrentDepth}/{StockfishAi.TargetDepth}";
@@ -647,6 +710,14 @@ public class _4ChessGame : BIERGame
         }
 
         int currentY = startY + headerHeight;
+        // Mate-Info (falls vorhanden)
+        var mateLine = thinkingLinesCopy.FirstOrDefault(l => l.ScoreType == "mate");
+        if (mateLine != null)
+        {
+            string mateText = $"Mate: {mateLine.GetScoreDisplay()}";
+            Color mateColor = mateLine.Score > 0 ? GREEN : RED;
+            DrawTextEx(_romulusFont, mateText, new Vector2(startX, startY + 90), 20, 1, mateColor);
+        }
 
         // Zeige alle Thinking Lines
         foreach (var line in thinkingLinesCopy)
@@ -669,5 +740,184 @@ public class _4ChessGame : BIERGame
         // Status-Text
         string status = isAiThinking ? "AI is thinking..." : "AI ready";
         DrawTextEx(_romulusFont, status, new Vector2(startX, currentY + 20), 24, 1, isAiThinking ? YELLOW : GREEN);
+    }
+
+    private void ShowTournamentSetup()
+    {
+        // White AI selection
+        int y = WINDOW_HEIGHT / 2 - 200;
+        for (int i = 0; i <= 7; i++)
+        {
+            ChessAiDifficulty diff = (ChessAiDifficulty)i;
+            string btnName = $"TournamentWhite{diff}Btn";
+            UIComponents.Add(btnName, new BIERButton($" {diff} ", WINDOW_WIDTH / 2 - 450, y, 180, 50, WHITE, SKYBLUE, null, 2, true)
+            {
+                ClickEvent = () =>
+                {
+                    _tournamentWhiteAi = diff;
+                    _4Chess.Logger.LogInfo($"White AI set to {diff}");
+                }
+            });
+            y += 60;
+        }
+
+        // Black AI selection
+        y = WINDOW_HEIGHT / 2 - 200;
+        for (int i = 0; i <= 7; i++)
+        {
+            ChessAiDifficulty diff = (ChessAiDifficulty)i;
+            string btnName = $"TournamentBlack{diff}Btn";
+            UIComponents.Add(btnName, new BIERButton($" {diff} ", WINDOW_WIDTH / 2 + 270, y, 180, 50, WHITE, ORANGE, null, 2, true)
+            {
+                ClickEvent = () =>
+                {
+                    _tournamentBlackAi = diff;
+                    _4Chess.Logger.LogInfo($"Black AI set to {diff}");
+                }
+            });
+            y += 60;
+        }
+
+        // Game count buttons
+        int[] gameCounts = [5, 10, 25, 50, 100];
+        int x = WINDOW_WIDTH / 2 - 250;
+        foreach (int count in gameCounts)
+        {
+            UIComponents.Add($"TournamentGames{count}Btn", new BIERButton($" {count} ", x, WINDOW_HEIGHT / 2 + 150, 100, 50, WHITE, GREEN, null, 2, true)
+            {
+                ClickEvent = () =>
+                {
+                    _tournamentGameCount = count;
+                    _4Chess.Logger.LogInfo($"Game count set to {count}");
+                }
+            });
+            x += 110;
+        }
+
+        // Start Tournament Button
+        UIComponents.Add("StartTournamentBtn", new BIERButton(" START TOURNAMENT ", WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 + 220, 300, 80, WHITE, RED, null, 2, true)
+        {
+            ClickEvent = () =>
+            {
+                StartTournament();
+            }
+        });
+
+        // Labels
+        UIComponents.Add("TournamentWhiteLabel", new BIERLabel(" White AI: ", WINDOW_WIDTH / 2 - 450, WINDOW_HEIGHT / 2 - 250, 30, WHITE));
+        UIComponents.Add("TournamentBlackLabel", new BIERLabel(" Black AI: ", WINDOW_WIDTH / 2 + 270, WINDOW_HEIGHT / 2 - 250, 30, WHITE));
+        UIComponents.Add("TournamentGamesLabel", new BIERLabel(" Number of Games: ", WINDOW_WIDTH / 2 - 250, WINDOW_HEIGHT / 2 + 110, 25, WHITE));
+    }
+
+    private void HideTournamentSetup()
+    {
+        for (int i = 0; i <= 7; i++)
+        {
+            ChessAiDifficulty diff = (ChessAiDifficulty)i;
+            if (UIComponents.ContainsKey($"TournamentWhite{diff}Btn")) UIComponents[$"TournamentWhite{diff}Btn"].Hide();
+            if (UIComponents.ContainsKey($"TournamentBlack{diff}Btn")) UIComponents[$"TournamentBlack{diff}Btn"].Hide();
+        }
+
+        int[] gameCounts = [5, 10, 25, 50, 100];
+        foreach (int count in gameCounts)
+        {
+            if (UIComponents.ContainsKey($"TournamentGames{count}Btn")) UIComponents[$"TournamentGames{count}Btn"].Hide();
+        }
+
+        if (UIComponents.ContainsKey("StartTournamentBtn")) UIComponents["StartTournamentBtn"].Hide();
+        if (UIComponents.ContainsKey("TournamentWhiteLabel")) UIComponents["TournamentWhiteLabel"].Hide();
+        if (UIComponents.ContainsKey("TournamentBlackLabel")) UIComponents["TournamentBlackLabel"].Hide();
+        if (UIComponents.ContainsKey("TournamentGamesLabel")) UIComponents["TournamentGamesLabel"].Hide();
+    }
+
+    private void StartTournament()
+    {
+        HideTournamentSetup();
+        TournamentMode = true;
+        CurrentTournament = new AiTournament(_tournamentWhiteAi, _tournamentBlackAi, _tournamentGameCount);
+
+        _4Chess.Logger.LogInfo($"Starting tournament: {_tournamentWhiteAi} vs {_tournamentBlackAi}, {_tournamentGameCount} games");
+
+        // Start tournament in background
+        Task.Run(async () =>
+        {
+            await CurrentTournament.RunTournamentAsync(this);
+        });
+    }
+
+    private void RenderTournamentResults()
+    {
+        if (CurrentTournament == null || !TournamentMode)
+            return;
+
+        int startX = WINDOW_WIDTH / 2 - 400;
+        int startY = WINDOW_HEIGHT / 2 - 300;
+        int boxWidth = 800;
+        int boxHeight = 600;
+
+        // Background
+        DrawRectangle(startX - 10, startY - 10, boxWidth, boxHeight, ColorAlpha(BLACK, 0.9f));
+
+        // Title
+        DrawTextEx(_romulusFont, "AI TOURNAMENT", new Vector2(startX + boxWidth / 2 - 150, startY), 40, 3, GOLD);
+
+        // Matchup
+        string matchup = $"{CurrentTournament.Result.WhiteAiName} vs {CurrentTournament.Result.BlackAiName}";
+        DrawTextEx(_romulusFont, matchup, new Vector2(startX + 50, startY + 60), 25, 2, WHITE);
+
+        // Progress
+        string progress = $"Game: {CurrentTournament.Result.CurrentGame} / {CurrentTournament.Result.TotalGames}";
+        DrawTextEx(_romulusFont, progress, new Vector2(startX + 50, startY + 100), 25, 2, SKYBLUE);
+
+        // Scores
+        int scoreY = startY + 150;
+        DrawTextEx(_romulusFont, "RESULTS:", new Vector2(startX + 50, scoreY), 30, 2, GOLD);
+
+        scoreY += 50;
+        string whiteScore = $"White Wins: {CurrentTournament.Result.WhiteWins}";
+        DrawTextEx(_romulusFont, whiteScore, new Vector2(startX + 50, scoreY), 25, 2, GREEN);
+
+        scoreY += 40;
+        string blackScore = $"Black Wins: {CurrentTournament.Result.BlackWins}";
+        DrawTextEx(_romulusFont, blackScore, new Vector2(startX + 50, scoreY), 25, 2, RED);
+
+        scoreY += 40;
+        string drawScore = $"Draws: {CurrentTournament.Result.Draws}";
+        DrawTextEx(_romulusFont, drawScore, new Vector2(startX + 50, scoreY), 25, 2, YELLOW);
+
+        // Win percentage
+        if (CurrentTournament.Result.CurrentGame > 0)
+        {
+            scoreY += 60;
+            float whitePercent = (float)CurrentTournament.Result.WhiteWins / CurrentTournament.Result.CurrentGame * 100f;
+            float blackPercent = (float)CurrentTournament.Result.BlackWins / CurrentTournament.Result.CurrentGame * 100f;
+
+            DrawTextEx(_romulusFont, $"White: {whitePercent:F1}%", new Vector2(startX + 50, scoreY), 22, 2, SKYBLUE);
+            DrawTextEx(_romulusFont, $"Black: {blackPercent:F1}%", new Vector2(startX + 50, scoreY + 30), 22, 2, ORANGE);
+        }
+
+        // Status
+        scoreY += 80;
+        string status = CurrentTournament.Result.IsFinished ? "TOURNAMENT FINISHED!" : "Tournament in progress...";
+        Color statusColor = CurrentTournament.Result.IsFinished ? GREEN : YELLOW;
+        DrawTextEx(_romulusFont, status, new Vector2(startX + 50, scoreY), 28, 2, statusColor);
+
+        // Exit button if finished
+        if (CurrentTournament.Result.IsFinished)
+        {
+            if (!UIComponents.ContainsKey("ExitTournamentBtn"))
+            {
+                UIComponents.Add("ExitTournamentBtn", new BIERButton(" BACK TO MENU ", WINDOW_WIDTH / 2 - 150, startY + boxHeight - 80, 300, 60, WHITE, RED, null, 2, true)
+                {
+                    ClickEvent = () =>
+                    {
+                        TournamentMode = false;
+                        CurrentTournament = null;
+                        UIComponents["ExitTournamentBtn"].Hide();
+                        GameInit(); // Reset game
+                    }
+                });
+            }
+        }
     }
 }

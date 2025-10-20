@@ -1,14 +1,17 @@
-﻿using System;
+﻿using _4Chess.Game;
+using _4Chess.Game.Input;
+using _4Chess.Pieces;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using _4Chess.Game;
-using _4Chess.Game.Input;
-using _4Chess.Pieces;
+using static System.Net.WebRequestMethods;
 
 namespace _4Chess.ChessAi
 {
@@ -26,6 +29,7 @@ namespace _4Chess.ChessAi
         private int _skillLevel;
         private int _multiPV; // Anzahl der Varianten für ultrathink
         private int _moveTimeMs; // Zeit in Millisekunden pro Zug (0 = unbegrenzt)
+        private int _threadCount; // Anzahl der Threads für Stockfish
 
         // Spielzug-Historie
         private List<string> _moveHistory = new List<string>();
@@ -48,52 +52,102 @@ namespace _4Chess.ChessAi
 
         private void ConfigureDifficulty()
         {
+            // Default: Hälfte der Threads, außer bei Overthinker (75%)
+            int defaultThreads = Math.Max(1, Environment.ProcessorCount / 2);
+            int overthinkerThreads = Math.Max(1, (int)(Environment.ProcessorCount * 0.75));
+
             switch (ChessAiDifficulty)
             {
                 case ChessAiDifficulty.Low:
                     _depth = 5;
-                    _skillLevel = 5;
+                    _skillLevel = 0;
                     _multiPV = 1;
-                    _moveTimeMs = 5000; // 5 Sekunden
+                    _moveTimeMs = 5000;
+                    _threadCount = defaultThreads;
                     ShowThinking = true;
                     break;
                 case ChessAiDifficulty.Medium:
                     _depth = 10;
-                    _skillLevel = 10;
+                    _skillLevel = 3;
                     _multiPV = 1;
-                    _moveTimeMs = 10000; // 10 Sekunden
+                    _moveTimeMs = 10000;
+                    _threadCount = defaultThreads;
                     ShowThinking = true;
                     break;
                 case ChessAiDifficulty.High:
                     _depth = 15;
-                    _skillLevel = 15;
+                    _skillLevel = 5;
                     _multiPV = 1;
-                    _moveTimeMs = 15000; // 15 Sekunden
+                    _moveTimeMs = 15000;
+                    _threadCount = defaultThreads;
+                    ShowThinking = true;
+                    break;
+                case ChessAiDifficulty.Expert:
+                    _depth = 18;
+                    _skillLevel = 8;
+                    _multiPV = 1;
+                    _moveTimeMs = 18000;
+                    _threadCount = defaultThreads;
                     ShowThinking = true;
                     break;
                 case ChessAiDifficulty.Ultra:
                     _depth = 20;
-                    _skillLevel = 20;
-                    _multiPV = 3;
-                    _moveTimeMs = 15000; // 15 Sekunden
+                    _skillLevel = 10;
+                    _multiPV = 1;
+                    _moveTimeMs = 15000;
+                    _threadCount = defaultThreads;
                     ShowThinking = true;
                     break;
                 case ChessAiDifficulty.UltraPlus:
                     _depth = 25;
-                    _skillLevel = 20;
-                    _multiPV = 5;
-                    _moveTimeMs = 22000; // 22 Sekunden
+                    _skillLevel = 12;
+                    _multiPV = 1;
+                    _moveTimeMs = 22000;
+                    _threadCount = defaultThreads;
+                    ShowThinking = true;
+                    break;
+                case ChessAiDifficulty.Godlike:
+                    _depth = 30;
+                    _skillLevel = 15;
+                    _multiPV = 1;
+                    _moveTimeMs = 25000;
+                    _threadCount = defaultThreads;
                     ShowThinking = true;
                     break;
                 case ChessAiDifficulty.Overthinker:
-                    _depth = 60;
+                    _depth = 30;
                     _skillLevel = 20;
-                    _multiPV = 10;
-                    _moveTimeMs = 30000; // 30 Sekunden
+                    _multiPV = 1;
+                    _moveTimeMs = 30000;
+                    _threadCount = overthinkerThreads; // 75% der Threads!
                     ShowThinking = true;
                     break;
             }
         }
+
+//| Skill Level | Geschätzte Elo | Beschreibung                                           |
+//| ----------- | -------------- | ------------------------------------------------------ |
+//| 0           | ~1350          | Macht sehr viele Zufallszüge, kaum planvolles Spiel    |
+//| 1           | ~1450          | Spielt etwas strukturierter, aber grobe Fehler         |
+//| 2           | ~1550          | Anfänger-Club-Niveau                                   |
+//| 3           | ~1650          | Schwacher Vereinsspieler                               |
+//| 4           | ~1750          | Solide Taktik, aber keine langfristigen Pläne          |
+//| 5           | ~1850          | Mittelstarker Vereinsspieler                           |
+//| 6           | ~1950          | Gute taktische Verteidigung                            |
+//| 7           | ~2050          | Ambitionierter Amateur                                 |
+//| 8           | ~2150          | Spielt schon sehr solide                               |
+//| 9           | ~2250          | FM-Niveau(unteres Ende)                               |
+//| 10          | ~2350          | Starke Vereinsspieler oder schwache Titelträger        |
+//| 11          | ~2450          | IM-Niveau                                              |
+//| 12          | ~2550          | FM/IM-Bereich, kaum taktische Fehler                   |
+//| 13          | ~2650          | IM/GM-Grenze                                           |
+//| 14          | ~2750          | GM-Niveau                                              |
+//| 15          | ~2850          | Weltklasse-Niveau                                      |
+//| 16          | ~2950          | Sehr starke Engine-Performance                         |
+//| 17          | ~3050          | Top-5-Engine-Niveau                                    |
+//| 18          | ~3150          | Nahe an Super-GM                                       |
+//| 19          | ~3250          | Fast maximale Stärke                                   |
+//| 20          | ~3400–3600     | Volle Engine-Power(entspricht Stockfish „unbegrenzt“) |
 
         private void InitializeStockfish()
         {
@@ -131,13 +185,14 @@ namespace _4Chess.ChessAi
                 WaitForResponse("uciok");
 
                 // Optionen setzen
+                SendCommand($"setoption name Threads value {_threadCount}");
                 SendCommand($"setoption name Skill Level value {_skillLevel}");
                 SendCommand($"setoption name MultiPV value {_multiPV}");
                 SendCommand("isready");
                 WaitForResponse("readyok");
 
                 _isInitialized = true;
-                _4Chess.Logger.LogInfo($"Stockfish initialized! Difficulty: {ChessAiDifficulty}, Depth: {_depth}, Skill: {_skillLevel}, MultiPV: {_multiPV}, TimeLimit: {_moveTimeMs}ms");
+                _4Chess.Logger.LogInfo($"Stockfish initialized! Difficulty: {ChessAiDifficulty}, Depth: {_depth}, Skill: {_skillLevel}, MultiPV: {_multiPV}, TimeLimit: {_moveTimeMs}ms, Threads: {_threadCount}/{Environment.ProcessorCount}");
             }
             catch (Exception ex)
             {
@@ -163,7 +218,7 @@ namespace _4Chess.ChessAi
 
             foreach (var path in possiblePaths)
             {
-                if (File.Exists(path))
+                if (System.IO.File.Exists(path))
                 {
                     _4Chess.Logger.LogInfo($"Found Stockfish at: {path}");
                     return path;
@@ -191,7 +246,7 @@ namespace _4Chess.ChessAi
                 if (!string.IsNullOrWhiteSpace(output))
                 {
                     string path = output.Split('\n')[0].Trim();
-                    if (File.Exists(path))
+                    if (System.IO.File.Exists(path))
                     {
                         _4Chess.Logger.LogInfo($"Found Stockfish in PATH: {path}");
                         return path;
@@ -259,6 +314,24 @@ namespace _4Chess.ChessAi
                 IsThinking = true;
 
                 string fen = ChessAiHelper.BoardToFEN(game.Board, isWhiteTurn, moveCounter);
+
+                // DEBUG: Log board state
+                _4Chess.Logger.LogInfo($"Board state before FEN:");
+                for (int y = 0; y < 8; y++)
+                {
+                    var row = "";
+                    for (int x = 0; x < 8; x++)
+                    {
+                        var piece = game.Board[y][x];
+                        if (piece == null)
+                            row += ".";
+                        else
+                            row += piece.GetType().Name[0] + (piece.Alignment == Piece.Color.White ? "w" : "b");
+                    }
+                    _4Chess.Logger.LogInfo($"  Row {y}: {row}");
+                }
+                _4Chess.Logger.LogInfo($"Generated FEN: {fen}");
+
                 SendCommand($"position fen {fen}");
 
                 // Berechnung starten (mit Depth und Zeitlimit)
@@ -283,6 +356,9 @@ namespace _4Chess.ChessAi
                 // Auf bestmove warten und Thinking-Lines sammeln
                 string? bestMove = null;
                 int maxDepthReached = 0;
+                string? bestMoveCandidate = null;
+                bool stopSent = false;
+                DateTime stopSentAt = DateTime.MinValue;
                 while (true)
                 {
                     string? line = await Task.Run(() => _stockfishOutput.ReadLine());
@@ -311,6 +387,43 @@ namespace _4Chess.ChessAi
                         }
                     }
 
+                    // Aktualisiere aktuellen besten Kandidaten (PV #1)
+                    lock (ThinkingLines)
+                    {
+                        var top = ThinkingLines.FirstOrDefault(t => t.MultiPVIndex == 1 && t.PrincipalVariation.Count > 0);
+                        if (top != null)
+                            bestMoveCandidate = top.PrincipalVariation[0];
+                    }
+                    // Zeitlimit erzwingen: stop senden und ggf. fallback
+                    if (_moveTimeMs > 0)
+                    {
+                        var elapsedMs = (int)(DateTime.Now - startTime).TotalMilliseconds;
+                        if (elapsedMs >= _moveTimeMs && !stopSent)
+                        {
+                            _4Chess.Logger.LogInfo($"Time limit reached ({elapsedMs}ms >= {_moveTimeMs}ms); sending stop. BestMoveCandidate: {bestMoveCandidate ?? "NULL"}");
+                            SendCommand("stop");
+                            stopSent = true;
+                            stopSentAt = DateTime.Now;
+                        }
+
+                        // Fallback: Wenn stop gesendet wurde und Stockfish nach 2 Sekunden nicht antwortet
+                        if (stopSent && (DateTime.Now - stopSentAt).TotalMilliseconds > 2000)
+                        {
+                            if (!string.IsNullOrEmpty(bestMoveCandidate))
+                            {
+                                bestMove = bestMoveCandidate;
+                                IsThinking = false;
+                                _4Chess.Logger.LogWarning($"Stockfish didn't respond after stop command. Using fallback best move: {bestMove}");
+                                break;
+                            }
+                            else
+                            {
+                                IsThinking = false;
+                                _4Chess.Logger.LogError("No bestmove from Stockfish and no candidate available! Aborting.");
+                                return null;
+                            }
+                        }
+                    }
                     // Best move gefunden
                     if (line.StartsWith("bestmove"))
                     {
@@ -414,7 +527,10 @@ namespace _4Chess.ChessAi
 
             if (bestMove == null || bestMove == "(none)")
             {
-                _4Chess.Logger.LogWarning("No valid move found by Stockfish!");
+                _4Chess.Logger.LogError("CRITICAL: No valid move found by Stockfish! Skipping turn to prevent infinite loop.");
+                // Skip turn to prevent AI from being called again immediately
+                _4ChessMove.TurnChange();
+                _4ChessMove.MoveCounter++;
                 return;
             }
 
@@ -432,6 +548,18 @@ namespace _4Chess.ChessAi
             }
 
             _4Chess.Logger.LogInfo($"Moving piece from ({from.x},{from.y}) to ({to.x},{to.y})");
+
+            // Reset all EnPassant flags before making the move
+            foreach (var row in game.Board)
+            {
+                foreach (var p in row)
+                {
+                    if (p is Pawn pawn)
+                    {
+                        pawn.IsEnPassant = false;
+                    }
+                }
+            }
 
             // Führe den Zug aus
             game.Board[from.y][from.x] = null;

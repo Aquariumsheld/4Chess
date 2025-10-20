@@ -241,3 +241,53 @@ Hier sieht man, dass Stockfish Depth 35 in 15 Sekunden erreicht hat (ohne Depth-
 
 **Problem:** AI denkt unendlich lange
 - **Lösung:** Setze `_moveTimeMs` auf einen Wert > 0 (z.B. 10000)
+
+## Syzygy-Tablebases (3-4-5)
+
+Mit Syzygy-Endspiel-Tablebases kann Stockfish perfekte Endspielbewertungen und -züge liefern, sobald die Figurenanzahl klein genug ist.
+
+- Unterstützt: 3-, 4- und 5-Steiner (empfohlen: WDL + DTZ)
+- Datei-Endungen: `*.rtb*` (WDL/DTZ der Syzygy-TBs)
+- In 4Chess werden die UCI-Optionen automatisch gesetzt, wenn ein Pfad erkannt wird.
+
+### Einrichten
+
+1) Tablebases herunterladen (3-4-5):
+   - Beliebige Quelle für „Syzygy 3-4-5“ verwenden (WDL + DTZ).
+   - Speicherbedarf grob ~ 0.7 GB (nur WDL) bis ~ 2 GB (WDL+DTZ).
+
+2) Ordner platzieren:
+   - Empfohlen: Externer Ordner, z.B. `C:\TB\Syzygy` (nicht ins Repo committen)
+   - Alternativ automatisch erkannte Pfade:
+     - `<GameDir>\res\engine\syzygy\` (wird ins Output kopiert; sehr groß → Build langsam)
+     - `<GameDir>\res\syzygy\`
+     - `<GameDir>\syzygy\`
+     - `%PROGRAMDATA%\Syzygy` oder `%LOCALAPPDATA%\Syzygy`
+
+3) Pfad konfigurieren (optional):
+   - Umgebungsvariable setzen: `SYZYGY_PATH=<Dein\Pfad\zu\Syzygy>`
+   - Optional anpassen:
+     - `SYZYGY_PROBE_DEPTH` (Standard `2`)
+     - `SYZYGY_PROBE_LIMIT` (Standard `5` für 3-4-5)
+     - `SYZYGY_50_MOVE_RULE` (`true`/`false`, Standard `true`)
+
+### Was der Code macht
+
+- Beim Start und vor jedem Zug setzt der Adapter die UCI-Optionen von Stockfish:
+  - `SyzygyPath = <Pfad>`
+  - `SyzygyProbeDepth = 2`
+  - `SyzygyProbeLimit = 5`
+  - `Syzygy50MoveRule = true`
+
+- Auto-Discovery: Wenn `SYZYGY_PATH` nicht gesetzt ist, werden die o.g. Standardverzeichnisse auf `*.rtb*` durchsucht.
+
+### Logs & Verifikation
+
+- Beim Initialisieren erscheint im Log (falls erkannt):
+  - `Syzygy enabled - Path: <Pfad>, ProbeDepth: 2, ProbeLimit: 5, 50MoveRule: True`
+
+### Hinweise
+
+- Lege Tablebases möglichst außerhalb des Repos ab (nicht versionieren).
+- WDL reicht für Ergebnisbewertung, DTZ verbessert die Zugauswahl in Endspielen.
+- Bei nur 3-4-5-TBs ist `SyzygyProbeLimit = 5` sinnvoll, um unnötige Probes zu vermeiden.

@@ -21,6 +21,20 @@ internal class Program
 
         try
         {
+            var syzygyCheck = System.Environment.GetEnvironmentVariable("SYZYGY_CHECK");
+            if (!string.IsNullOrWhiteSpace(syzygyCheck) && syzygyCheck.Trim() == "1")
+            {
+                Logger.LogInfo("Running headless Syzygy check (SYZYGY_CHECK=1)");
+                var game = new _4ChessGame();
+                var tournament = new _4Chess.ChessAi.AiTournament(
+                    _4Chess.ChessAi.ChessAiDifficulty.Low,
+                    _4Chess.ChessAi.ChessAiDifficulty.Low,
+                    numberOfGames: 1,
+                    maxMovesPerGame: 1);
+                tournament.RunTournamentAsync(game).GetAwaiter().GetResult();
+                Logger.LogInfo("Syzygy check finished. Exiting.");
+                return;
+            }
             var _4chessGame = new _4ChessGame();
             _4chessGame.Run();
         }

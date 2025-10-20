@@ -41,12 +41,16 @@ namespace _4Chess.ChessAi
                 case 2:
                     ChessAiDifficulty = ChessAiDifficulty.High; break;
                 case 3:
-                    ChessAiDifficulty = ChessAiDifficulty.Ultra; break;
+                    ChessAiDifficulty = ChessAiDifficulty.Expert; break;
                 case 4:
-                    ChessAiDifficulty = ChessAiDifficulty.UltraPlus; break;
+                    ChessAiDifficulty = ChessAiDifficulty.Ultra; break;
                 case 5:
+                    ChessAiDifficulty = ChessAiDifficulty.UltraPlus; break;
+                case 6:
+                    ChessAiDifficulty = ChessAiDifficulty.Godlike; break;
+                case 7:
                     ChessAiDifficulty = ChessAiDifficulty.Overthinker; break;
-                default: 
+                default:
                     ChessAiDifficulty = ChessAiDifficulty.Low; break;
             }
         }

@@ -53,6 +53,13 @@ public static class _4ChessMove
             return;
         }
 
+        // Block input while AI is thinking
+        if (_4ChessGame.AiMode && game.IsAiThinking)
+        {
+            _4Chess.Logger.Log("MouseUpdate blocked: AI is currently thinking");
+            return;
+        }
+
         // Aktualisiere die Mausposition
         MouseRect.x = GetMousePosition().X;
         MouseRect.y = GetMousePosition().Y;
@@ -234,6 +241,18 @@ public static class _4ChessMove
         bool isValidMove = (DraggedPiece?.GetMoves().Any(move => (int)move.X == newX && (int)move.Y == newY) ?? false);
         if (isValidMove && DraggedPiece != null)
         {
+            // Reset all EnPassant flags before making the move
+            foreach (var row in game.Board)
+            {
+                foreach (var p in row)
+                {
+                    if (p is Pawn pawn)
+                    {
+                        pawn.IsEnPassant = false;
+                    }
+                }
+            }
+
             DraggedPiece.X = newX;
             DraggedPiece.Y = newY;
 
