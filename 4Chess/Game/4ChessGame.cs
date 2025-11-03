@@ -31,6 +31,8 @@ public class _4ChessGame : BIERGame
     public BIERInput IpInput = default!;
     private bool schachmatt = false;
 
+    private bool _isLoadingAi = false;
+    private string _loadingMessage = "Loading AI...";
 
     private Raylib_CsLo.Font _romulusFont;
     public List<BIERRenderObject> RenderObjects { get; set; } = [];
@@ -77,6 +79,7 @@ public class _4ChessGame : BIERGame
         CustomPostRenderFuncs.Add(RenderIpInput);
         CustomPostRenderFuncs.Add(RenderStockfishThinking);
         CustomPostRenderFuncs.Add(RenderTournamentResults);
+        CustomPostRenderFuncs.Add(RenderLoadingIndicator); // NEU
     }
 
     public override unsafe void GameInit()
@@ -478,9 +481,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 0); // Stockfish Low
-                                AiMode = true;
+                                InitializeAiAsync(1, 0, "Loading Easy AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 0); // Stockfish Low
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
 
@@ -488,9 +497,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 1); // Stockfish Medium
-                                AiMode = true;
+                                InitializeAiAsync(1, 1, "Loading Medium AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 1); // Stockfish Medium
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
 
@@ -498,9 +513,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 2); // Stockfish High
-                                AiMode = true;
+                                InitializeAiAsync(1, 2, "Loading Hard AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 2); // Stockfish High
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
 
@@ -508,9 +529,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 3); // Stockfish Expert
-                                AiMode = true;
+                                InitializeAiAsync(1, 3, "Loading Expert AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 3); // Stockfish Expert
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
 
@@ -519,9 +546,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 4); // Stockfish Ultra
-                                AiMode = true;
+                                InitializeAiAsync(1, 4, "Loading Ultra AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 4); // Stockfish Ultra
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
 
@@ -529,9 +562,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 5); // Stockfish UltraPlus
-                                AiMode = true;
+                                InitializeAiAsync(1, 5, "Loading Ultra+ AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 5); // Stockfish UltraPlus
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
 
@@ -539,9 +578,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 6); // Stockfish Godlike
-                                AiMode = true;
+                                InitializeAiAsync(1, 6, "Loading Godlike AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 6); // Stockfish Godlike
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
 
@@ -549,9 +594,15 @@ public class _4ChessGame : BIERGame
                         {
                             ClickEvent = () =>
                             {
-                                ChessAi = new ChessAi.ChessAi(1, 7); // Stockfish Overthinker
-                                AiMode = true;
+                                InitializeAiAsync(1, 7, "Loading Ultimate AI...");
                                 HideDifficultyButtons();
+                                ShowLoadingIndicator();
+                                Task.Run(() =>
+                                {
+                                    ChessAi = new ChessAi.ChessAi(1, 7); // Stockfish Overthinker
+                                    AiMode = true;
+                                    HideLoadingIndicator();
+                                });
                             }
                         });
                     }
@@ -564,8 +615,13 @@ public class _4ChessGame : BIERGame
                         UIComponents["PlayStockfishBtn"].Hide();
                         UIComponents["PlayCustomBtn"].Hide();
                         UIComponents["AiTournamentBtn"].Hide();
-                        ChessAi = new ChessAi.ChessAi(2); // 2 = CustomAi
-                        AiMode = true;
+                        ShowLoadingIndicator();
+                        Task.Run(() =>
+                        {
+                            ChessAi = new ChessAi.ChessAi(2); // 2 = CustomAi
+                            AiMode = true;
+                            HideLoadingIndicator();
+                        });
                     }
                 });
 
@@ -621,6 +677,33 @@ public class _4ChessGame : BIERGame
                 });
             }
         });
+    }
+
+    private async void InitializeAiAsync(int aiType, int difficulty, string loadingMessage)
+    {
+        _loadingMessage = loadingMessage;
+        _isLoadingAi = true;
+        HideDifficultyButtons();
+
+        await Task.Run(() =>
+        {
+            try
+            {
+                Logger.LogInfo($"Initializing AI: Type={aiType}, Difficulty={difficulty}");
+                ChessAi = new ChessAi.ChessAi(aiType, difficulty);
+                Logger.LogInfo("AI initialization completed");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("AI initialization failed", ex);
+            }
+        });
+
+        // Kleine Verzögerung für besseres UX
+        await Task.Delay(500);
+
+        _isLoadingAi = false;
+        AiMode = true;
     }
 
     private void RenderBoard()
@@ -689,6 +772,50 @@ public class _4ChessGame : BIERGame
         if (UIComponents.ContainsKey("PlayStockfishBtn")) UIComponents["PlayStockfishBtn"].Hide();
         if (UIComponents.ContainsKey("PlayCustomBtn")) UIComponents["PlayCustomBtn"].Hide();
         if (UIComponents.ContainsKey("AiTournamentBtn")) UIComponents["AiTournamentBtn"].Hide();
+    }
+
+    private void RenderLoadingIndicator()
+    {
+        if (!_isLoadingAi)
+            return;
+
+        // Semi-transparenter Hintergrund über dem gesamten Bildschirm
+        DrawRectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, ColorAlpha(BLACK, 0.7f));
+
+        // Loading-Box
+        int boxWidth = 600;
+        int boxHeight = 200;
+        int boxX = WINDOW_WIDTH / 2 - boxWidth / 2;
+        int boxY = WINDOW_HEIGHT / 2 - boxHeight / 2;
+
+        DrawRectangle(boxX, boxY, boxWidth, boxHeight, ColorAlpha(DARKGRAY, 0.95f));
+        DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, GOLD);
+
+        // Titel
+        DrawTextEx(_romulusFont, _loadingMessage,
+            new Vector2(boxX + boxWidth / 2 - MeasureTextEx(_romulusFont, _loadingMessage, 40, 3).X / 2, boxY + 30),
+            40, 3, GOLD);
+
+        // Animierter Ladebalken
+        int barWidth = boxWidth - 100;
+        int barHeight = 30;
+        int barX = boxX + 50;
+        int barY = boxY + 100;
+
+        DrawRectangle(barX, barY, barWidth, barHeight, DARKGRAY);
+
+        // Animierte Füllung basierend auf Zeit
+        float progress = (float)(GetTime() % 2.0) / 2.0f; // 2 Sekunden Zyklus
+        int fillWidth = (int)(barWidth * progress);
+        DrawRectangle(barX, barY, fillWidth, barHeight, SKYBLUE);
+
+        DrawRectangleLines(barX, barY, barWidth, barHeight, WHITE);
+
+        // Fortschrittstext
+        string statusText = "Please wait...";
+        DrawTextEx(_romulusFont, statusText,
+            new Vector2(boxX + boxWidth / 2 - MeasureTextEx(_romulusFont, statusText, 25, 2).X / 2, boxY + 150),
+            25, 2, WHITE);
     }
 
     private void RenderStockfishThinking()
@@ -960,6 +1087,23 @@ public class _4ChessGame : BIERGame
                     }
                 });
             }
+        }
+    }
+
+    private void ShowLoadingIndicator()
+    {
+        if (!UIComponents.ContainsKey("LoadingIndicator"))
+        {
+            UIComponents.Add("LoadingIndicator", new BIERButton(" Loading AI... ", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT / 2 - 50, 400, 100, BLACK, YELLOW, _romulusFont, 3, false));
+        }
+        UIComponents["LoadingIndicator"].Show();
+    }
+
+    private void HideLoadingIndicator()
+    {
+        if (UIComponents.ContainsKey("LoadingIndicator"))
+        {
+            UIComponents["LoadingIndicator"].Hide();
         }
     }
 }
