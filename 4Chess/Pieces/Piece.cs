@@ -75,7 +75,7 @@ namespace _4Chess.Pieces
             {
                 for (int i = moves.Count - 1; i >= 0; i--)
                 {
-                    //aktuellen Zustand speichern
+                    // aktuellen Zustand speichern
                     int tempY = (int)moves[i].Y;
                     int tempX = (int)moves[i].X;
 
@@ -83,25 +83,37 @@ namespace _4Chess.Pieces
                     Game.Board[tempY][tempX] = this;
                     Game.Board[Y][X] = null;
 
-                    //alle jetzt gegnerischen Züge ohne Validierung abfragen
-                    List<Vector2> enemyMoves = 
-                        [.. Game.Board.
-                        SelectMany(x => x).
-                        Where(elem => elem != null && 
-                        elem.Alignment != Alignment).
-                        SelectMany(p => p?.GetMoves(false) ?? [])];
+                    // Gegnerische Figuren einmalig snappen, um Modifikation während Enumeration zu vermeiden
+                    var enemyPieces = Game.Board
+                        .SelectMany(x => x)
+                        .Where(elem => elem != null && elem.Alignment != Alignment)
+                        .ToList();
 
-                    if(typeof(King) == GetType())
+                    // Alle gegnerischen Züge (ohne Validierung) einsammeln
+                    var enemyMoves = new List<Vector2>();
+                    foreach (var ep in enemyPieces)
                     {
-                        if (enemyMoves.Contains(moves[i])) moves.RemoveAt(i);
+                        var em = ep?.GetMoves(false, false);
+                        if (em != null && em.Count > 0)
+                        {
+                            enemyMoves.AddRange(em);
+                        }
+                    }
+
+                    if (typeof(King) == GetType())
+                    {
+                        if (enemyMoves.Contains(moves[i]))
+                            moves.RemoveAt(i);
                     }
                     else
                     {
-                        //prüfen, ob König bedroht würde
-                        if (enemyMoves.Contains(GetKingPosition() ?? new Vector2(-99f, -99f))) moves.RemoveAt(i);
+                        // prüfen, ob König bedroht würde
+                        var kingPos = GetKingPosition() ?? new Vector2(-99f, -99f);
+                        if (enemyMoves.Contains(kingPos))
+                            moves.RemoveAt(i);
                     }
 
-                    //vorherigen Zustand wiederherstellen
+                    // vorherigen Zustand wiederherstellen
                     Game.Board[tempY][tempX] = tileContent;
                     Game.Board[Y][X] = this;
                 }

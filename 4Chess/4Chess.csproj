@@ -18,11 +18,14 @@
   <ItemGroup>
 	<ResFileFolder Include="Res\img" />
     <ResFiles Include="Res\img\**\*.*" />
+    <EngineFiles Include="Res\engine\**\*.*" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 	  <MakeDir Directories="$(OutDir)res" />
+	  <MakeDir Directories="$(OutDir)res\engine" />
 	  <Copy SourceFiles="@(ResFiles)" DestinationFolder="$(ProjectDir)$(OutDir)res" />
+	  <Copy SourceFiles="@(EngineFiles)" DestinationFolder="$(ProjectDir)$(OutDir)res\engine" />
   </Target>
 
 </Project>
